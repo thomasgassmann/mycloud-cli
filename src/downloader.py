@@ -1,4 +1,4 @@
-import os, numpy
+import os, numpy, traceback
 from mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloudapi.object_request import ObjectRequest
 from mycloudapi.metadata_request import MetadataRequest
@@ -30,11 +30,19 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
             if is_encrypted:
                 encryptor = Encryptor(encryption_password, 1024)
             with open(download_path, 'wb') as f:
+                last_chunk = None
                 for chunk in downloaded_content.iter_content(chunk_size=1024):
-                    if chunk:
-                        if is_encrypted:
-                            chunk = encryptor.decrypt(chunk)
-                        f.write(chunk)
+                    if last_chunk is None:
+                        last_chunk = chunk
+                        continue
+                    if is_encrypted:
+                        last_chunk = encryptor.decrypt(last_chunk)
+                    f.write(last_chunk)
+                    last_chunk = chunk
+                final_chunk = last_chunk
+                if is_encrypted:
+                    final_chunk = encryptor.decrypt(final_chunk, last_block=True)
+                f.write(final_chunk)                        
 
             tracker.track_progress(file)
             print(f'Downloaded file {file} to {download_path}...')

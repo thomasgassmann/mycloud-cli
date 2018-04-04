@@ -44,9 +44,15 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
             while True:
                 data = f.read(1024)
                 if not data:
+                    if is_encrypted:
+                        yield encryptor.encrypt(bytes([]), last_block=True)
                     break
                 if is_encrypted:
-                    data = encryptor.encrypt(data)
+                    if len(data) != 1024:
+                        yield encryptor.encrypt(data, last_block=True)
+                        break
+                    else:
+                        data = encryptor.encrypt(data)
                 yield data
 
     request.put(generator())

@@ -2,6 +2,7 @@ from Crypto import Random
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 import os, struct, base64
+from Crypto.Util.py3compat import bchr, bord
 
 
 class Encryptor:
@@ -11,7 +12,8 @@ class Encryptor:
         self.first_state = True
 
 
-    def encrypt(self, source):
+    # TODO: passt last_block correctly in other scripts
+    def encrypt(self, source, last_block=False):
         first = self.first_state
         if first:
             self.IV = Random.new().read(AES.block_size)
@@ -19,14 +21,15 @@ class Encryptor:
             self.first_state = False
         # Assume last, if chunk size is not met
         # Add padding for message length
-        if len(source) != self.chunk_size:
+        if last_block:
             padding = AES.block_size - len(source) % AES.block_size
-            source += bytes([padding]) * padding
+            source += bchr(padding) * padding
         encrypted = self.aes.encrypt(source)
         return self.IV + encrypted if first else encrypted
 
 
-    def decrypt(self, source):
+    # TODO: passt last_block correctly in other scripts
+    def decrypt(self, source, last_block=False):
         first = self.first_state
         if first:
             self.IV = source[:AES.block_size]
@@ -35,7 +38,9 @@ class Encryptor:
         decrypted_data = self.aes.decrypt(source[AES.block_size:]) if first else self.aes.decrypt(source)
         # Assume last, if chunk size is not met
         # Cut padding
-        if len(source) != self.chunk_size:
-            padding = decrypted_data[-1]
+        if last_block:
+            padding = bord(decrypted_data[-1])
+            if decrypted_data[-padding:] != bchr(padding) * padding:
+                raise ValueError('PKCS#7 padding is incorrect')
             return decrypted_data[:-padding]
         return decrypted_data
