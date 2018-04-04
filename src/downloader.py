@@ -45,6 +45,7 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
                 f.write(final_chunk)                        
 
             tracker.track_progress(file)
+            tracker.save()
             print(f'Downloaded file {file} to {download_path}...')
         except Exception as e:
             err = f'Could not download {file} because: {str(e)}'

@@ -24,11 +24,11 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, progress_f
                 __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
                 print(f'Uploaded file {full_file_path} to {cloud_name}...')
                 tracker.track_progress(full_file_path)
+                tracker.save()
             except Exception as e:
                 err = f'Could not upload {full_file_path} because: {str(e)}'
                 print(err)
                 errors.append(err)
-        tracker.save()
     for error in errors:
         print(f'ERR: {error}')
     if len(errors) == 0:
