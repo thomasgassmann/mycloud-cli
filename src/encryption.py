@@ -12,14 +12,12 @@ class Encryptor:
         self.first_state = True
 
 
-    # TODO: passt last_block correctly in other scripts
     def encrypt(self, source, last_block=False):
         first = self.first_state
         if first:
             self.IV = Random.new().read(AES.block_size)
             self.aes = AES.new(self.key, AES.MODE_CBC, self.IV)
             self.first_state = False
-        # Assume last, if chunk size is not met
         # Add padding for message length
         if last_block:
             padding = AES.block_size - len(source) % AES.block_size
@@ -28,7 +26,6 @@ class Encryptor:
         return self.IV + encrypted if first else encrypted
 
 
-    # TODO: passt last_block correctly in other scripts
     def decrypt(self, source, last_block=False):
         first = self.first_state
         if first:
@@ -36,7 +33,6 @@ class Encryptor:
             self.aes = AES.new(self.key, AES.MODE_CBC, self.IV)
             self.first_state = False
         decrypted_data = self.aes.decrypt(source[AES.block_size:]) if first else self.aes.decrypt(source)
-        # Assume last, if chunk size is not met
         # Cut padding
         if last_block:
             padding = bord(decrypted_data[-1])
