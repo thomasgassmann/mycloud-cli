@@ -15,15 +15,15 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, progress_f
     errors = []
     for root, _, files in os.walk(local_directory):
         for file in files:
-            full_file_path = os.path.join(root, file)
-            if tracker.file_handled(full_file_path):
-                print(f'Skipping file {full_file_path}...')
-                continue
-            try:
-                cloud_name = builder.build(full_file_path)        
+            try:    
+                cloud_name = builder.build(full_file_path)
+                full_file_path = os.path.join(root, file)
+                if tracker.file_handled(full_file_path, cloud_name):
+                    print(f'Skipping file {full_file_path}...')
+                    continue
                 __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
                 print(f'Uploaded file {full_file_path} to {cloud_name}...')
-                tracker.track_progress(full_file_path)
+                tracker.track_progress(full_file_path, cloud_name)
                 tracker.save()
             except Exception as e:
                 err = f'Could not upload {full_file_path} because: {str(e)}'

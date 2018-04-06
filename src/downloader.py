@@ -17,11 +17,11 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
     files = []
     recurse_directory(files, mycloud_directory, bearer)
     for file in files:
-        if tracker.file_handled(file):
-            print(f'Skipping file {file}...')
-            continue
         try:
             download_path = builder.build_local_path(file)
+            if tracker.file_handled(download_path, file):
+                print(f'Skipping file {file}...')
+                continue
             directory = os.path.dirname(download_path)
             if not os.path.isdir(directory):
                 os.makedirs(directory)
@@ -44,7 +44,7 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
                     final_chunk = encryptor.decrypt(final_chunk, last_block=True)
                 f.write(final_chunk)                        
 
-            tracker.track_progress(file)
+            tracker.track_progress(file, cloud_name)
             tracker.save()
             print(f'Downloaded file {file} to {download_path}...')
         except Exception as e:
