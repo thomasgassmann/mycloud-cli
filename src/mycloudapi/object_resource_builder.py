@@ -37,8 +37,8 @@ class ObjectResourceBuilder:
         if not os.path.isdir(directory_path):
             raise ValueError(f'Path is not directory: {directory_path}')
 
-        if self.base_dir in directory_path:
-            directory_path = directory_path.replace(self.base_dir, '')
+        if directory_path.startswith(self.base_dir):
+            directory_path = directory_path.replace(self.base_dir, '', 1)
         directory_path = directory_path.replace('\\', '/')
         if directory_path.startswith('/'):
             directory_path = directory_path[1:]
