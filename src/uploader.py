@@ -16,8 +16,8 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, progress_f
     for root, _, files in os.walk(local_directory):
         for file in files:
             try:    
-                cloud_name = builder.build(full_file_path)
                 full_file_path = os.path.join(root, file)
+                cloud_name = builder.build(full_file_path)
                 if tracker.file_handled(full_file_path, cloud_name):
                     print(f'Skipping file {full_file_path}...')
                     continue

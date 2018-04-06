@@ -44,7 +44,7 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
                     final_chunk = encryptor.decrypt(final_chunk, last_block=True)
                 f.write(final_chunk)                        
 
-            tracker.track_progress(file, cloud_name)
+            tracker.track_progress(download_path, file)
             tracker.save()
             print(f'Downloaded file {file} to {download_path}...')
         except Exception as e:
