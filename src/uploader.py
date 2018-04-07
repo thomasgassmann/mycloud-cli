@@ -42,7 +42,7 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
     request = ObjectRequest(cloud_name, bearer)
     def generator():
         with open(full_file_path, 'rb') as f:
-            chunk_num = 0
+            chunk_num = 1
             while True:
                 data = f.read(1024)
                 if not data:
@@ -55,7 +55,8 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
                         break
                     else:
                         data = encryptor.encrypt(data)
-                print(f'Uploading chunk {chunk_num}...')
+                if chunk_num % 10000 == 0:
+                    print(f'Uploading chunk {chunk_num}...')
                 chunk_num += 1
                 yield data
 

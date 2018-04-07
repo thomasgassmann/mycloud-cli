@@ -32,14 +32,15 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
                 encryptor = Encryptor(encryption_password, 1024)
             with open(download_path, 'wb') as f:
                 last_chunk = None
-                chunk_num = 0
+                chunk_num = 1
                 for chunk in downloaded_content.iter_content(chunk_size=1024):
                     if last_chunk is None:
                         last_chunk = chunk
                         continue
                     if is_encrypted:
                         last_chunk = encryptor.decrypt(last_chunk)
-                    print(f'Uploading chunk {chunk_num}...')
+                    if chunk_num % 10000 == 0:
+                        print(f'Uploading chunk {chunk_num}...')
                     f.write(last_chunk)
                     chunk_num += 1
                     last_chunk = chunk
