@@ -56,6 +56,7 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
                     else:
                         data = encryptor.encrypt(data)
                 print(f'Uploading chunk {chunk_num}...')
+                chunk_num += 1
                 yield data
 
     request.put(generator())
