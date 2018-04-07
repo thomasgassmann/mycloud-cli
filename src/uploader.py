@@ -21,6 +21,7 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, progress_f
                 if tracker.file_handled(full_file_path, cloud_name):
                     print(f'Skipping file {full_file_path}...')
                     continue
+                print(f'Uploading file {full_file_path} to {cloud_name}...')
                 __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
                 print(f'Uploaded file {full_file_path} to {cloud_name}...')
                 tracker.track_progress(full_file_path, cloud_name)
@@ -41,6 +42,7 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
     request = ObjectRequest(cloud_name, bearer)
     def generator():
         with open(full_file_path, 'rb') as f:
+            chunk_num = 0
             while True:
                 data = f.read(1024)
                 if not data:
@@ -53,6 +55,7 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
                         break
                     else:
                         data = encryptor.encrypt(data)
+                print(f'Uploading chunk {chunk_num}...')
                 yield data
 
     request.put(generator())
