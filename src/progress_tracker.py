@@ -34,5 +34,11 @@ class ProgressTracker:
 
 
     def save(self):
-        with open(self.progress_file, 'w') as fp:
+        real = self.progress_file
+        bak = self.progress_file + '.bak'
+        tmp = self.progress_file + '.tmp'
+        with open(tmp, 'w') as fp:
             json.dump(self.files, fp)
+        os.rename(real, bak)
+        os.rename(tmp, real)
+        
