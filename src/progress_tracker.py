@@ -41,4 +41,5 @@ class ProgressTracker:
             json.dump(self.files, fp)
         os.rename(real, bak)
         os.rename(tmp, real)
+        os.remove(bak)
         
