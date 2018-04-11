@@ -47,7 +47,7 @@ class ProgressTracker:
 
     def skip_file(self, file_path):
         for path in self.skipped:
-            if path.startswith(file_path):
+            if file_path.startswith(path):
                 return True
         return False
         

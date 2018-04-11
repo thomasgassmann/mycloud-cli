@@ -26,6 +26,8 @@ is_encrypted = args.encryption_pwd is not None
 tracker = ProgressTracker(args.progress_file)
 tracker.load_if_exists()
 if args.skip is not None:
+    skipped = ', '.join(args.skip)
+    print(f'Skipping files: {skipped}')
     tracker.set_skipped_paths(args.skip)
 
 if args.direction is '1':
