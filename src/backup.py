@@ -14,7 +14,7 @@ parser.add_argument('--encryption_pwd', metavar='e', type=str, help='Encryption 
 parser.add_argument('--token', metavar='t', type=str, help='Pass token manually')
 parser.add_argument('--skip', metavar='s', help='Paths to skip', nargs='+')
 
-print(args.skip)
+args = parser.parse_args()	
 
 if not (args.direction is '1' or args.direction is '0') or args.local_dir is None or args.direction is None or args.mycloud_dir is None or not args.mycloud_dir.startswith('/Drive/') or args.progress_file is None:
     parser.print_help()
