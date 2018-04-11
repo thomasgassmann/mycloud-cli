@@ -7,6 +7,7 @@ class ProgressTracker:
         if not self.progress_file.endswith('.json'):
             self.progress_file += '.json'
         self.files = {}
+        self.set_skipped_paths([])
 
     
     def track_progress(self, file_path, cloud_name):
@@ -42,4 +43,14 @@ class ProgressTracker:
         os.rename(real, bak)
         os.rename(tmp, real)
         os.remove(bak)
+
+
+    def skip_file(self, file_path):
+        for path in self.skipped:
+            if path.startswith(file_path):
+                return True
+        return False
         
+
+    def set_skipped_paths(self, skipped_paths):
+        self.skipped = skipped_paths

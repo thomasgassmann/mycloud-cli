@@ -5,12 +5,10 @@ from progress_tracker import ProgressTracker
 from encryption import Encryptor
 
 
-def upload(bearer: str, local_directory: str, mycloud_directory: str, progress_file: str, is_encrypted: bool, encryption_password: str):
+def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
     if not os.path.isdir(local_directory):
         return
-    
-    tracker = ProgressTracker(progress_file)
-    tracker.load_if_exists()
+
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
     errors = []
     for root, _, files in os.walk(local_directory):
@@ -18,7 +16,7 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, progress_f
             try:    
                 full_file_path = os.path.join(root, file)
                 cloud_name = builder.build(full_file_path)
-                if tracker.file_handled(full_file_path, cloud_name):
+                if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
                     print(f'Skipping file {full_file_path}...')
                     continue
                 print(f'Uploading file {full_file_path} to {cloud_name}...')

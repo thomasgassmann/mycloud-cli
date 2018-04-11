@@ -6,12 +6,10 @@ from progress_tracker import ProgressTracker
 from encryption import Encryptor
 
 
-def download(bearer: str, local_directory: str, mycloud_directory: str, progress_file: str, is_encrypted: bool, encryption_password: str):
+def download(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
     if not os.path.isdir(local_directory):
         os.makedirs(local_directory)
     
-    tracker = ProgressTracker(progress_file)
-    tracker.load_if_exists()
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
     errors = []
     files = []
@@ -19,7 +17,7 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, progress
     for file in files:
         try:
             download_path = builder.build_local_path(file)
-            if tracker.file_handled(download_path, file):
+            if tracker.file_handled(download_path, file) or tracker.skip_file(file):
                 print(f'Skipping file {file}...')
                 continue
             directory = os.path.dirname(download_path)
