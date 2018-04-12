@@ -33,6 +33,6 @@ if args.skip is not None:
     tracker.set_skipped_paths(args.skip)
 
 if args.direction is '1':
-    upload(batch_size, bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
+    upload(batch, bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
 elif args.direction is '0':
     download(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
