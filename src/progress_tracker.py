@@ -1,4 +1,5 @@
 import json, os, ast, datetime
+from filelock import FileLock
 
 
 class ProgressTracker:
@@ -38,8 +39,9 @@ class ProgressTracker:
         real = self.progress_file
         bak = self.progress_file + '.bak'
         tmp = self.progress_file + '.tmp'
-        with open(tmp, 'w') as fp:
-            json.dump(self.files, fp)
+        with FileLock(tmp):
+            with open(tmp, 'w') as fp:
+                json.dump(self.files, fp)
         if os.path.isfile(real):
             os.rename(real, bak)
         os.rename(tmp, real)

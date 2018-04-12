@@ -11,29 +11,36 @@ def upload(batch_size, bearer: str, local_directory: str, mycloud_directory: str
         return
 
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
-    errors = []
     tasks = []
     for root, _, files in os.walk(local_directory):
-        for file in files:
-            if len(tasks) > (batch_size - 1):
-                for (task, full_path, cloud_path) in tasks:
+        for chunk_files in chunks(files, batch_size):
+            tasks = []
+            for file in chunk_files:
+                try:    
+                    full_file_path = os.path.join(root, file)
+                    cloud_name = builder.build(full_file_path)
+                    if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
+                        print(f'Skipping file {full_file_path}...')
+                        continue
+                    thread = Thread(target=__upload, args=(bearer, full_file_path, cloud_name, is_encrypted, encryption_password))
+                    thread.start()
+                    tasks.append((thread, full_file_path, cloud_name))
+                except Exception as e:
+                    err = f'Could not upload {full_file_path} because: {str(e)}'
+                    print(err)
+            
+            for (task, full_path, cloud_path) in tasks:
+                try:
                     task.join()
                     tracker.track_progress(full_path, cloud_path)
                     tracker.save()
-                tasks.clear()
-            try:    
-                full_file_path = os.path.join(root, file)
-                cloud_name = builder.build(full_file_path)
-                if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
-                    print(f'Skipping file {full_file_path}...')
-                    continue
-                thread = Thread(target=__upload, args=(bearer, full_file_path, cloud_name, is_encrypted, encryption_password))
-                thread.start()
-                tasks.append((thread, full_file_path, cloud_name))
-            except Exception as e:
-                err = f'Could not upload {full_file_path} because: {str(e)}'
-                print(err, color='red')
-                errors.append(err)
+                except Exception as e:
+                    print(f'Failed to complete upload task: {str(e)}')
+
+    
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 
 def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
