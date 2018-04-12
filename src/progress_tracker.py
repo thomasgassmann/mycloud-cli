@@ -40,9 +40,11 @@ class ProgressTracker:
         tmp = self.progress_file + '.tmp'
         with open(tmp, 'w') as fp:
             json.dump(self.files, fp)
-        os.rename(real, bak)
+        if os.path.isfile(real):
+            os.rename(real, bak)
         os.rename(tmp, real)
-        os.remove(bak)
+        if os.path.isfile(bak):
+            os.remove(bak)
 
 
     def skip_file(self, file_path):

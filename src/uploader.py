@@ -3,35 +3,47 @@ from mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloudapi.object_request import ObjectRequest
 from progress_tracker import ProgressTracker
 from encryption import Encryptor
+from threading import Thread
 
 
-def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
+def upload(batch_size, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
     if not os.path.isdir(local_directory):
         return
 
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
     errors = []
+    tasks = []
     for root, _, files in os.walk(local_directory):
         for file in files:
+            if len(tasks) > (batch_size - 1):
+                for (task, full_path, cloud_path) in tasks:
+                    task.join()
+                    tracker.track_progress(full_path, cloud_path)
+                    tracker.save()
+                tasks.clear()
             try:    
                 full_file_path = os.path.join(root, file)
                 cloud_name = builder.build(full_file_path)
                 if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
                     print(f'Skipping file {full_file_path}...')
                     continue
-                print(f'Uploading file {full_file_path} to {cloud_name}...')
-                __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
-                print(f'Uploaded file {full_file_path} to {cloud_name}...')
-                tracker.track_progress(full_file_path, cloud_name)
-                tracker.save()
+                thread = Thread(target=__upload, args=(bearer, full_file_path, cloud_name, is_encrypted, encryption_password))
+                thread.start()
+                tasks.append((thread, full_file_path, cloud_name))
             except Exception as e:
                 err = f'Could not upload {full_file_path} because: {str(e)}'
-                print(err)
+                print(err, color='red')
                 errors.append(err)
-    for error in errors:
-        print(f'ERR: {error}')
-    if len(errors) == 0:
-        print('Successfully uploaded files')
+
+
+def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
+    try:
+        print(f'Uploading file {full_file_path} to {cloud_name}...')
+        __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
+        print(f'Uploaded file {full_file_path} to {cloud_name}...')
+    except Exception as e:
+        err = f'Could not upload {full_file_path} because: {str(e)}'
+        print(err)
 
 
 def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
