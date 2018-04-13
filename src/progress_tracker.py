@@ -48,6 +48,13 @@ class ProgressTracker:
             os.remove(bak)
 
 
+    def try_save(self):
+        try:
+            self.save()
+        except Exception as e:
+            print(f'Could not save file because: {str(e)}')
+
+
     def skip_file(self, file_path):
         for path in self.skipped:
             if file_path.startswith(path):

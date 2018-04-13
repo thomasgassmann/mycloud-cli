@@ -33,7 +33,7 @@ def upload(batch_size, bearer: str, local_directory: str, mycloud_directory: str
                 try:
                     task.join()
                     tracker.track_progress(full_path, cloud_path)
-                    tracker.save()
+                    tracker.try_save()
                 except Exception as e:
                     print(f'Failed to complete upload task: {str(e)}')
 
