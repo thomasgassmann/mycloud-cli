@@ -6,41 +6,25 @@ from encryption import Encryptor
 from threading import Thread
 
 
-def upload(batch_size, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
+def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
     if not os.path.isdir(local_directory):
         return
 
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
-    tasks = []
     for root, _, files in os.walk(local_directory):
-        for chunk_files in chunks(files, batch_size):
-            tasks = []
-            for file in chunk_files:
-                try:    
-                    full_file_path = os.path.join(root, file)
-                    cloud_name = builder.build(full_file_path)
-                    if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
-                        print(f'Skipping file {full_file_path}...')
-                        continue
-                    thread = Thread(target=__upload, args=(bearer, full_file_path, cloud_name, is_encrypted, encryption_password))
-                    thread.start()
-                    tasks.append((thread, full_file_path, cloud_name))
-                except Exception as e:
-                    err = f'Could not upload {full_file_path} because: {str(e)}'
-                    print(err)
-            
-            for (task, full_path, cloud_path) in tasks:
-                try:
-                    task.join()
-                    tracker.track_progress(full_path, cloud_path)
-                    tracker.try_save()
-                except Exception as e:
-                    print(f'Failed to complete upload task: {str(e)}')
-
-    
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+        for file in files:
+            try:    
+                full_file_path = os.path.join(root, file)
+                cloud_name = builder.build(full_file_path)
+                if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
+                    print(f'Skipping file {full_file_path}...')
+                    continue
+                __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
+                tracker.track_progress(full_path, cloud_path)
+                tracker.try_save()
+            except Exception as e:
+                err = f'Could not upload {full_file_path} because: {str(e)}'
+                print(err)
 
 
 def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
