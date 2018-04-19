@@ -20,7 +20,7 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
                     print(f'Skipping file {full_file_path}...')
                     continue
                 __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
-                tracker.track_progress(full_file_path, cloud_path)
+                tracker.track_progress(full_file_path, cloud_name)
                 tracker.try_save()
             except Exception as e:
                 err = f'Could not upload {full_file_path} because: {str(e)}'
