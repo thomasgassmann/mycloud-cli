@@ -31,11 +31,8 @@ class ProgressTracker:
 
 
     def load(self):
-        if os.path.isfile(self.progress_file):
-            with open(self.progress_file, 'r') as r:
-                self.files = json.load(r)
-        else:
-            self.files = {}
+        with open(self.progress_file, 'r') as r:
+            self.files = json.load(r)
 
 
     def save(self):
