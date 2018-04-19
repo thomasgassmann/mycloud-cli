@@ -28,13 +28,9 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
 
 
 def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
-    try:
-        print(f'Uploading file {full_file_path} to {cloud_name}...')
-        __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
-        print(f'Uploaded file {full_file_path} to {cloud_name}...')
-    except Exception as e:
-        err = f'Could not upload {full_file_path} because: {str(e)}'
-        print(err)
+    print(f'Uploading file {full_file_path} to {cloud_name}...')
+    __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
+    print(f'Uploaded file {full_file_path} to {cloud_name}...')
 
 
 def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
