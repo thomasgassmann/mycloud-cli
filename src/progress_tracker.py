@@ -22,7 +22,7 @@ class ProgressTracker:
 
     def file_handled(self, file_path, cloud_name):
         is_available = cloud_name in self.files.keys()
-        if is_available:
+        if is_available and os.path.isfile(file_path):
             update_date = os.path.getmtime(file_path)
             current_time = self.files[cloud_name]
             if update_date > current_time:

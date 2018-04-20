@@ -1,4 +1,4 @@
-import os, numpy, traceback
+import os, numpy
 from mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloudapi.object_request import ObjectRequest
 from mycloudapi.metadata_request import MetadataRequest
