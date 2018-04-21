@@ -13,6 +13,7 @@ def download(bearer: str, local_directory: str, mycloud_directory: str, tracker:
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
     errors = []
     files = []
+    # TODO: list is lazily and immediately download files
     recurse_directory(files, mycloud_directory, bearer)
     for file in files:
         try:
