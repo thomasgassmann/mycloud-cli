@@ -3,6 +3,8 @@ from uploader import upload
 from mycloudapi.bearer_token import get_bearer_token
 from downloader import download
 from progress_tracker import ProgressTracker
+from file_progress_tracker import FileProgressTracker
+from cloud_progress_tracker import CloudProgressTracker
 
 
 parser = argparse.ArgumentParser(description='Swisscom myCloud Backup')
@@ -16,21 +18,28 @@ parser.add_argument('--skip', metavar='s', help='Paths to skip', nargs='+')
 
 args = parser.parse_args()	
 
-if not (args.direction is '1' or args.direction is '0') or args.local_dir is None or args.direction is None or args.mycloud_dir is None or not args.mycloud_dir.startswith('/Drive/') or args.progress_file is None:
+if not (args.direction == '1' or args.direction == '0') or args.local_dir is None or args.direction is None or args.mycloud_dir is None or not args.mycloud_dir.startswith('/Drive/'):
     parser.print_help()
     sys.exit(1)
 
 bearer = get_bearer_token() if args.token is None else args.token
 is_encrypted = args.encryption_pwd is not None
 
-tracker = ProgressTracker(args.progress_file)
+if args.progress_file is None and args.direction == '1':
+    tracker = CloudProgressTracker(bearer, args.mycloud_dir)
+elif args.progress_file is None:
+    print('Cloud progress tracker cannot be used with upload')
+    sys.exit(1)
+else:
+    tracker = FileProgressTracker(args.progress_file)
+
 tracker.load_if_exists()
 if args.skip is not None:
     skipped = ', '.join(args.skip)
     print(f'Skipping files: {skipped}')
     tracker.set_skipped_paths(args.skip)
 
-if args.direction is '1':
+if args.direction == '1':
     upload(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
-elif args.direction is '0':
+elif args.direction == '0':
     download(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)

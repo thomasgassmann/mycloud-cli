@@ -28,7 +28,7 @@ class MetadataRequest(request.MyCloudRequest):
     def __get_files(json):
         if 'Files' in json:
             files = json['Files']
-            return [file['Path'] for file in files]
+            return files
         return []
 
 
@@ -36,5 +36,5 @@ class MetadataRequest(request.MyCloudRequest):
     def __get_directories(json):
         if 'Directories' in json:
             directories = json['Directories']
-            return [dir['Path'] for dir in directories]
+            return directories
         return []
