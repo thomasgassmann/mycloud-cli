@@ -16,7 +16,7 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
             try:    
                 full_file_path = os.path.join(root, file)
                 cloud_name = builder.build(full_file_path)
-                if tracker.file_handled(full_file_path, cloud_name) or tracker.skip_file(full_file_path):
+                if tracker.skip_file(full_file_path) or tracker.file_handled(full_file_path, cloud_name):
                     print(f'Skipping file {full_file_path}...')
                     continue
                 __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
