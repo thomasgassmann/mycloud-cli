@@ -23,13 +23,3 @@ class CloudProgressTracker(ProgressTracker):
             datetime = parser.parse(file[1])
             timestamp = arrow.get(datetime).timestamp
             self.files[file[0]] = timestamp
-
-
-    def save(self):
-        # No need to save
-        pass
-
-    
-    def try_save(self):
-        # No need to save
-        pass

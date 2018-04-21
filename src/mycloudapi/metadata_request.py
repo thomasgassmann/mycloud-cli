@@ -13,11 +13,13 @@ class MetadataRequest(request.MyCloudRequest):
             raise ValueError('Cannot list a file')
 
 
-    def get_contents(self):
+    def get_contents(self, ignore_not_found=False):
         headers = super(MetadataRequest, self).get_headers('application/json')
         url = REQUEST_URL + super(MetadataRequest, self).get_object_id()
         response = requests.get(url, headers=headers)
-        super(MetadataRequest, self).raise_if_invalid(response)
+        super(MetadataRequest, self).raise_if_invalid(response, ignore_not_found)
+        if response.status_code == 404:
+            return ([], [])
         json_data = json.loads(response.text)
         files = MetadataRequest.__get_files(json_data)
         dirs = MetadataRequest.__get_directories(json_data)

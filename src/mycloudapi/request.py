@@ -9,14 +9,14 @@ class MyCloudRequest:
         self.bearer_token = bearer_token
     
 
-    def raise_if_invalid(self, response):
-        if response.status_code == 404:
+    def raise_if_invalid(self, response, ignore_not_found=False):
+        if response.status_code == 404 and not ignore_not_found:
             raise ValueError('File not found in myCloud')
 
         if response.status_code == 401:
             raise ValueError('Bearer token is invalid')
 
-        if not str(response.status_code).startswith('2'):
+        if not str(response.status_code).startswith('2') and response.status_code != 404:
             raise ValueError('Error while downloading file from myCloud')
 
 

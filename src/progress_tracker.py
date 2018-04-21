@@ -26,24 +26,20 @@ class ProgressTracker:
         return is_available
 
 
-    @abstractmethod
     def load_if_exists(self):
-        raise NotImplementedError
+        pass
 
 
-    @abstractmethod
     def load(self):
-        raise NotImplementedError
+        pass
 
 
-    @abstractmethod
     def save(self):
-        raise NotImplementedError
+        pass
 
 
-    @abstractmethod
     def try_save(self):
-        raise NotImplementedError
+        pass
 
 
     def skip_file(self, file_path):
