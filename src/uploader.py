@@ -52,8 +52,8 @@ def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption
                         break
                     else:
                         data = encryptor.encrypt(data)
-                if chunk_num % 10000 == 0:
-                    print(f'Uploading chunk {chunk_num}...')
+                if chunk_num % 1000 == 0:
+                    print(f'{cloud_name}: Uploading chunk {chunk_num}...')
                 chunk_num += 1
                 yield data
 
