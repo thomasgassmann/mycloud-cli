@@ -6,6 +6,10 @@ from encryption import Encryptor
 from threading import Thread
 
 
+my_cloud_max_file_size = 3000000000
+my_cloud_big_file_chunk_size = 2500000000
+
+
 def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
     if not os.path.isdir(local_directory):
         return
@@ -28,9 +32,14 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
 
 
 def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
-    print(f'Uploading file {full_file_path} to {cloud_name}...')
-    __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
-    print(f'Uploaded file {full_file_path} to {cloud_name}...')
+    # Perform chunking if file is too big for myCloud
+    if os.path.getsize(full_file_path) > my_cloud_max_file_size:
+        print(f'Chunking file {cloud_name} because it\'s bigger than the maximum allowed file size')
+            
+    else:
+        print(f'Uploading file {full_file_path} to {cloud_name}...')
+        __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
+        print(f'Uploaded file {full_file_path} to {cloud_name}...')
 
 
 def __upload_single(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
