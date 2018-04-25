@@ -41,13 +41,13 @@ def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_passwo
     file_size = os.path.getsize(full_file_path)
     if file_size > my_cloud_max_file_size:
         print(f'Chunking file {cloud_name} because it\'s bigger than the maximum allowed file size')
-        read_length = 0
         current_file = 0
         with open(full_file_path, 'rb') as f:
             sent_final = False
             while not sent_final:
                 def generator():
                     encryptor = None
+                    read_length = 0
                     if is_encrypted:
                         encryptor = Encryptor(encryption_password, encryption_chunk_length)
                     while read_length < my_cloud_big_file_chunk_size:
@@ -61,7 +61,6 @@ def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_passwo
                     if not sent_final:
                         (_, data_to_be_sent) = __get_chunk(encryptor, None)
                         yield return data_to_be_sent
-                read_length = 0
                 partial_cloud_name = __build_partial_file_upload_name(cloud_name, current_file)
                 request = ObjectRequest(partial_cloud_name, bearer_token)
                 current_file += 1
