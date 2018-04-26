@@ -7,8 +7,10 @@ from threading import Thread
 
 
 my_cloud_max_file_size = 3000000000
-my_cloud_big_file_chunk_size = 2500000000
+my_cloud_big_file_chunk_size = 1000000000
 encryption_chunk_length = 1024
+
+sent_final = False
 
 
 def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
@@ -18,13 +20,13 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
     builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
     for root, _, files in os.walk(local_directory):
         for file in files:
-            try:    
+            try:
                 full_file_path = os.path.join(root, file)
                 cloud_name = builder.build(full_file_path)
                 if tracker.skip_file(full_file_path) or tracker.file_handled(full_file_path, cloud_name):
                     print(f'Skipping file {full_file_path}...')
                     continue
-                __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password)
+                __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password, tracker)
                 tracker.track_progress(full_file_path, cloud_name)
                 tracker.try_save()
             except Exception as e:
@@ -32,7 +34,11 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
                 print(err)
 
 
-def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password):
+def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password, tracker: ProgressTracker):
+    
+
+
+    global sent_final
     encryptor = None
     if is_encrypted:
         encryptor = Encryptor(encryption_password, encryption_chunk_length)
@@ -43,9 +49,9 @@ def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_passwo
         print(f'Chunking file {cloud_name} because it\'s bigger than the maximum allowed file size')
         current_file = 0
         with open(full_file_path, 'rb') as f:
-            sent_final = False
             while not sent_final:
                 def generator():
+                    global sent_final
                     encryptor = None
                     read_length = 0
                     if is_encrypted:
@@ -53,18 +59,26 @@ def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_passwo
                     while read_length < my_cloud_big_file_chunk_size:
                         data = f.read(encryption_chunk_length)
                         (final, data_to_be_sent) = __get_chunk(encryptor, data)
+                        print(f'Uploading partial file {str(current_file)} - Read {str(read_length)} bytes...')
                         read_length += encryption_chunk_length
-                        yield return data_to_be_sent
+                        yield data_to_be_sent
                         if final and not sent_final:
                             sent_final = True
                             break
                     if not sent_final:
                         (_, data_to_be_sent) = __get_chunk(encryptor, None)
-                        yield return data_to_be_sent
+                        yield data_to_be_sent
+                
                 partial_cloud_name = __build_partial_file_upload_name(cloud_name, current_file)
-                request = ObjectRequest(partial_cloud_name, bearer_token)
+                if tracker.skip_file(full_file_path) or tracker.file_handled(full_file_path, partial_cloud_name):
+                    print(f'Skipping partial file {full_file_path}...')
+                    continue
+
+                request = ObjectRequest(partial_cloud_name, bearer)
                 current_file += 1
                 request.put(generator())
+                print(f'Uploading partial file {str(current_file)}...')
+        sent_final = False
     else:
         print(f'Uploading file {full_file_path} to {cloud_name}...')
         __upload_single_file(bearer, full_file_path, cloud_name, encryptor)
@@ -78,13 +92,6 @@ def __upload_single_file(bearer, full_file_path, cloud_name, encryptor: Encrypto
     with open(full_file_path, 'rb') as f:
         generator = __get_generator_for_upload(f, encryptor, log)
         request.put(generator)
-
-
-def __build_partial_file_upload_name(cloud_name, current_iteration):
-    file = os.path.basename(cloud_name)
-    if not cloud_name.endswith('/'):
-        cloud_name += '/'
-    return cloud_name + str(current_iteration) + file
 
 
 def __get_generator_for_upload(file_stream, encryptor: Encryptor, log):

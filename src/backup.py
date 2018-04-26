@@ -43,6 +43,8 @@ if args.skip is not None:
     print(f'Skipping files: {skipped}')
     tracker.set_skipped_paths(args.skip)
 
+builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted)
+
 if args.direction == '1':
     upload(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
 elif args.direction == '0':

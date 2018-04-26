@@ -3,6 +3,10 @@ import base64, os
 
 BASE_DIR = '/Drive/'
 AES_EXTENSION = '.aes'
+PARTIAL_EXTENSION = '.partial'
+MY_CLOUD_MAX_FILE_SIZE = 3000000000
+MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1000000000
+START_NUMBER_LENGTH = 8
 
 
 class ObjectResourceBuilder:
@@ -16,10 +20,44 @@ class ObjectResourceBuilder:
             self.mycloud_dir += '/'
 
 
+    def build_partial(self, path: str, current_iteration: int):
+        formatted_iteration = format(current_iteration, f'0{START_NUMBER_LENGTH}d')
+        directory = os.path.dirname(path)
+        file_name = os.path.basename(path)
+        updated_file_name = f'{formatted_iteration}-{file_name}{PARTIAL_EXTENSION}'
+        joined = os.path.join(directory, updated_file_name)
+        self.build_file(joined)
+        cloud_path = self.build(path)
+        return cloud_path
+
+
+    def is_partial_file_local_path(self, path: str):
+        file_size = os.path.getsize(path)
+        return file_size >= MY_CLOUD_MAX_FILE_SIZE
+
+
+    def is_partial_file(self, mycloud_path: str):
+        unencrypted_mycloud_pathcloud = self.__remove_encryption_file_name_if_exists(mycloud_path)
+        ends_wtih_partial = unencrypted_mycloud_pathcloud.endswith(PARTIAL_EXTENSION)
+        start_number = mycloud_path[:START_NUMBER_LENGTH]
+        starts_with_dash = mycloud_path[START_NUMBER_LENGTH:].startswith('-')
+        is_integer = ObjectResourceBuilder.__is_int(start_number)
+        return is_integer and ends_wtih_partial and starts_with_dash
+
+
+    def build_partial_local_path(self, mycloud_path: str):
+        if not self.is_partial_file(mycloud_path):
+            return self.build_local_path(mycloud_path)
+        unencrypted_cloud_path = self.__remove_encryption_file_name_if_exists(mycloud_path)
+        numbers_to_cut = START_NUMBER_LENGTH + 1 # +1 for dash
+        chunk_number = int(mycloud_path[:START_NUMBER_LENGTH])
+        file_name = mycloud_path[numbers_to_cut:-PARTIAL_EXTENSION]
+        return (chunk_number, file_name)
+
+
     def build_local_path(self, mycloud_path: str):
+        mycloud_path = self.__remove_encryption_file_name_if_exists(mycloud_path)
         str = mycloud_path[len(self.mycloud_dir):]
-        if self.encrypted:
-            str = str[:-len(AES_EXTENSION)]
         normalized_relative_path = os.path.normpath(str)
         return os.path.join(self.base_dir, normalized_relative_path)
 
@@ -34,9 +72,6 @@ class ObjectResourceBuilder:
 
 
     def build_directory(self, directory_path: str):
-        if not os.path.isdir(directory_path):
-            raise ValueError(f'Path is not directory: {directory_path}')
-
         if directory_path.startswith(self.base_dir):
             directory_path = directory_path.replace(self.base_dir, '', 1)
         directory_path = directory_path.replace('\\', '/')
@@ -48,12 +83,24 @@ class ObjectResourceBuilder:
 
 
     def build_file(self, full_file_path: str):
-        if not os.path.isfile(full_file_path):
-            raise ValueError('Path is no file')
-
         file_name = os.path.basename(full_file_path)
         directory = os.path.dirname(full_file_path)
         if self.encrypted:
             file_name += AES_EXTENSION
         built = self.build_directory(directory)
         return (built + file_name).replace('//', '/')
+
+    
+    def __remove_encryption_file_name_if_exists(mycloud_file_name):
+        if self.encrypted:
+            return mycloud_file_name[:-len(AES_EXTENSION)]
+        return mycloud_file_name
+
+
+    @staticmethod
+    def __is_int(s):
+        try: 
+            int(s)
+            return True
+        except ValueError:
+            return False
