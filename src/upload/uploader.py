@@ -8,9 +8,28 @@ from threading import Thread
 
 my_cloud_max_file_size = 3000000000
 my_cloud_big_file_chunk_size = 1000000000
-encryption_chunk_length = 1024
-
 sent_final = False
+
+
+ENCRYPTION_CHUNK_LENGTH = 1024
+
+
+class Uploader:
+    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker):
+        self.bearer_token = bearer
+        self.local_directory = local_directory
+        self.mycloud_directory = mycloud_directory
+        self.progress_tracker = tracker
+
+
+    def upload(encryption_password=None):
+        is_encrypted = encryption_password is not None
+        encryptor = Encryptor(encryption_password, ENCRYPTION_CHUNK_LENGTH) if self.is_encrypted else None
+        for root, _, files in os.walk(self.local_directory):
+            for file in files:
+                full_file_path = os.path.join(root, file)
+
+
 
 
 def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
@@ -35,7 +54,7 @@ def upload(bearer: str, local_directory: str, mycloud_directory: str, tracker: P
 
 
 def __upload(bearer, full_file_path, cloud_name, is_encrypted, encryption_password, tracker: ProgressTracker):
-    
+
 
 
     global sent_final

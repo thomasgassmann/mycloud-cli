@@ -2,7 +2,7 @@ import argparse, os, sys
 from uploader import upload
 from mycloudapi.bearer_token import get_bearer_token
 from downloader import download
-from progress_tracker import ProgressTracker
+from progress.progress_tracker import ProgressTracker
 from file_progress_tracker import FileProgressTracker
 from cloud_progress_tracker import CloudProgressTracker
 from lazy_cloud_progress_tracker import LazyCloudProgressTracker
@@ -20,6 +20,7 @@ parser.add_argument('--skip', metavar='s', help='Paths to skip', nargs='+')
 
 args = parser.parse_args()	
 
+# TODO: properly use init.py
 if args.progress_type is None or not (args.direction == '1' or args.direction == '0') or args.local_dir is None or args.direction is None or args.mycloud_dir is None or not args.mycloud_dir.startswith('/Drive/'):
     parser.print_help()
     sys.exit(1)

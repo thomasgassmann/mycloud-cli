@@ -2,7 +2,6 @@ import os, requests, json
 import mycloudapi.request as request
 
 
-'https://www.swisscom.ch/login/'
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/metadata?p='
 
 
