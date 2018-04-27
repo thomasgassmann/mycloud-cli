@@ -24,7 +24,7 @@ class ObjectResourceBuilder:
         directory = os.path.dirname(path)
         file_name = os.path.basename(path)
         updated_file_name = f'{formatted_iteration}-{file_name}{PARTIAL_EXTENSION}'
-        joined = os.path.join(directory, updated_file_name)
+        joined = os.path.join(directory, file_name, updated_file_name)
         self.build_file(joined)
         cloud_path = self.build_file(joined)
         return cloud_path
