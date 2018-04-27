@@ -1,5 +1,5 @@
-from progress_tracker import ProgressTracker
-from mycloud.helper import directory_list
+from progress.progress_tracker import ProgressTracker
+from helper import directory_list
 from dateutil import parser
 import arrow
 

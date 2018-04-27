@@ -1,5 +1,5 @@
-from progress_tracker import ProgressTracker
-from mycloud.mycloudapi.metadata_request import MetadataRequest
+from progress import ProgressTracker
+from mycloudapi import MetadataRequest
 from dateutil import parser
 import os, arrow
 

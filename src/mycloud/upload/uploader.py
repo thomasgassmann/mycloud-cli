@@ -1,9 +1,8 @@
 import os
-from mycloudapi.object_resource_builder import ObjectResourceBuilder
-from mycloudapi.object_request import ObjectRequest
-from progress_tracker import ProgressTracker
-from encryption import Encryptor
 from threading import Thread
+from mycloudapi import ObjectResourceBuilder, ObjectRequest
+from progress import ProgressTracker
+from encryption import Encryptor
 
 
 my_cloud_max_file_size = 3000000000
@@ -15,19 +14,26 @@ ENCRYPTION_CHUNK_LENGTH = 1024
 
 
 class Uploader:
-    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker):
+    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str):
         self.bearer_token = bearer
         self.local_directory = local_directory
         self.mycloud_directory = mycloud_directory
         self.progress_tracker = tracker
+        self.is_encrypted = encryption_password is not None
+        self.builder = ObjectResourceBuilder(self.local_directory, self.mycloud_directory, self.is_encrypted)
+        self.encryptor = Encryptor(encryption_password, ENCRYPTION_CHUNK_LENGTH) if self.is_encrypted else None
 
 
-    def upload(encryption_password=None):
-        is_encrypted = encryption_password is not None
-        encryptor = Encryptor(encryption_password, ENCRYPTION_CHUNK_LENGTH) if self.is_encrypted else None
+    def upload():
         for root, _, files in os.walk(self.local_directory):
             for file in files:
                 full_file_path = os.path.join(root, file)
+                if self.progress_tracker.skip_file(full_file_path) or self.progress_tracker.file_handled(full_file_path):
+                    continue
+
+                if self.builder.is_partial_file_local_path(full_file_path):
+                    __upload_in_chunks(full_file_path)
+                
 
 
 

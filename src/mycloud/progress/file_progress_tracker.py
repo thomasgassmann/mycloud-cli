@@ -1,6 +1,6 @@
-import json, os, ast, datetime
+import json, os
 from filelock import FileLock
-from progress_tracker import ProgressTracker
+from progress import ProgressTracker
 
 
 class FileProgressTracker(ProgressTracker):

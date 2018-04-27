@@ -1,6 +1,6 @@
 import argparse, os, sys
-from uploader import upload
-from downloader import download
+from upload import Uploader
+from download import download
 from mycloudapi import get_bearer_token
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker
 

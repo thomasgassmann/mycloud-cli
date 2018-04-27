@@ -1,3 +1,4 @@
-from encryption import Encryptor
+from encryption.encryption import Encryptor
+
 
 __all__ = ['Encryptor']
