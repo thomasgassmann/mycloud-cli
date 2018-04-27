@@ -5,7 +5,6 @@ BASE_DIR = '/Drive/'
 AES_EXTENSION = '.aes'
 PARTIAL_EXTENSION = '.partial'
 MY_CLOUD_MAX_FILE_SIZE = 3000000000
-MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1000000000
 START_NUMBER_LENGTH = 8
 
 
@@ -27,7 +26,7 @@ class ObjectResourceBuilder:
         updated_file_name = f'{formatted_iteration}-{file_name}{PARTIAL_EXTENSION}'
         joined = os.path.join(directory, updated_file_name)
         self.build_file(joined)
-        cloud_path = self.build(path)
+        cloud_path = self.build_file(joined)
         return cloud_path
 
 

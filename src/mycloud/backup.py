@@ -1,7 +1,7 @@
 import argparse, os, sys
 from upload import Uploader
 from download import download
-from mycloudapi import get_bearer_token
+from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker
 
 
@@ -17,7 +17,6 @@ parser.add_argument('--skip', metavar='s', help='Paths to skip', nargs='+')
 
 args = parser.parse_args()
 
-# TODO: properly use init.py
 if args.progress_type is None or not (args.direction == '1' or args.direction == '0') or args.local_dir is None or args.direction is None or args.mycloud_dir is None or not args.mycloud_dir.startswith('/Drive/'):
     parser.print_help()
     sys.exit(1)
@@ -44,6 +43,7 @@ if args.skip is not None:
 builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted)
 
 if args.direction == '1':
-    upload(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
+    uploader = Uploader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd)
+    uploader.upload()
 elif args.direction == '0':
     download(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)

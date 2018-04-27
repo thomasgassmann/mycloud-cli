@@ -3,7 +3,7 @@ from mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloudapi.object_request import ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper.directory_list import recurse_directory
+from helper import recurse_directory
 
 
 def download(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):

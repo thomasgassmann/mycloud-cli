@@ -1,5 +1,5 @@
 from progress.progress_tracker import ProgressTracker
-from helper import directory_list
+from helper import recurse_directory
 from dateutil import parser
 import arrow
 
@@ -18,7 +18,7 @@ class CloudProgressTracker(ProgressTracker):
     def load(self):
         files_list = []
         self.files = {}
-        directory_list.recurse_directory(files_list, self.mycloud_base_directory, self.bearer_token, ['Path', 'ModificationTime'])
+        recurse_directory(files_list, self.mycloud_base_directory, self.bearer_token, ['Path', 'ModificationTime'])
         for file in files_list:
             datetime = parser.parse(file[1])
             timestamp = arrow.get(datetime).timestamp

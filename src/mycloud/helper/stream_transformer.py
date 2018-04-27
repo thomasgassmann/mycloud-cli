@@ -1,5 +1,5 @@
 from encryption import Encryptor
-from progress_tracker import ProgressTracker
+from progress import ProgressTracker
 from io import TextIOWrapper
 
 
@@ -8,7 +8,7 @@ my_cloud_big_file_chunk_size = 1000000000
 
 
 class StreamTransformer:
-    def __init__(self, encryptor: Encryptor, tracker: ProgressTracker, split_into_chunks=False, chunk_size):
+    def __init__(self, encryptor: Encryptor, tracker: ProgressTracker, chunk_size, split_into_chunks=False):
         self.encryptor = encryptor
         self.tracker = tracker
 
