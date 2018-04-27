@@ -1,12 +1,12 @@
 from progress_tracker import ProgressTracker
-from src.helper import directory_list
+from mycloud.helper import directory_list
 from dateutil import parser
 import arrow
 
 
 class CloudProgressTracker(ProgressTracker):
     def __init__(self, bearer_token, mycloud_base_directory):
-        super().__init__('progress')
+        super().__init__()
         self.bearer_token = bearer_token
         self.mycloud_base_directory = mycloud_base_directory
 

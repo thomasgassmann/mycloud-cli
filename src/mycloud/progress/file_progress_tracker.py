@@ -5,7 +5,10 @@ from progress_tracker import ProgressTracker
 
 class FileProgressTracker(ProgressTracker):
     def __init__(self, progress_file):
-        super().__init__(progress_file)
+        self.progress_file = progress_file
+        if not self.progress_file.endswith('.json'):
+            self.progress_file += '.json'
+        super().__init__()
 
 
     def load_if_exists(self):

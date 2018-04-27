@@ -1,12 +1,12 @@
 from progress_tracker import ProgressTracker
-from src.mycloudapi.metadata_request import MetadataRequest
+from mycloud.mycloudapi.metadata_request import MetadataRequest
 from dateutil import parser
 import os, arrow
 
 
 class LazyCloudProgressTracker(ProgressTracker):
     def __init__(self, bearer):
-        super().__init__('progress')
+        super().__init__()
         self.files = {}
         self.bearer_token = bearer
         self.fetched_directories = []

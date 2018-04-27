@@ -4,10 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class ProgressTracker:
-    def __init__(self, progress_file):
-        self.progress_file = progress_file
-        if not self.progress_file.endswith('.json'):
-            self.progress_file += '.json'
+    def __init__(self):
         self.files = {}
         self.set_skipped_paths([])
 
