@@ -36,7 +36,7 @@ class Uploader(SyncBase):
         iteration = 0
         while True:
             partial_cloud_name = self.builder.build_partial(full_file_path, iteration)
-            partial_local_path = self.builder.build_partial_local_path(partial_cloud_name)
+            (_, partial_local_path) = self.builder.build_partial_local_path(partial_cloud_name)
             print(f'Uploading chunk {iteration} of file {full_file_path} to {partial_cloud_name}...')
             chunk = chunker.get_next_chunk()
             iteration += 1
@@ -64,29 +64,21 @@ class Uploader(SyncBase):
 
 
     def __get_generator_for_upload(self, file_stream):
-        chunk_num = 0
+        last_chunk = None
         while True:
-            data = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
-            if data == b'' or data is None:
+            if last_chunk is None:
+                last_chunk = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
+                continue
+            if self.is_encrypted:
+                last_chunk = self.encryptor.encrypt(last_chunk)
+            yield last_chunk
+            last_chunk = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
+            if last_chunk == b'' or last_chunk is None or len(last_chunk) < ENCRYPTION_CHUNK_LENGTH:
                 break
-            (final, data_to_be_sent) = self.__get_chunk(data)
-            chunk_num += 1
-            if chunk_num % 1000 == 0:
-                print(f'Uploading {chunk_num}...')
-            yield data_to_be_sent
-            if final:
-                break
-
-
-    def __get_chunk(self, data):
-        final = False
-        if data is None:
-            final = True
-            data = self.encryptor.encrypt(bytes([]), last_block=True) if self.is_encrypted else bytes([])
+        final_chunk = last_chunk
+        if final_chunk is None:
+            final_chunk = bytes([])
         if self.is_encrypted:
-            if len(data) != ENCRYPTION_CHUNK_LENGTH:
-                final = True
-                data = self.encryptor.encrypt(data, last_block=True)
-            else:
-                data = self.encryptor.encrypt(data)
-        return (final, data)
+            final_chunk = self.encryptor.encrypt(final_chunk, last_block=True)
+        if len(final_chunk) > 0:
+            yield final_chunk

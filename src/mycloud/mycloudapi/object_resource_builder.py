@@ -53,6 +53,8 @@ class ObjectResourceBuilder:
         file_name = os.path.basename(mycloud_path)
         chunk_number = int(file_name[:START_NUMBER_LENGTH])
         dir = os.path.dirname(mycloud_path)
+        if self.encrypted:
+            dir += AES_EXTENSION
         local_path = self.build_local_path(dir)
         return (chunk_number, local_path)
 
