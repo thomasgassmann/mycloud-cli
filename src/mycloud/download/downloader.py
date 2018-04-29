@@ -8,6 +8,7 @@ from helper import SyncBase, ENCRYPTION_CHUNK_LENGTH
 class Downloader(SyncBase):
     def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str = None):
         super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password)
+        self.partial_ignores = []
         
 
     def download(self):
@@ -24,9 +25,11 @@ class Downloader(SyncBase):
                     if self.progress_tracker.file_handled(local_path, cloud_path):
                         print(f'Skipping partial file (Chunk {key}) file {local_path}...')
                         continue
+                    print(f'Downloading partial file {local_path}, chunk {str(key)}...')
                     self.__download_and_append_to(cloud_path, local_path)
             else:
                 cloud_path = files[0]
+                print(f'Downloading file {cloud_path}...')
                 file_name = self.builder.build_local_path(cloud_path)
                 if self.progress_tracker.skip_file(file_name) or self.progress_tracker.file_handled(file_name, cloud_path):
                     print(f'Skipping file {file_name}...')
@@ -67,7 +70,6 @@ class Downloader(SyncBase):
     def __list_files(self, directory):
         base_request = MetadataRequest(directory, self.bearer_token)
         (dirs, files) = base_request.get_contents()
-
         chunked = True
         if len(dirs) == 0:
             for file in files:
@@ -77,10 +79,13 @@ class Downloader(SyncBase):
                     
         if chunked:
             file_list = [item['Path'] for item in files]
-            return (True, file_list)
+            for item in file_list:
+                self.partial_ignores.append(item)
+            yield (True, file_list)
 
         for file in files:
-            yield (False, [file['Path']])
+            if not file['Path'] in self.partial_ignores:
+                yield (False, [file['Path']])
         for directory in dirs:
             listed = self.__list_files(directory['Path'])
             for listed_item in listed:

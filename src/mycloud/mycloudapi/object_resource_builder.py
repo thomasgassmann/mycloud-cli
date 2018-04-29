@@ -4,7 +4,7 @@ import base64, os
 BASE_DIR = '/Drive/'
 AES_EXTENSION = '.aes'
 PARTIAL_EXTENSION = '.partial'
-MY_CLOUD_MAX_FILE_SIZE = 3000000000
+MY_CLOUD_MAX_FILE_SIZE = 10240000
 START_NUMBER_LENGTH = 8
 
 
@@ -38,8 +38,9 @@ class ObjectResourceBuilder:
     def is_partial_file(self, mycloud_path: str):
         unencrypted_mycloud_pathcloud = self.__remove_encryption_file_name_if_exists(mycloud_path)
         ends_wtih_partial = unencrypted_mycloud_pathcloud.endswith(PARTIAL_EXTENSION)
-        start_number = mycloud_path[:START_NUMBER_LENGTH]
-        starts_with_dash = mycloud_path[START_NUMBER_LENGTH:].startswith('-')
+        file_name = os.path.basename(mycloud_path)
+        start_number = file_name[:START_NUMBER_LENGTH]
+        starts_with_dash = file_name[START_NUMBER_LENGTH:].startswith('-')
         is_integer = ObjectResourceBuilder.__is_int(start_number)
         return is_integer and ends_wtih_partial and starts_with_dash
 
@@ -49,9 +50,11 @@ class ObjectResourceBuilder:
             return self.build_local_path(mycloud_path)
         unencrypted_cloud_path = self.__remove_encryption_file_name_if_exists(mycloud_path)
         numbers_to_cut = START_NUMBER_LENGTH + 1 # +1 for dash
-        chunk_number = int(mycloud_path[:START_NUMBER_LENGTH])
-        file_name = mycloud_path[numbers_to_cut:-PARTIAL_EXTENSION]
-        return (chunk_number, file_name)
+        file_name = os.path.basename(mycloud_path)
+        chunk_number = int(file_name[:START_NUMBER_LENGTH])
+        dir = os.path.dirname(mycloud_path)
+        local_path = self.build_local_path(dir)
+        return (chunk_number, local_path)
 
 
     def build_local_path(self, mycloud_path: str):

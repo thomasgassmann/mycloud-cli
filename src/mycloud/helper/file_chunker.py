@@ -3,22 +3,23 @@ from io import BytesIO, RawIOBase
 from mycloudapi import ObjectResourceBuilder
 
 
-MY_CLOUD_BIG_FILE_CHUNK_SIZE = 2**30
+MY_CLOUD_BIG_FILE_CHUNK_SIZE = 5120000
 
 
 class FileChunker:
     def __init__(self, full_file_path):
         self.full_file_path = full_file_path
-        self.file_size = os.path.getsize(full_file_path)
         self.stream = None
         self.is_final = False
+        self.chunk_num = 0
 
     
     def get_next_chunk(self):
         self.__initialize_stream()
         if self.is_final:
             return None
-        reader = StreamReader(self.stream, self)
+        reader = StreamReader(self.stream, self, self.chunk_num)
+        self.chunk_num += 1
         return reader
 
 
@@ -37,10 +38,11 @@ class FileChunker:
 
 
 class StreamReader:
-    def __init__(self, stream: RawIOBase, file_chunker: FileChunker):
+    def __init__(self, stream: RawIOBase, file_chunker: FileChunker, chunk: int):
         self.stream = stream
         self.read_length = 0
         self.file_chunker = file_chunker
+        self.stream.seek(chunk * MY_CLOUD_BIG_FILE_CHUNK_SIZE, 0)
 
 
     def read(self, length: int):
