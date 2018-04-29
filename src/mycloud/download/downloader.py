@@ -42,6 +42,7 @@ class Downloader(SyncBase):
         download_stream = object_request.get()
         with open(local_file, 'a+b') as file:
             last_chunk = None
+            self.update_encryptor()
             for chunk in download_stream.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
                 if last_chunk is None:
                     last_chunk = chunk

@@ -57,6 +57,7 @@ class Uploader(SyncBase):
 
 
     def __upload_stream(self, stream, cloud_file_name):
+        self.update_encryptor()
         request = ObjectRequest(cloud_file_name, self.bearer_token)
         generator = self.__get_generator_for_upload(stream)
         request.put(generator)
@@ -72,7 +73,7 @@ class Uploader(SyncBase):
             chunk_num += 1
             if chunk_num % 1000 == 0:
                 print(f'Uploading {chunk_num}...')
-            yield data
+            yield data_to_be_sent
             if final:
                 break
 
