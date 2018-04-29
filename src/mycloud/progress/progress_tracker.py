@@ -1,4 +1,4 @@
-import os
+import os, time
 
 
 class ProgressTracker:
@@ -8,7 +8,7 @@ class ProgressTracker:
 
 
     def track_progress(self, file_path, cloud_name):
-        self.files[cloud_name] = os.path.getmtime(file_path)
+        self.files[cloud_name] = os.path.getmtime(file_path) if os.path.isfile(file_path) else time.time()
 
 
     def file_handled(self, file_path, cloud_name):
