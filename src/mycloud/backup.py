@@ -1,6 +1,6 @@
 import argparse, os, sys
 from upload import Uploader
-from download import download
+from download import Downloader
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker
 
@@ -46,4 +46,5 @@ if args.direction == '1':
     uploader = Uploader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd)
     uploader.upload()
 elif args.direction == '0':
-    download(bearer, args.local_dir, args.mycloud_dir, tracker, is_encrypted, args.encryption_pwd)
+    downloader = Downloader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd)
+    downloader.download()

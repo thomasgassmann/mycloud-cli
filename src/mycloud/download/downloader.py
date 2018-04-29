@@ -1,62 +1,86 @@
 import os, numpy
-from mycloudapi.object_resource_builder import ObjectResourceBuilder
-from mycloudapi.object_request import ObjectRequest
+from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataRequest, ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper import recurse_directory
+from helper import SyncBase, ENCRYPTION_CHUNK_LENGTH
 
 
-def download(bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, is_encrypted: bool, encryption_password: str):
-    if not os.path.isdir(local_directory):
-        os.makedirs(local_directory)
-    
-    builder = ObjectResourceBuilder(local_directory, mycloud_directory, is_encrypted)
-    errors = []
-    files = []
-    # TODO: list is lazily and immediately download files
-    recurse_directory(files, mycloud_directory, bearer)
-    for file in files:
-        try:
-            download_path = builder.build_local_path(file)
-            if tracker.file_handled(download_path, file) or tracker.skip_file(file):
-                print(f'Skipping file {file}...')
-                continue
-            directory = os.path.dirname(download_path)
-            if not os.path.isdir(directory):
-                os.makedirs(directory)
-            object_request = ObjectRequest(file, bearer)
-            print(f'Downloading file {file} to {download_path}...')
-            downloaded_content = object_request.get()
-            if is_encrypted:
-                encryptor = Encryptor(encryption_password, 1024)
-            with open(download_path, 'wb') as f:
-                last_chunk = None
-                chunk_num = 1
-                for chunk in downloaded_content.iter_content(chunk_size=1024):
-                    if last_chunk is None:
-                        last_chunk = chunk
-                        continue
-                    if is_encrypted:
-                        last_chunk = encryptor.decrypt(last_chunk)
-                    if chunk_num % 10000 == 0:
-                        print(f'Uploading chunk {chunk_num}...')
-                    f.write(last_chunk)
-                    chunk_num += 1
-                    last_chunk = chunk
-                final_chunk = last_chunk
-                if is_encrypted:
-                    final_chunk = encryptor.decrypt(final_chunk, last_block=True)
-                f.write(final_chunk)                        
-
-            tracker.track_progress(download_path, file)
-            tracker.try_save()
-            print(f'Downloaded file {file} to {download_path}...')
-        except Exception as e:
-            err = f'Could not download {file} because: {str(e)}'
-            print(err)
-            errors.append(err)
+class Downloader(SyncBase):
+    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str = None):
+        super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password)
         
-    for error in errors:
-        print(f'ERR: {error}')
-    if len(errors) == 0:
-        print('Successfully downloaded files')
+
+    def download(self):
+        self.__initialize()
+        for chunked, files in self.__list_files(self.mycloud_directory):
+            if chunked:
+                dictionary = {}
+                for file in files:
+                    (chunk_number, file_name) = self.builder.build_partial_local_path(file)
+                    dictionary[chunk_number] = {'local': file_name, 'cloud': file}
+                dictionary = dict(sorted(dictionary.items()))
+                for key, value in dictionary.items():
+                    cloud_path, local_path = value['cloud'], value['local']
+                    if self.progress_tracker.file_handled(local_path, cloud_path):
+                        print(f'Skipping partial file (Chunk {key}) file {local_path}...')
+                        continue
+                    self.__download_and_append_to(cloud_path, local_path)
+            else:
+                cloud_path = files[0]
+                file_name = self.builder.build_local_path(cloud_path)
+                if self.progress_tracker.skip_file(file_name) or self.progress_tracker.file_handled(file_name, cloud_path):
+                    print(f'Skipping file {file_name}...')
+                    continue
+                self.__download_and_append_to(cloud_path, file_name)
+
+
+    def __download_and_append_to(self, mycloud_path: str, local_file: str):
+        directory = os.path.dirname(local_file)
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        object_request = ObjectRequest(mycloud_path, self.bearer_token)
+        download_stream = object_request.get()
+        with open(local_file, 'a+b') as file:
+            last_chunk = None
+            for chunk in download_stream.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
+                if last_chunk is None:
+                    last_chunk = chunk
+                    continue
+                if self.is_encrypted:
+                    last_chunk = self.encryptor.decrypt(last_chunk)
+                file.write(last_chunk)
+                last_chunk = chunk
+            final_chunk = last_chunk
+            if self.is_encrypted:
+                final_chunk = self.encryptor.decrypt(final_chunk, last_block=True)
+            file.write(final_chunk)
+        self.progress_tracker.track_progress(local_file, mycloud_path)
+        self.progress_tracker.try_save()
+
+
+    def __initialize(self):
+        if not os.path.isdir(self.local_directory):
+            os.makedirs(self.local_directory)
+
+
+    def __list_files(self, directory):
+        base_request = MetadataRequest(directory, self.bearer_token)
+        (dirs, files) = base_request.get_contents()
+
+        chunked = True
+        if len(dirs) == 0:
+            for file in files:
+                file_path = file['Path']
+                if not self.builder.is_partial_file(file_path):
+                    chunked = False
+                    
+        if chunked:
+            file_list = [item['Path'] for item in files]
+            return (True, file_list)
+
+        for file in files:
+            yield (False, [file['Path']])
+        for directory in dirs:
+            listed = self.__list_files(directory['Path'])
+            for listed_item in listed:
+                yield listed_item

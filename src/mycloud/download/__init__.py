@@ -1,3 +1,3 @@
-from download.downloader import download
+from download.downloader import Downloader
 
-__all__ = [download]
+__all__ = [Downloader]

@@ -11,7 +11,6 @@ class FileChunker:
         self.full_file_path = full_file_path
         self.file_size = os.path.getsize(full_file_path)
         self.stream = None
-        self.current = 0
         self.is_final = False
 
     
@@ -19,8 +18,7 @@ class FileChunker:
         self.__initialize_stream()
         if self.is_final:
             return None
-        reader = StreamReader(self.stream, self.current, self)
-        self.current += 1
+        reader = StreamReader(self.stream, self)
         return reader
 
 
@@ -39,7 +37,7 @@ class FileChunker:
 
 
 class StreamReader:
-    def __init__(self, stream: RawIOBase, chunk: int, file_chunker: FileChunker):
+    def __init__(self, stream: RawIOBase, file_chunker: FileChunker):
         self.stream = stream
         self.read_length = 0
         self.file_chunker = file_chunker

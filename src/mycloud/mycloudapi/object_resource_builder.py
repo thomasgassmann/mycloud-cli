@@ -90,7 +90,7 @@ class ObjectResourceBuilder:
         return (built + file_name).replace('//', '/')
 
     
-    def __remove_encryption_file_name_if_exists(mycloud_file_name):
+    def __remove_encryption_file_name_if_exists(self, mycloud_file_name):
         if self.encrypted:
             return mycloud_file_name[:-len(AES_EXTENSION)]
         return mycloud_file_name
