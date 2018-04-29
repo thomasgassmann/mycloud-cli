@@ -31,7 +31,7 @@ class Downloader(SyncBase):
                     if first and os.path.isfile(local_path):
                         os.remove(local_path)
                         first = False
-                    print(f'Downloading partial file {local_path}, chunk {str(key)}...')
+                    print(f'Downloading partial file from {cloud_path} to {local_path}, chunk {str(key)}...')
                     self.__download_and_append_to(cloud_path, local_path)
             else:
                 cloud_path = files[0]

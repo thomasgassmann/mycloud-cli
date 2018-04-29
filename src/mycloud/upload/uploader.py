@@ -49,6 +49,7 @@ class Uploader(SyncBase):
             self.__upload_stream(chunk, partial_cloud_name)
             self.progress_tracker.track_progress(partial_local_path, partial_cloud_name)
             self.progress_tracker.try_save()
+        chunker.close()
 
 
     def __upload(self, full_file_path: str):
