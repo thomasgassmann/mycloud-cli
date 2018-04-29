@@ -4,7 +4,8 @@ from threading import Thread
 from mycloudapi import ObjectResourceBuilder, ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper import FileChunker, SyncBase, ENCRYPTION_CHUNK_LENGTH
+from helper import FileChunker, SyncBase
+from constants import ENCRYPTION_CHUNK_LENGTH
 
 
 class Uploader(SyncBase):

@@ -2,7 +2,8 @@ import os, numpy
 from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataRequest, ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper import SyncBase, ENCRYPTION_CHUNK_LENGTH
+from helper import SyncBase
+from constants import ENCRYPTION_CHUNK_LENGTH
 
 
 class Downloader(SyncBase):
@@ -20,11 +21,16 @@ class Downloader(SyncBase):
                     (chunk_number, file_name) = self.builder.build_partial_local_path(file)
                     dictionary[chunk_number] = {'local': file_name, 'cloud': file}
                 dictionary = dict(sorted(dictionary.items()))
+                first = True
                 for key, value in dictionary.items():
                     cloud_path, local_path = value['cloud'], value['local']
                     if self.progress_tracker.file_handled(local_path, cloud_path):
                         print(f'Skipping partial file (Chunk {key}) file {local_path}...')
+                        first = False
                         continue
+                    if first and os.path.isfile(local_path):
+                        os.remove(local_path)
+                        first = False
                     print(f'Downloading partial file {local_path}, chunk {str(key)}...')
                     self.__download_and_append_to(cloud_path, local_path)
             else:

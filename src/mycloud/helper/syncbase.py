@@ -1,9 +1,7 @@
 from mycloudapi import ObjectResourceBuilder
 from progress import ProgressTracker
 from encryption import Encryptor
-
-
-ENCRYPTION_CHUNK_LENGTH = 1024
+from constants import ENCRYPTION_CHUNK_LENGTH
 
 
 class SyncBase:

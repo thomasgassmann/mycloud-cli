@@ -1,9 +1,7 @@
 import math, os
 from io import BytesIO, RawIOBase
 from mycloudapi import ObjectResourceBuilder
-
-
-MY_CLOUD_BIG_FILE_CHUNK_SIZE = 5120000
+from constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
 
 
 class FileChunker:

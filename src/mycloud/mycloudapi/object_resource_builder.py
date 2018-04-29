@@ -1,11 +1,5 @@
 import base64, os
-
-
-BASE_DIR = '/Drive/'
-AES_EXTENSION = '.aes'
-PARTIAL_EXTENSION = '.partial'
-MY_CLOUD_MAX_FILE_SIZE = 10240000
-START_NUMBER_LENGTH = 8
+from constants import PARTIAL_EXTENSION, START_NUMBER_LENGTH, AES_EXTENSION, MY_CLOUD_MAX_FILE_SIZE, BASE_DIR
 
 
 class ObjectResourceBuilder:
