@@ -50,6 +50,7 @@ class Downloader(SyncBase):
         object_request = ObjectRequest(mycloud_path, self.bearer_token)
         download_stream = object_request.get()
         with open(local_file, 'a+b') as file:
+            chunk_num = 0
             last_chunk = None
             self.update_encryptor()
             for chunk in download_stream.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
@@ -59,6 +60,9 @@ class Downloader(SyncBase):
                 if self.is_encrypted:
                     last_chunk = self.encryptor.decrypt(last_chunk)
                 file.write(last_chunk)
+                if chunk_num % 1000 == 0:
+                    print(f'Downloading chunk {chunk_num}...')
+                chunk_num += 1
                 last_chunk = chunk
             final_chunk = last_chunk
             if self.is_encrypted:
