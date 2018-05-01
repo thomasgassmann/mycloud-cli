@@ -29,10 +29,11 @@ class Downloader(SyncBase):
                         first = False
                         continue
                     if first and os.path.isfile(local_path):
+                        print('Removing file...')
                         os.remove(local_path)
-                        first = False
                     print(f'Downloading partial file from {cloud_path} to {local_path}, chunk {str(key)}...')
                     self.__download_and_append_to(cloud_path, local_path)
+                    first = False
             else:
                 cloud_path = files[0]
                 print(f'Downloading file {cloud_path}...')
@@ -49,7 +50,7 @@ class Downloader(SyncBase):
             os.makedirs(directory)
         object_request = ObjectRequest(mycloud_path, self.bearer_token)
         download_stream = object_request.get()
-        with open(local_file, 'a+b') as file:
+        with open(local_file, 'ab') as file:
             chunk_num = 0
             last_chunk = None
             self.update_encryptor()
