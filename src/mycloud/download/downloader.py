@@ -32,16 +32,25 @@ class Downloader(SyncBase):
                         print('Removing file...')
                         os.remove(local_path)
                     print(f'Downloading partial file from {cloud_path} to {local_path}, chunk {str(key)}...')
-                    self.__download_and_append_to(cloud_path, local_path)
-                    first = False
+                    try:
+                        self.__download_and_append_to(cloud_path, local_path)
+                    except:
+                        print(f'ERR: Could not download partial file {cloud_path} to {local_path}!')
+                        print(f'ERR: Stopping download of partial file!')
+                        break
+                    finally:
+                        first = False
             else:
                 cloud_path = files[0]
-                print(f'Downloading file {cloud_path}...')
                 file_name = self.builder.build_local_path(cloud_path)
+                print(f'Downloading file {cloud_path} to {file_name}...')
                 if self.progress_tracker.skip_file(file_name) or self.progress_tracker.file_handled(file_name, cloud_path):
                     print(f'Skipping file {file_name}...')
                     continue
-                self.__download_and_append_to(cloud_path, file_name)
+                try:
+                    self.__download_and_append_to(cloud_path, file_name)
+                except:
+                    print(f'ERR: Could not download file {cloud_path} to {file_name}!')
 
 
     def __download_and_append_to(self, mycloud_path: str, local_file: str):
@@ -62,7 +71,7 @@ class Downloader(SyncBase):
                     last_chunk = self.encryptor.decrypt(last_chunk)
                 file.write(last_chunk)
                 if chunk_num % 1000 == 0:
-                    print(f'Downloading chunk {chunk_num}...')
+                    print(f'Downloading chunk {chunk_num} of {mycloud_path}...')
                 chunk_num += 1
                 last_chunk = chunk
             final_chunk = last_chunk
