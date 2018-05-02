@@ -1,7 +1,7 @@
 from progress import ProgressTracker
 from mycloudapi import MetadataRequest
 from dateutil import parser
-from helper import log
+from logger import log
 import os, arrow
 
 

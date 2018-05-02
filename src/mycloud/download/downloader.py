@@ -2,8 +2,9 @@ import os, numpy
 from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataRequest, ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper import SyncBase, log
+from helper import SyncBase
 from constants import ENCRYPTION_CHUNK_LENGTH
+from logger import log
 
 
 class Downloader(SyncBase):

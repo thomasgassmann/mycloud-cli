@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from browsermobproxy import Server
 from time import sleep
-from helper import log
+from logger import log
 import urllib.parse as urlparse
 import urllib.request
 import os, tempfile, zipfile, io

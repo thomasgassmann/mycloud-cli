@@ -1,7 +1,7 @@
 import json, os
 from filelock import FileLock
 from progress import ProgressTracker
-from helper import log
+from logger import log
 
 
 class FileProgressTracker(ProgressTracker):

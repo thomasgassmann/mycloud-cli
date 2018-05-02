@@ -1,5 +1,5 @@
 import base64
-from helper import log
+from logger import log
 
 
 class MyCloudRequest:
@@ -11,7 +11,7 @@ class MyCloudRequest:
     
 
     def raise_if_invalid(self, response, ignore_not_found=False):
-        log(f'Checking status code for response resource {self.object_resource} (Status {str(response.status_code)})...')
+        log(f'Checking status code for response resource {self.object} (Status {str(response.status_code)})...')
         if response.status_code == 404 and not ignore_not_found:
             raise ValueError('File not found in myCloud')
 

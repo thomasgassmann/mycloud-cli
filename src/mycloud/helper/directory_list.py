@@ -1,5 +1,5 @@
 from mycloudapi import MetadataRequest
-from helper import log
+from logger import log
 
 
 def recurse_directory(files, mycloud_directory: str, bearer: str, result_properties=None):
