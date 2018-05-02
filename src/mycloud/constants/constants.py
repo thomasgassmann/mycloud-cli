@@ -5,4 +5,3 @@ BASE_DIR = '/Drive/'
 AES_EXTENSION = '.aes'
 PARTIAL_EXTENSION = '.partial'
 START_NUMBER_LENGTH = 8
-LOG_FILE = './log.txt'

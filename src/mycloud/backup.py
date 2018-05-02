@@ -3,7 +3,7 @@ from upload import Uploader
 from download import Downloader
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker
-from helper import log
+import logger
 
 
 parser = argparse.ArgumentParser(description='Swisscom myCloud Backup')
@@ -15,6 +15,7 @@ parser.add_argument('--progress_file', metavar='p', type=str, help='Save progres
 parser.add_argument('--encryption_pwd', metavar='e', type=str, help='Encryption Password')
 parser.add_argument('--token', metavar='t', type=str, help='Pass token manually')
 parser.add_argument('--skip', metavar='s', help='Paths to skip', nargs='+')
+parser.add_argument('--log_file', metavar='l', help='Log file path')
 
 args = parser.parse_args()
 
@@ -44,6 +45,9 @@ if args.skip is not None:
     tracker.set_skipped_paths(args.skip)
 
 builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted)
+
+if args.log_file is not None:
+    logger.LOG_FILE = args.log_file
 
 if args.direction == '1':
     uploader = Uploader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd)
