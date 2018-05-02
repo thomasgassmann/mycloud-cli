@@ -1,6 +1,7 @@
 import json, os
 from filelock import FileLock
 from progress import ProgressTracker
+from helper import log
 
 
 class FileProgressTracker(ProgressTracker):
@@ -38,4 +39,4 @@ class FileProgressTracker(ProgressTracker):
         try:
             self.save()
         except Exception as e:
-            print(f'Could not save file because: {str(e)}')
+            log(f'Could not save file because: {str(e)}')

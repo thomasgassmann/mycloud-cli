@@ -3,6 +3,7 @@ from upload import Uploader
 from download import Downloader
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker
+from helper import log
 
 
 parser = argparse.ArgumentParser(description='Swisscom myCloud Backup')
@@ -39,7 +40,7 @@ else:
 tracker.load_if_exists()
 if args.skip is not None:
     skipped = ', '.join(args.skip)
-    print(f'Skipping files: {skipped}')
+    log(f'Skipping files: {skipped}')
     tracker.set_skipped_paths(args.skip)
 
 builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted)

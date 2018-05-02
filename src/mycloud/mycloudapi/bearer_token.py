@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from browsermobproxy import Server
 from time import sleep
+from helper import log
 import urllib.parse as urlparse
 import urllib.request
 import os, tempfile, zipfile, io
@@ -21,7 +22,7 @@ START_LOGIN_URL = 'https://start.mycloud.ch/'
 def get_bearer_token():
     (proxy, server) = __get_proxy()
     driver = __get_web_driver(proxy)
-    print('Please log in...')
+    log('Please log in...')
     driver.get(START_LOGIN_URL)
     proxy.new_har()
     token = None
@@ -30,7 +31,7 @@ def get_bearer_token():
         token = __get_token_if_available(proxy)
     server.stop()
     driver.quit()
-    print(f'Found token {token}')
+    log(f'Found token {token}')
     return token
 
 
@@ -38,7 +39,7 @@ def __get_token_if_available(proxy):
     try:
         all_requests = [entry['request']['url'] for entry in proxy.har['log']['entries']]
         matching_requests = [s for s in all_requests if 'mycloud.ch/login' in s]
-        print('Searching for token...')
+        log('Searching for token...')
         for matching_request in matching_requests:
             parsed = urlparse.urlparse(matching_request)
             parsed_access_token = urlparse.parse_qs(parsed.query)

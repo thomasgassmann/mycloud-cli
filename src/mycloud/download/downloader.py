@@ -2,7 +2,7 @@ import os, numpy
 from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataRequest, ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper import SyncBase
+from helper import SyncBase, log
 from constants import ENCRYPTION_CHUNK_LENGTH
 
 
@@ -25,32 +25,34 @@ class Downloader(SyncBase):
                 for key, value in dictionary.items():
                     cloud_path, local_path = value['cloud'], value['local']
                     if self.progress_tracker.file_handled(local_path, cloud_path):
-                        print(f'Skipping partial file (Chunk {key}) file {local_path}...')
+                        log(f'Skipping partial file (Chunk {key}) file {local_path}...')
                         first = False
                         continue
                     if first and os.path.isfile(local_path):
-                        print('Removing file...')
+                        log('Removing file...')
                         os.remove(local_path)
-                    print(f'Downloading partial file from {cloud_path} to {local_path}, chunk {str(key)}...')
+                    log(f'Downloading partial file from {cloud_path} to {local_path}, chunk {str(key)}...')
                     try:
                         self.__download_and_append_to(cloud_path, local_path)
-                    except:
-                        print(f'ERR: Could not download partial file {cloud_path} to {local_path}!')
-                        print(f'ERR: Stopping download of partial file!')
+                    except Exception as ex:
+                        log(f'ERR: Could not download partial file {cloud_path} to {local_path}!')
+                        log(f'ERR: Stopping download of partial file!')
+                        log(f'ERR: {str(ex)}')
                         break
                     finally:
                         first = False
             else:
                 cloud_path = files[0]
                 file_name = self.builder.build_local_path(cloud_path)
-                print(f'Downloading file {cloud_path} to {file_name}...')
+                log(f'Downloading file {cloud_path} to {file_name}...')
                 if self.progress_tracker.skip_file(file_name) or self.progress_tracker.file_handled(file_name, cloud_path):
-                    print(f'Skipping file {file_name}...')
+                    log(f'Skipping file {file_name}...')
                     continue
                 try:
                     self.__download_and_append_to(cloud_path, file_name)
-                except:
-                    print(f'ERR: Could not download file {cloud_path} to {file_name}!')
+                except Exception as ex:
+                    log(f'ERR: Could not download file {cloud_path} to {file_name}!')
+                    log(f'ERR: {str(ex)}')
 
 
     def __download_and_append_to(self, mycloud_path: str, local_file: str):
@@ -71,7 +73,7 @@ class Downloader(SyncBase):
                     last_chunk = self.encryptor.decrypt(last_chunk)
                 file.write(last_chunk)
                 if chunk_num % 1000 == 0:
-                    print(f'Downloading chunk {chunk_num} of {mycloud_path}...')
+                    log(f'Downloading chunk {chunk_num} of {mycloud_path}...')
                 chunk_num += 1
                 last_chunk = chunk
             final_chunk = last_chunk

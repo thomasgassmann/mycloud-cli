@@ -1,6 +1,7 @@
 from progress import ProgressTracker
 from mycloudapi import MetadataRequest
 from dateutil import parser
+from helper import log
 import os, arrow
 
 
@@ -27,7 +28,7 @@ class LazyCloudProgressTracker(ProgressTracker):
 
 
     def __search_directory(self, cloud_directory):
-        print(f'Searching directory {cloud_directory}...')
+        log(f'Searching directory {cloud_directory}...')
         request = MetadataRequest(cloud_directory, self.bearer_token)
         (_, fetched_files) = request.get_contents(ignore_not_found=True)
         for fetched_file in fetched_files:

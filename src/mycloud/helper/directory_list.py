@@ -1,10 +1,11 @@
 from mycloudapi import MetadataRequest
+from helper import log
 
 
 def recurse_directory(files, mycloud_directory: str, bearer: str, result_properties=None):
     if result_properties is None:
         result_properties = ['Path']
-    print(f'Listing directory {mycloud_directory}...')
+    log(f'Listing directory {mycloud_directory}...')
     metadata_request = MetadataRequest(mycloud_directory, bearer)
     try:
         (directories, fetched_files) = metadata_request.get_contents()
@@ -19,4 +20,4 @@ def recurse_directory(files, mycloud_directory: str, bearer: str, result_propert
                     properties.append(file[result_property])
                 files.append(properties)
     except Exception as e:
-        print(f'Failed to list directory: {mycloud_directory}: {str(e)}')
+        log(f'Failed to list directory: {mycloud_directory}: {str(e)}')
