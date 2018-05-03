@@ -10,11 +10,15 @@ class FileChunker:
         self.stream = None
         self.is_final = False
         self.chunk_num = 0
+        self.file_size = os.path.getsize(full_file_path)
 
     
     def get_next_chunk(self):
         self.__initialize_stream()
         if self.is_final:
+            return None
+        if self.chunk_num * MY_CLOUD_BIG_FILE_CHUNK_SIZE > self.file_size:
+            print(f'Already reached EOF of {self.full_file_path}')
             return None
         reader = StreamReader(self.stream, self, self.chunk_num)
         self.chunk_num += 1

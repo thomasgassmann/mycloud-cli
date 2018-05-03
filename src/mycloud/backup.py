@@ -41,7 +41,7 @@ else:
 tracker.load_if_exists()
 if args.skip is not None:
     skipped = ', '.join(args.skip)
-    log(f'Skipping files: {skipped}')
+    logger.log(f'Skipping files: {skipped}')
     tracker.set_skipped_paths(args.skip)
 
 builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted)
