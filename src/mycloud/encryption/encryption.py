@@ -27,7 +27,6 @@ class Encryptor:
             padding = AES.block_size - len(source) % AES.block_size
             source += bchr(padding) * padding
             self.finished_last = True
-        print(len(source))
         encrypted = self.aes.encrypt(source)
         return self.IV + encrypted if first else encrypted
 
