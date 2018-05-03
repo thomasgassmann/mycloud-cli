@@ -10,9 +10,13 @@ class Encryptor:
         self.key = SHA256.new(password.encode()).digest()
         self.chunk_size = chunk_size
         self.first_state = True
+        self.finished_last = False
 
 
     def encrypt(self, source, last_block=False):
+        if self.finished_last:
+            return bytes([])
+
         first = self.first_state
         if first:
             self.IV = Random.new().read(AES.block_size)
@@ -22,11 +26,16 @@ class Encryptor:
         if last_block:
             padding = AES.block_size - len(source) % AES.block_size
             source += bchr(padding) * padding
+            self.finished_last = True
+        print(len(source))
         encrypted = self.aes.encrypt(source)
         return self.IV + encrypted if first else encrypted
 
 
     def decrypt(self, source, last_block=False):
+        if self.finished_last:
+            return bytes([])
+
         first = self.first_state
         if first:
             self.IV = source[:AES.block_size]
@@ -38,5 +47,6 @@ class Encryptor:
             padding = bord(decrypted_data[-1])
             if decrypted_data[-padding:] != bchr(padding) * padding:
                 raise ValueError('PKCS#7 padding is incorrect')
+            self.finished_last = True
             return decrypted_data[:-padding]
         return decrypted_data
