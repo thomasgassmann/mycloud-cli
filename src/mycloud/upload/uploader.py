@@ -19,21 +19,21 @@ class Uploader(SyncBase):
             for file in files:
                 full_file_path = os.path.join(root, file)
                 cloud_file_path = self.builder.build(full_file_path)
-                # try:
-                if self.progress_tracker.skip_file(full_file_path) or self.progress_tracker.file_handled(full_file_path, cloud_file_path):
-                    log(f'Skipping file {full_file_path}...')
-                    continue
+                try:
+                    if self.progress_tracker.skip_file(full_file_path) or self.progress_tracker.file_handled(full_file_path, cloud_file_path):
+                        log(f'Skipping file {full_file_path}...')
+                        continue
 
-                if self.builder.is_partial_file_local_path(full_file_path):
-                    log(f'Chunking file {full_file_path}...')
-                    self.__upload_in_chunks(full_file_path)
-                else:
-                    self.__upload(full_file_path)
-                self.progress_tracker.track_progress(full_file_path, cloud_file_path)
-                self.progress_tracker.try_save()
-                # except Exception as ex:
-                #     log(f'ERR: Could not upload file {full_file_path} to {cloud_file_path}!')
-                #     log(f'ERR: {str(ex)}')
+                    if self.builder.is_partial_file_local_path(full_file_path):
+                        log(f'Chunking file {full_file_path}...')
+                        self.__upload_in_chunks(full_file_path)
+                    else:
+                        self.__upload(full_file_path)
+                    self.progress_tracker.track_progress(full_file_path, cloud_file_path)
+                    self.progress_tracker.try_save()
+                except Exception as ex:
+                    log(f'ERR: Could not upload file {full_file_path} to {cloud_file_path}!')
+                    log(f'ERR: {str(ex)}')
     
 
     def __upload_in_chunks(self, full_file_path: str):
