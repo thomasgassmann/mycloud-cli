@@ -18,8 +18,11 @@ class MyCloudRequest:
         if response.status_code == 401:
             raise ValueError('Bearer token is invalid')
 
-        if not str(response.status_code).startswith('2') and response.status_code != 404:
-            raise ValueError('Error while downloading file from myCloud')
+        if not str(response.status_code).startswith('2') and response.status_code != 404 and response.status_code != 401:
+            print(f'ERR: Status code {str(response.status_code)}!')
+            print('ERR: CONTENT:')
+            print(f'ERR: {str(response.content)}')
+            raise ValueError('Error while performing myCloud request')
 
 
     def get_object_id(self):
