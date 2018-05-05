@@ -36,9 +36,9 @@ class Downloader(SyncBase):
                     try:
                         self.__download_and_append_to(cloud_path, local_path)
                     except Exception as ex:
-                        log(f'ERR: Could not download partial file {cloud_path} to {local_path}!')
-                        log(f'ERR: Stopping download of partial file!')
-                        log(f'ERR: {str(ex)}')
+                        log(f'Could not download partial file {cloud_path} to {local_path}!', error=True)
+                        log(f'Stopping download of partial file!', error=True)
+                        log(str(ex), error=True)
                         break
                     finally:
                         first = False
@@ -52,8 +52,8 @@ class Downloader(SyncBase):
                 try:
                     self.__download_and_append_to(cloud_path, file_name)
                 except Exception as ex:
-                    log(f'ERR: Could not download file {cloud_path} to {file_name}!')
-                    log(f'ERR: {str(ex)}')
+                    log(f'Could not download file {cloud_path} to {file_name}!', error=True)
+                    log(str(ex), error=True)
 
 
     def __download_and_append_to(self, mycloud_path: str, local_file: str):
