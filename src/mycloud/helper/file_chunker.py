@@ -2,6 +2,7 @@ import math, os
 from io import BytesIO, RawIOBase
 from mycloudapi import ObjectResourceBuilder
 from constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
+from logger import log
 
 
 class FileChunker:
@@ -18,7 +19,7 @@ class FileChunker:
         if self.is_final:
             return None
         if self.chunk_num * MY_CLOUD_BIG_FILE_CHUNK_SIZE > self.file_size:
-            print(f'Already reached EOF of {self.full_file_path}')
+            log(f'Already reached EOF of {self.full_file_path}')
             return None
         reader = StreamReader(self.stream, self, self.chunk_num)
         self.chunk_num += 1

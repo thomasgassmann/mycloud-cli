@@ -7,6 +7,7 @@ from encryption import Encryptor
 from helper import FileChunker, SyncBase
 from constants import ENCRYPTION_CHUNK_LENGTH
 from logger import log
+from collections import deque
 
 
 class Uploader(SyncBase):
@@ -15,25 +16,43 @@ class Uploader(SyncBase):
 
 
     def upload(self):
+        failed_uploads = deque()
+        def do_upload(root, file):
+            full_file_path = os.path.join(root, file)
+            cloud_file_path = self.builder.build(full_file_path)
+            try:
+                if self.progress_tracker.skip_file(full_file_path) or self.progress_tracker.file_handled(full_file_path, cloud_file_path):
+                    log(f'Skipping file {full_file_path}...')
+                    continue
+
+                if self.builder.is_partial_file_local_path(full_file_path):
+                    log(f'Chunking file {full_file_path}...')
+                    self.__upload_in_chunks(full_file_path)
+                else:
+                    self.__upload(full_file_path)
+                self.progress_tracker.track_progress(full_file_path, cloud_file_path)
+            except Exception as ex:
+                log(f'ERR: Could not upload file {full_file_path} to {cloud_file_path}!')
+                log(f'ERR: {str(ex)}')
+                failed_uploads.append((root, file))
+        def upload_single_failed():
+            if len(failed_uploads) > 0:
+                (root, file) = failed_uploads.popleft()
+                log(f'Retrying to upload failed file {os.path.join(root, file)}...')
+                do_upload(root, file)
+        current_iteration = 0
         for root, _, files in os.walk(self.local_directory):
             for file in files:
-                full_file_path = os.path.join(root, file)
-                cloud_file_path = self.builder.build(full_file_path)
+                do_upload(root, file)
+                current_iteration += 1
+            if current_iteration % 100 == 0:
                 try:
-                    if self.progress_tracker.skip_file(full_file_path) or self.progress_tracker.file_handled(full_file_path, cloud_file_path):
-                        log(f'Skipping file {full_file_path}...')
-                        continue
-
-                    if self.builder.is_partial_file_local_path(full_file_path):
-                        log(f'Chunking file {full_file_path}...')
-                        self.__upload_in_chunks(full_file_path)
-                    else:
-                        self.__upload(full_file_path)
-                    self.progress_tracker.track_progress(full_file_path, cloud_file_path)
                     self.progress_tracker.try_save()
-                except Exception as ex:
-                    log(f'ERR: Could not upload file {full_file_path} to {cloud_file_path}!')
-                    log(f'ERR: {str(ex)}')
+                except Expception as ex:
+                    log(f'ERR: Could not save progress file: {str(ex)}')
+            upload_single_failed()
+        for _ in range(len(failed_uploads)):
+            upload_single_failed()
     
 
     def __upload_in_chunks(self, full_file_path: str):
