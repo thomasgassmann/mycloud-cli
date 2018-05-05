@@ -1,10 +1,12 @@
-import os
+import os, datetime
 
 
 LOG_FILE = ''
 
 
 def log(str: str):
+    formatted_time = datetime.datetime.now().strftime('%H:%M:%S')
+    str = f'{formatted_time}: {str}'
     print(str)
     if LOG_FILE == '':
         return
