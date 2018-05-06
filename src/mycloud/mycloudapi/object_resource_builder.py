@@ -1,4 +1,4 @@
-import base64, os
+import base64, os, re
 from constants import PARTIAL_EXTENSION, START_NUMBER_LENGTH, AES_EXTENSION, MY_CLOUD_MAX_FILE_SIZE, BASE_DIR
 
 

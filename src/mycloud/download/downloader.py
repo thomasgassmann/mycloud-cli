@@ -74,7 +74,7 @@ class Downloader(SyncBase):
                     last_chunk = self.encryptor.decrypt(last_chunk)
                 file.write(last_chunk)
                 if chunk_num % 1000 == 0:
-                    log(f'Downloading chunk {chunk_num} of {mycloud_path}...')
+                    log(f'Downloading byte {str(chunk_num * ENCRYPTION_CHUNK_LENGTH)} of {mycloud_path}...')
                 chunk_num += 1
                 last_chunk = chunk
             final_chunk = last_chunk

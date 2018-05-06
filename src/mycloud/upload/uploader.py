@@ -1,13 +1,14 @@
-import os, io
+import os, io, time
 from io import BytesIO
 from threading import Thread
 from mycloudapi import ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
 from helper import FileChunker, SyncBase
-from constants import ENCRYPTION_CHUNK_LENGTH
+from constants import ENCRYPTION_CHUNK_LENGTH, RETRY_COUNT
 from logger import log
 from collections import deque
+from random import shuffle
 
 
 class Uploader(SyncBase):
@@ -17,7 +18,7 @@ class Uploader(SyncBase):
 
     def upload(self):
         failed_uploads = deque()
-        def do_upload(root, file):
+        def do_upload(root, file, retry=0):
             full_file_path = os.path.join(root, file)
             cloud_file_path = self.builder.build(full_file_path)
             try:
@@ -34,22 +35,25 @@ class Uploader(SyncBase):
             except Exception as ex:
                 log(f'Could not upload file {full_file_path} to {cloud_file_path}!', error=True)
                 log(str(ex), error=True)
-                failed_uploads.append((root, file))
+                failed_uploads.append((root, file, retry))
         def upload_single_failed():
             if len(failed_uploads) > 0:
-                (root, file) = failed_uploads.popleft()
+                (root, file, i) = failed_uploads.popleft()
                 log(f'Retrying to upload failed file {os.path.join(root, file)}...')
-                do_upload(root, file)
+                if i < RETRY_COUNT:
+                    i += 1
+                    do_upload(root, file, i)
         current_iteration = 0
-        for root, _, files in os.walk(self.local_directory):
+        for root, dirs, files in os.walk(self.local_directory, topdown=True):
+            shuffle(dirs)
             for file in files:
                 do_upload(root, file)
                 current_iteration += 1
-            if current_iteration % 100 == 0:
-                try:
-                    self.progress_tracker.try_save()
-                except Expception as ex:
-                    log(f'Could not save progress file: {str(ex)}', error=True)
+                if current_iteration % 100 == 0:
+                    try:
+                        self.progress_tracker.try_save()
+                    except Expception as ex:
+                        log(f'Could not save progress file: {str(ex)}', error=True)
             upload_single_failed()
         for _ in range(len(failed_uploads)):
             upload_single_failed()
@@ -93,6 +97,11 @@ class Uploader(SyncBase):
     def __get_generator_for_upload(self, file_stream):
         last_chunk = None
         chunk_num = 0
+
+        bytes_per_second = 0
+        current_time = time.time()
+        read_since_time_calculation = 0
+
         while True:
             if last_chunk is None:
                 last_chunk = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
@@ -101,11 +110,20 @@ class Uploader(SyncBase):
                 last_chunk = self.encryptor.encrypt(last_chunk, last_block=True) if len(last_chunk) != ENCRYPTION_CHUNK_LENGTH else self.encryptor.encrypt(last_chunk)
             yield last_chunk
             if chunk_num % 1000 == 0:
-                log(f'Uploading chunk {chunk_num}...')
+                log(f'Uploading iteration {chunk_num} and byte {str(chunk_num * ENCRYPTION_CHUNK_LENGTH)} ({str(bytes_per_second)} bytes per second)...')
             chunk_num += 1
             last_chunk = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
             if last_chunk == b'' or last_chunk is None or len(last_chunk) < ENCRYPTION_CHUNK_LENGTH:
                 break
+            
+            read_since_time_calculation += len(last_chunk)
+            read_time = time.time()
+            if read_time - current_time > 1:
+                time_passed = read_time - current_time
+                bytes_per_second = int(read_since_time_calculation / time_passed)
+                read_since_time_calculation = 0
+                current_time = time.time()
+
         final_chunk = last_chunk
         if final_chunk is None:
             final_chunk = bytes([])
