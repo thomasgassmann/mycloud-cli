@@ -66,7 +66,7 @@ class ObjectResourceBuilder:
         elif os.path.isdir(path):
             return self.build_directory(path)
         else:
-            raise ValueError('Path is neither file, nor directory')
+            return self.build_file(path)
 
 
     def build_directory(self, directory_path: str):
