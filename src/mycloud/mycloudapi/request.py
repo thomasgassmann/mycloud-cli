@@ -19,9 +19,9 @@ class MyCloudRequest:
             raise ValueError('Bearer token is invalid')
 
         if not str(response.status_code).startswith('2') and response.status_code != 404 and response.status_code != 401:
-            print(f'ERR: Status code {str(response.status_code)}!')
-            print('ERR: CONTENT:')
-            print(f'ERR: {str(response.content)}')
+            log(f'ERR: Status code {str(response.status_code)}!')
+            log('ERR: CONTENT:')
+            log(f'ERR: {str(response.content)}')
             raise ValueError('Error while performing myCloud request')
 
 
