@@ -9,11 +9,12 @@ from constants import ENCRYPTION_CHUNK_LENGTH, RETRY_COUNT
 from logger import log
 from collections import deque
 from random import shuffle
+from mycloudapi import ObjectResourceBuilder
 
 
 class Uploader(SyncBase):
-    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str = None):
-        super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password)
+    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str, builder: ObjectResourceBuilder):
+        super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password, builder)
 
 
     def upload(self):

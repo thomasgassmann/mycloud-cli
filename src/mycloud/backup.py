@@ -1,4 +1,4 @@
-import argparse, os, sys
+import argparse, os, sys, json
 from upload import Uploader
 from download import Downloader
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
@@ -44,14 +44,17 @@ if args.skip is not None:
     logger.log(f'Skipping files: {skipped}')
     tracker.set_skipped_paths(args.skip)
 
-builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted)
+with open('./replacements.json', 'r') as f:
+    replacement_table = json.load(f)
+
+builder = ObjectResourceBuilder(args.local_dir, args.mycloud_dir, is_encrypted, replacement_table)
 
 if args.log_file is not None:
     logger.LOG_FILE = args.log_file
 
 if args.direction == '1':
-    uploader = Uploader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd)
+    uploader = Uploader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
     uploader.upload()
 elif args.direction == '0':
-    downloader = Downloader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd)
+    downloader = Downloader(bearer, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
     downloader.download()

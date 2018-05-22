@@ -5,14 +5,14 @@ from constants import ENCRYPTION_CHUNK_LENGTH
 
 
 class SyncBase:
-    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str):
+    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str, builder: ObjectResourceBuilder):
         self.bearer_token = bearer
         self.local_directory = local_directory
         self.mycloud_directory = mycloud_directory
         self.progress_tracker = tracker
         self.is_encrypted = encryption_password is not None
         self.encryption_password = encryption_password
-        self.builder = ObjectResourceBuilder(self.local_directory, self.mycloud_directory, self.is_encrypted)
+        self.builder = builder
         self.encryptor = Encryptor(encryption_password, ENCRYPTION_CHUNK_LENGTH) if self.is_encrypted else None
 
 

@@ -8,8 +8,8 @@ from logger import log
 
 
 class Downloader(SyncBase):
-    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str = None):
-        super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password)
+    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str, builder: ObjectResourceBuilder):
+        super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password, builder)
         self.partial_ignores = []
         
 

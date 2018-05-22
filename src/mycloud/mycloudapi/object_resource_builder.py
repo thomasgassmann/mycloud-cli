@@ -3,7 +3,8 @@ from constants import PARTIAL_EXTENSION, START_NUMBER_LENGTH, AES_EXTENSION, MY_
 
 
 class ObjectResourceBuilder:
-    def __init__(self, base_dir: str, mycloud_backup_dir: str, encrypted: bool):
+    def __init__(self, base_dir: str, mycloud_backup_dir: str, encrypted: bool, replacement_table):
+        self.replacement_table = replacement_table
         self.base_dir = base_dir
         self.encrypted = encrypted
         self.mycloud_dir = mycloud_backup_dir
@@ -86,6 +87,8 @@ class ObjectResourceBuilder:
         if self.encrypted:
             file_name += AES_EXTENSION
         built = self.build_directory(directory)
+        built = self.__replace_invalid_characters(built)
+        file_name = self.__replace_invalid_characters(file_name)
         return (built + file_name).replace('//', '/')
 
     
@@ -93,6 +96,13 @@ class ObjectResourceBuilder:
         if self.encrypted:
             return mycloud_file_name[:-len(AES_EXTENSION)]
         return mycloud_file_name
+
+
+    def __replace_invalid_characters(self, string: str) -> str:
+        for characters in self.replacement_table:
+            if characters['character'] in string:
+                string = string.replace(characters['character'], characters['replacement'])
+        return string
 
 
     @staticmethod
