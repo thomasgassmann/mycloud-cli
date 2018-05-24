@@ -47,6 +47,7 @@ class Downloader(SyncBase):
                 file_name = self.builder.build_local_path(cloud_path)
                 log(f'Downloading file {cloud_path} to {file_name}...')
                 if self.progress_tracker.skip_file(file_name) or self.progress_tracker.file_handled(file_name, cloud_path):
+                    self.progress_tracker.track_progress(local_file, mycloud_path)
                     log(f'Skipping file {file_name}...')
                     continue
                 try:

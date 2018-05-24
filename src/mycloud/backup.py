@@ -2,7 +2,7 @@ import argparse, os, sys, json
 from upload import Uploader
 from download import Downloader
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
-from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker
+from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker, LazyCloudCacheProgressTracker
 import logger
 
 
@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='Swisscom myCloud Backup')
 parser.add_argument('--direction', metavar='i', type=str, help='The direction of the backup (1 = up, 0 = down')
 parser.add_argument('--local_dir', metavar='d', type=str, help='The directory to backup')
 parser.add_argument('--mycloud_dir', metavar='m', type=str, help='Base path in my cloud to upload to (must start with /Drive/)')
-parser.add_argument('--progress_type', metavar='v', type=str, help='Progress type (CLOUD: Use files in cloud, LAZY_CLOUD: Use files in cloud lazily, FILE: Use local file, progress_file parameter required, NONE: no progress')
+parser.add_argument('--progress_type', metavar='v', type=str, help='Progress type (CLOUD: Use files in cloud, LAZY_CLOUD: Use files in cloud lazily, FILE: Use local file, progress_file parameter required, LAZY_CLOUD_CACHE: Use local files or lazy cloud, requires progress_file prameter, NONE: no progress')
 parser.add_argument('--progress_file', metavar='p', type=str, help='Save progress file name')
 parser.add_argument('--encryption_pwd', metavar='e', type=str, help='Encryption Password')
 parser.add_argument('--token', metavar='t', type=str, help='Pass token manually')
@@ -34,6 +34,8 @@ elif args.progress_type == 'LAZY_CLOUD' and args.direction == '1':
     tracker = LazyCloudProgressTracker(bearer)
 elif args.progress_file is not None and args.progress_type == 'FILE':
     tracker = FileProgressTracker(args.progress_file)
+elif args.progress_file is not None and args.progress_type == 'LAZY_CLOUD_CACHE' and args.direction == '1':
+    tracker = LazyCloudCacheProgressTracker(bearer, args.progress_file)
 else:
     parser.print_help()
     sys.exit(1)
