@@ -5,7 +5,7 @@ from mycloudapi import ObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
 from helper import FileChunker, SyncBase
-from constants import ENCRYPTION_CHUNK_LENGTH, RETRY_COUNT
+from constants import ENCRYPTION_CHUNK_LENGTH, RETRY_COUNT, SAVE_FREQUENCY
 from logger import log
 from collections import deque
 from random import shuffle
@@ -51,11 +51,8 @@ class Uploader(SyncBase):
             for file in files:
                 do_upload(root, file)
                 current_iteration += 1
-                if current_iteration % 100 == 0:
-                    try:
-                        self.progress_tracker.try_save()
-                    except Expception as ex:
-                        log(f'Could not save progress file: {str(ex)}', error=True)
+                if current_iteration % SAVE_FREQUENCY == 0:
+                    self.progress_tracker.try_save()
             upload_single_failed()
         for _ in range(len(failed_uploads)):
             upload_single_failed()

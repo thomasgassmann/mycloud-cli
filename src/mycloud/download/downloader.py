@@ -3,7 +3,7 @@ from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataReq
 from progress import ProgressTracker
 from encryption import Encryptor
 from helper import SyncBase
-from constants import ENCRYPTION_CHUNK_LENGTH
+from constants import ENCRYPTION_CHUNK_LENGTH, SAVE_FREQUENCY
 from logger import log
 
 
@@ -15,6 +15,7 @@ class Downloader(SyncBase):
 
     def download(self):
         self.__initialize()
+        current = 0
         for chunked, files in self.__list_files(self.mycloud_directory):
             if chunked:
                 dictionary = {}
@@ -55,6 +56,9 @@ class Downloader(SyncBase):
                 except Exception as ex:
                     log(f'Could not download file {cloud_path} to {file_name}!', error=True)
                     log(str(ex), error=True)
+            if current % SAVE_FREQUENCY == 0:
+                self.progress_tracker.try_save()
+            current += 1
 
 
     def __download_and_append_to(self, mycloud_path: str, local_file: str):
@@ -83,7 +87,6 @@ class Downloader(SyncBase):
                 final_chunk = self.encryptor.decrypt(final_chunk, last_block=True)
             file.write(final_chunk)
         self.progress_tracker.track_progress(local_file, mycloud_path)
-        self.progress_tracker.try_save()
 
 
     def __initialize(self):

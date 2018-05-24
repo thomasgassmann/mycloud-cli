@@ -39,4 +39,4 @@ class FileProgressTracker(ProgressTracker):
         try:
             self.save()
         except Exception as e:
-            log(f'Could not save file because: {str(e)}')
+            log(f'Could not save file because: {str(e)}', error=True)
