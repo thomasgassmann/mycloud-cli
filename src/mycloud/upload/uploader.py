@@ -47,7 +47,6 @@ class Uploader(SyncBase):
                     do_upload(root, file, i)
         current_iteration = 0
         for root, dirs, files in os.walk(self.local_directory, topdown=True):
-            shuffle(dirs)
             for file in files:
                 do_upload(root, file)
                 current_iteration += 1
