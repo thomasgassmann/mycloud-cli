@@ -18,7 +18,14 @@ class ProgressType(Enum):
 class Application:
     def run(self):
         parser = argparse.ArgumentParser(description='Swisscom myCloud Backup')
-        parser.add_argument('command', help='Subcommand to run')
+        parser.add_argument('command', help='''
+            Subcommand to run
+
+            The following subcommands are supported:
+                statistics
+                upload
+                download
+        ''')
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             print('Unrecognized command')
@@ -82,7 +89,8 @@ class Application:
         def is_valid(value):
             Application.__must_be_not_empty_string(value, command)
             if not value.startswith('/Drive/'):
-                raise argparse.ArgumentTypeError(f'{command} must start with /Drive/')
+                logger.log(f'{command} must start with /Drive/', True)
+                sys.exit(2)
             return value
         argument_parser.add_argument(f'--{command}', metavar='m', type=is_valid, help='Base path in Swisscom myCloud')
 
@@ -92,7 +100,8 @@ class Application:
         def is_valid(value):
             Application.__must_be_not_empty_string(value, command)
             if directory_should_exist and not os.path.isdir(value):
-                raise argparse.ArgumentTypeError(f'{command} must be an existing directory')
+                logger.log(f'{command} must be an existing directory', True)
+                sys.exit(2)
             return value
         argument_parser.add_argument(f'--{command}', metavar='l', type=is_valid, help='Local directory')
 
@@ -130,7 +139,8 @@ class Application:
             value = value.upper() if type(value) is str else ''
             if value not in valid_types:
                 concatenated = ', '.join(valid_types)
-                raise argparse.ArgumentTypeError(f'{command} must be one of {concatenated}')
+                logger.log(f'{command} must be one of {concatenated}', True)
+                sys.exit(2)
             if value == valid_types[0]:
                 return ProgressType.CLOUD 
             elif value == valid_types[1]:
@@ -153,7 +163,7 @@ class Application:
                 LAZY_CLOUD_CACHE: Use local files or lazy cloud (requires progress_file prameter)
                 NONE: no progress (DEFAULT)
         ''')
-        self.__add_progress_file_argument(parser)
+        self.__add_progress_file_argument(argument_parser)
 
 
     def __add_encryption_password_argument(self, argument_parser):
@@ -222,13 +232,15 @@ class Application:
     def __must_be_not_empty_string(value, command):
         Application.__must_be_string(value, command)
         if value == '':
-            raise argparse.ArgumentTypeError(f'{command} must not be empty')
+            logger.log(f'{command} must not be empty', True)
+            sys.exit(2)
 
 
     @staticmethod
     def __must_be_string(value, command):
         if type(value) is not str:
-            raise argparse.ArgumentTypeError(f'{command} must be a string')
+            logger.log(f'{command} must be a string', True)
+            sys.exit(2)
 
 
     @staticmethod
@@ -237,15 +249,17 @@ class Application:
         if min_length > 0:
             Application.__must_be_not_empty_string(value, command)
             if len(value) <= min_length:
-                raise argparse.ArgumentTypeError(f'{command} must be at least {min_length} characters long')
+                logger.log(f'{command} must be at least {min_length} characters long', True)
+                sys.exit(2)
 
 
     @staticmethod
     def __path_is_in_valid_directory(value, command):
         dir = os.path.basename(value)
         if not os.path.isdir(dir):
-            raise argparse.ArgumentTypeError(f'{command} must be in a valid directory')
+            logger.log(f'{command} must be in a valid directory', True)
+            sys.exit(2)
 
 
-if __file__ == '__main__':
+if __name__ == '__main__':
     Application().run()
