@@ -75,7 +75,7 @@ class Downloader(SyncBase):
                 if last_chunk is None:
                     last_chunk = chunk
                     continue
-                if self.is_encrypted:
+                if self.builder.is_path_encrypted(mycloud_path) and self.is_encrypted:
                     last_chunk = self.encryptor.decrypt(last_chunk)
                 file.write(last_chunk)
                 if chunk_num % 1000 == 0:
@@ -83,7 +83,7 @@ class Downloader(SyncBase):
                 chunk_num += 1
                 last_chunk = chunk
             final_chunk = last_chunk
-            if self.is_encrypted:
+            if self.builder.is_path_encrypted(mycloud_path) and self.is_encrypted:
                 final_chunk = self.encryptor.decrypt(final_chunk, last_block=True)
             file.write(final_chunk)
         self.progress_tracker.track_progress(local_file, mycloud_path)

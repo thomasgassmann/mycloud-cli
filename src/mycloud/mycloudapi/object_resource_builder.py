@@ -14,6 +14,10 @@ class ObjectResourceBuilder:
             self.mycloud_dir += '/'
 
 
+    def is_path_encrypted(self, path: str):
+        return path.endswith(AES_EXTENSION)    
+    
+    
     def build_partial(self, path: str, current_iteration: int):
         formatted_iteration = format(current_iteration, f'0{START_NUMBER_LENGTH}d')
         directory = os.path.dirname(path)

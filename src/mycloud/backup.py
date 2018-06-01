@@ -15,8 +15,6 @@ class ProgressType(Enum):
     NONE = 5
 
 
-# TODO: fix it, fix readme
-
 class Application:
     def run(self):
         parser = argparse.ArgumentParser(description='Swisscom myCloud Backup', formatter_class=argparse.RawTextHelpFormatter)
@@ -42,7 +40,7 @@ class Application:
         self.__add_remote_directory_argument(parser)
         self.__add_local_directory_argument(parser)
         self.__add_token_argument(parser)
-        self.__add_progress_argument(parser)
+        self.__add_progress_argument(parser, True)
         self.__add_encryption_password_argument(parser)
         self.__add_skip_argument(parser)
         self.__add_log_file_argument(parser)
@@ -61,7 +59,7 @@ class Application:
         self.__add_remote_directory_argument(parser)
         self.__add_local_directory_argument(parser, False)
         self.__add_token_argument(parser)
-        self.__add_progress_argument(parser)
+        self.__add_progress_argument(parser, False)
         self.__add_encryption_password_argument(parser)
         self.__add_skip_argument(parser)
         self.__add_log_file_argument(parser)
@@ -129,7 +127,7 @@ class Application:
         argument_parser.add_argument(f'--{command}', metavar='p', type=is_valid, help='Path to the progress file') 
 
 
-    def __add_progress_argument(self, argument_parser):
+    def __add_progress_argument(self, argument_parser, upload):
         command = 'progress_type'
         valid_types = [
             'CLOUD',
@@ -145,7 +143,7 @@ class Application:
                 raise argparse.ArgumentTypeError(f'{command} must be one of {concatenated}', True)
                 sys.exit(2)
             if value == valid_types[0]:
-                return ProgressType.CLOUD 
+                return ProgressType.CLOUD
             elif value == valid_types[1]:
                 return ProgressType.LAZY_CLOUD 
             elif value == valid_types[2]:
@@ -156,16 +154,21 @@ class Application:
                 return ProgressType.NONE
             else:
                 return ProgressType.NONE
-        argument_parser.add_argument(f'--{command}', metavar='p', type=is_valid, help='''
+        upload_types = '''
+                CLOUD: Use files in cloud to measure progress. This will create an initial representation of the files on myCloud.
+                LAZY_CLOUD: Use files in cloud to measure progress lazily.
+                LAZY_CLOUD_CACHE: Use local file or lazy cloud, if file is not in local file. (requires progress_file prameter)
+        '''
+        description_help = '''
             Progress type to be used to measure progress of the current action.
             
             Valid types are:
-                CLOUD: Use files in cloud to measure progress. This will create an initial representation of the files on myCloud.
-                LAZY_CLOUD: Use files in cloud to measure progress lazily.
                 FILE: Use local JSON file. (progress_file parameter required)
-                LAZY_CLOUD_CACHE: Use local file or lazy cloud, if file is not in local file. (requires progress_file prameter)
                 NONE: No progress measurement. (DEFAULT)
-        '''.strip())
+        '''.strip()
+        if upload:
+            description_help += upload_types
+        argument_parser.add_argument(f'--{command}', metavar='p', type=is_valid, help=description_help)
         self.__add_progress_file_argument(argument_parser)
 
 
