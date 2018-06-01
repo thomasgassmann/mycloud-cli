@@ -15,9 +15,11 @@ class ProgressType(Enum):
     NONE = 5
 
 
+# TODO: fix it, fix readme
+
 class Application:
     def run(self):
-        parser = argparse.ArgumentParser(description='Swisscom myCloud Backup')
+        parser = argparse.ArgumentParser(description='Swisscom myCloud Backup', formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument('command', help='''
             Subcommand to run
 
@@ -35,7 +37,7 @@ class Application:
 
 
     def upload(self):
-        parser = argparse.ArgumentParser(description='Swisscom myCloud Upload')
+        parser = argparse.ArgumentParser(description='Swisscom myCloud Upload', formatter_class=argparse.RawTextHelpFormatter)
         self.__add_remote_directory_argument(parser)
         self.__add_local_directory_argument(parser)
         self.__add_token_argument(parser)
@@ -54,7 +56,7 @@ class Application:
 
 
     def download(self):
-        parser = argparse.ArgumentParser(description='Swisscom myCloud Download')
+        parser = argparse.ArgumentParser(description='Swisscom myCloud Download', formatter_class=argparse.RawTextHelpFormatter)
         self.__add_remote_directory_argument(parser)
         self.__add_local_directory_argument(parser, False)
         self.__add_token_argument(parser)
@@ -63,8 +65,8 @@ class Application:
         self.__add_skip_argument(parser)
         self.__add_log_file_argument(parser)
         args = self.__parse_sub_command_arguments(parser)
-        tracker = self.__get_progress_tracker(args.progress_type, args.progress_file, bearer, args.skip, False)
         bearer = get_bearer_token() if args.token is None else args.token
+        tracker = self.__get_progress_tracker(args.progress_type, args.progress_file, bearer, args.skip, False)
         is_encrypted = args.encryption_pwd is not None
         builder = self.__get_resource_builder(is_encrypted, args.local_dir, args.mycloud_dir)
         self.__set_log_file(args.log_file)
@@ -73,7 +75,7 @@ class Application:
 
 
     def statistics(self):
-        parser = argparse.ArgumentParser(description='Swisscom myCloud Statistics')
+        parser = argparse.ArgumentParser(description='Swisscom myCloud Statistics', formatter_class=argparse.RawTextHelpFormatter)
         self.__add_remote_directory_argument(parser)
         self.__add_token_argument(parser)
         self.__add_log_file_argument(parser)
@@ -89,10 +91,10 @@ class Application:
         def is_valid(value):
             Application.__must_be_not_empty_string(value, command)
             if not value.startswith('/Drive/'):
-                logger.log(f'{command} must start with /Drive/', True)
+                raise argparse.ArgumentTypeError(f'{command} must start with /Drive/', True)
                 sys.exit(2)
             return value
-        argument_parser.add_argument(f'--{command}', metavar='m', type=is_valid, help='Base path in Swisscom myCloud')
+        argument_parser.add_argument(f'--{command}', metavar='m', type=is_valid, help='Base path in Swisscom myCloud', required=True)
 
 
     def __add_local_directory_argument(self, argument_parser, directory_should_exist=True):
@@ -100,10 +102,10 @@ class Application:
         def is_valid(value):
             Application.__must_be_not_empty_string(value, command)
             if directory_should_exist and not os.path.isdir(value):
-                logger.log(f'{command} must be an existing directory', True)
+                raise argparse.ArgumentTypeError(f'{command} must be an existing directory', True)
                 sys.exit(2)
             return value
-        argument_parser.add_argument(f'--{command}', metavar='l', type=is_valid, help='Local directory')
+        argument_parser.add_argument(f'--{command}', metavar='l', type=is_valid, help='Local directory', required=True)
 
 
     def __add_token_argument(self, argument_parser):
@@ -111,7 +113,7 @@ class Application:
         def is_valid(value):
             Application.__must_be_not_empty_string(value, command)
             return value
-        argument_parser.add_argument(f'--{command}', metavar='t', type=is_valid, help='Swisscom myCloud bearer token')
+        argument_parser.add_argument(f'--{command}', metavar='t', type=is_valid, help='Swisscom myCloud bearer token', required=True)
 
 
     def __add_progress_file_argument(self, argument_parser):
@@ -139,7 +141,7 @@ class Application:
             value = value.upper() if type(value) is str else ''
             if value not in valid_types:
                 concatenated = ', '.join(valid_types)
-                logger.log(f'{command} must be one of {concatenated}', True)
+                raise argparse.ArgumentTypeError(f'{command} must be one of {concatenated}', True)
                 sys.exit(2)
             if value == valid_types[0]:
                 return ProgressType.CLOUD 
@@ -157,12 +159,12 @@ class Application:
             Progress type to be used to measure progress of the current action.
             
             Valid types are:
-                CLOUD: Use files in cloud
-                LAZY_CLOUD: Use files in cloud lazily
-                FILE: Use local file (progress_file parameter required)
-                LAZY_CLOUD_CACHE: Use local files or lazy cloud (requires progress_file prameter)
-                NONE: no progress (DEFAULT)
-        ''')
+                CLOUD: Use files in cloud to measure progress. This will create an initial representation of the files on myCloud.
+                LAZY_CLOUD: Use files in cloud to measure progress lazily.
+                FILE: Use local JSON file. (progress_file parameter required)
+                LAZY_CLOUD_CACHE: Use local file or lazy cloud, if file is not in local file. (requires progress_file prameter)
+                NONE: No progress measurement. (DEFAULT)
+        '''.strip())
         self.__add_progress_file_argument(argument_parser)
 
 
@@ -232,14 +234,14 @@ class Application:
     def __must_be_not_empty_string(value, command):
         Application.__must_be_string(value, command)
         if value == '':
-            logger.log(f'{command} must not be empty', True)
+            raise argparse.ArgumentTypeError(f'{command} must not be empty', True)
             sys.exit(2)
 
 
     @staticmethod
     def __must_be_string(value, command):
         if type(value) is not str:
-            logger.log(f'{command} must be a string', True)
+            raise argparse.ArgumentTypeError(f'{command} must be a string', True)
             sys.exit(2)
 
 
@@ -249,7 +251,7 @@ class Application:
         if min_length > 0:
             Application.__must_be_not_empty_string(value, command)
             if len(value) <= min_length:
-                logger.log(f'{command} must be at least {min_length} characters long', True)
+                raise argparse.ArgumentTypeError(f'{command} must be at least {min_length} characters long', True)
                 sys.exit(2)
 
 
@@ -257,7 +259,7 @@ class Application:
     def __path_is_in_valid_directory(value, command):
         dir = os.path.basename(value)
         if not os.path.isdir(dir):
-            logger.log(f'{command} must be in a valid directory', True)
+            raise argparse.ArgumentTypeError(f'{command} must be in a valid directory', True)
             sys.exit(2)
 
 

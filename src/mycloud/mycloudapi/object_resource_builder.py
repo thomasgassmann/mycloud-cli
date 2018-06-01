@@ -41,8 +41,6 @@ class ObjectResourceBuilder:
 
 
     def build_partial_local_path(self, mycloud_path: str):
-        if not self.is_partial_file(mycloud_path):
-            return self.build_local_path(mycloud_path)
         unencrypted_cloud_path = self.__remove_encryption_file_name_if_exists(mycloud_path)
         numbers_to_cut = START_NUMBER_LENGTH + 1 # +1 for dash
         file_name = os.path.basename(mycloud_path)

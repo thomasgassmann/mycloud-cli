@@ -97,7 +97,7 @@ class Downloader(SyncBase):
     def __list_files(self, directory):
         base_request = MetadataRequest(directory, self.bearer_token)
         (dirs, files) = base_request.get_contents()
-        chunked = True
+        chunked = len(dirs) == 0
         if len(dirs) == 0:
             for file in files:
                 file_path = file['Path']
