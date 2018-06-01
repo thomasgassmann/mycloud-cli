@@ -6,12 +6,12 @@ Files larger than approx. 3GB are not allowed by Swisscom. Therefore this backup
 ## So how do I back something up?
 Navigate to `src/mycloud` directory.
 
-`python backup.py --token MY_TOKEN --local_dir LOCAL_PATH --mycloud_dir /Drive/LOCAL_PATH/ --encryption_pwd MY_SUPER_SECRET_PASSWORD --direction 1 --skip C:\$RECYCLE.BIN --progress_type LAZY_CLOUD_CACHE --progress_file C:\progress.json`
+`python backup.py upload --token MY_TOKEN --local_dir LOCAL_PATH --mycloud_dir /Drive/LOCAL_PATH/ --encryption_pwd MY_SUPER_SECRET_PASSWORD --skip C:\$RECYCLE.BIN --progress_type LAZY_CLOUD_CACHE --progress_file C:\progress.json`
 
 ## And how would I download these files again?
 Navigate to `src/mycloud` directory.
 
-`python backup.py --token MY_TOKEN --local_dir LOCAL_PATH --mycloud_dir /Drive/LOCAL_PATH/ --encryption_pwd MY_SUPER_SECRET_PASSWORD --direction 0 -progress_type FILE --progress_file C:\progress.json`
+`python backup.py download --token MY_TOKEN --local_dir LOCAL_PATH --mycloud_dir /Drive/LOCAL_PATH/ --encryption_pwd MY_SUPER_SECRET_PASSWORD --progress_type FILE --progress_file C:\progress.json`
 
 ## Need more help?
 1. Run `python backup.py -h`

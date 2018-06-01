@@ -29,8 +29,9 @@ class Application:
                 download
         ''')
         args = parser.parse_args(sys.argv[1:2])
-        if not hasattr(self, args.command):
-            print('Unrecognized command')
+        if not hasattr(self, args.command) or args.command == self.run.__name__:
+            logger.log('Unrecognized command', True)
+            print()
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
@@ -197,17 +198,25 @@ class Application:
 
 
     def __get_progress_tracker(self, progress_type, progress_file, bearer, skip_paths, upload):
+        def default_if_no_upload(tried_tracker):
+            if not upload:
+                logger.log(f'{str(tried_tracker)} progress tracker not available for download. Defaulting to NoProgressTracker', True)
+                tracker = NoProgressTracker()
+
         tracker = None
         if progress_type == ProgressType.NONE or progress_type is None:
             tracker = NoProgressTracker()
-        elif progress_type == ProgressType.CLOUD and upload:
+        elif progress_type == ProgressType.CLOUD:
             tracker = CloudProgressTracker(bearer, mycloud_dir)
-        elif progress_type == ProgressType.LAZY_CLOUD and upload:
+            default_if_no_upload(ProgressType.CLOUD)
+        elif progress_type == ProgressType.LAZY_CLOUD:
             tracker = LazyCloudProgressTracker(bearer)
+            default_if_no_upload(ProgressType.LAZY_CLOUD)
         elif progress_type == ProgressType.FILE:
             tracker = FileProgressTracker(progress_file)
-        elif progress_type == ProgressType.LAZY_CLOUD_CACHE and upload:
+        elif progress_type == ProgressType.LAZY_CLOUD_CACHE:
             tracker = LazyCloudCacheProgressTracker(bearer, progress_file)
+            default_if_no_upload(ProgressType.LAZY_CLOUD_CACHE)
         else:
             tracker = NoProgressTracker()
         tracker.load_if_exists()
@@ -215,6 +224,7 @@ class Application:
             skipped = ', '.join(skip_paths)
             logger.log(f'Skipping files: {skipped}')
             tracker.set_skipped_paths(skip_paths)
+        logger.log(f'Using progress tracker {type(tracker).__name__}')
         return tracker
 
 
@@ -247,7 +257,7 @@ class Application:
 
     @staticmethod
     def __min_length(value, command, min_length):
-        Application.__must_be_string()
+        Application.__must_be_string(value, command)
         if min_length > 0:
             Application.__must_be_not_empty_string(value, command)
             if len(value) <= min_length:
@@ -257,7 +267,7 @@ class Application:
 
     @staticmethod
     def __path_is_in_valid_directory(value, command):
-        dir = os.path.basename(value)
+        dir = os.path.dirname(value)
         if not os.path.isdir(dir):
             raise argparse.ArgumentTypeError(f'{command} must be in a valid directory', True)
             sys.exit(2)
