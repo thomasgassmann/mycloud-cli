@@ -95,7 +95,7 @@ class ObjectResourceBuilder:
 
     
     def __remove_encryption_file_name_if_exists(self, mycloud_file_name):
-        if self.encrypted:
+        if self.encrypted and self.is_path_encrypted(mycloud_file_name):
             return mycloud_file_name[:-len(AES_EXTENSION)]
         return mycloud_file_name
 

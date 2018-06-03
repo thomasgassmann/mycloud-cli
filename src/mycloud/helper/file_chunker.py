@@ -31,7 +31,7 @@ class FileChunker:
 
 
     def close(self):
-        if self.stream:
+        if self.stream is not None:
             self.stream.close()
 
 

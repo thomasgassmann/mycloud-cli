@@ -40,6 +40,7 @@ class Downloader(SyncBase):
                         log(f'Could not download partial file {cloud_path} to {local_path}!', error=True)
                         log(f'Stopping download of partial file!', error=True)
                         log(str(ex), error=True)
+                        # TODO: delete all progress from this partial file (remove all bytes after CHUNK_SIZE * (CURRENT_CHUNK - 1))
                         break
                     finally:
                         first = False
@@ -56,6 +57,7 @@ class Downloader(SyncBase):
                 except Exception as ex:
                     log(f'Could not download file {cloud_path} to {file_name}!', error=True)
                     log(str(ex), error=True)
+                    os.remove(file_name)
             if current % SAVE_FREQUENCY == 0:
                 self.progress_tracker.try_save()
             current += 1
@@ -69,20 +71,20 @@ class Downloader(SyncBase):
         download_stream = object_request.get()
         with open(local_file, 'ab') as file:
             chunk_num = 0
-            last_chunk = None
+            last_iteration_chunk = None
             self.update_encryptor()
             for chunk in download_stream.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
-                if last_chunk is None:
-                    last_chunk = chunk
+                if last_iteration_chunk is None:
+                    last_iteration_chunk = chunk
                     continue
                 if self.builder.is_path_encrypted(mycloud_path) and self.is_encrypted:
-                    last_chunk = self.encryptor.decrypt(last_chunk)
-                file.write(last_chunk)
+                    last_iteration_chunk = self.encryptor.decrypt(last_iteration_chunk)
+                file.write(last_iteration_chunk)
                 if chunk_num % 1000 == 0:
                     log(f'Downloading byte {str(chunk_num * ENCRYPTION_CHUNK_LENGTH)} of {mycloud_path}...')
                 chunk_num += 1
-                last_chunk = chunk
-            final_chunk = last_chunk
+                last_iteration_chunk = chunk
+            final_chunk = last_iteration_chunk
             if self.builder.is_path_encrypted(mycloud_path) and self.is_encrypted:
                 final_chunk = self.encryptor.decrypt(final_chunk, last_block=True)
             file.write(final_chunk)
