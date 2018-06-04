@@ -1,5 +1,5 @@
 import argparse
-from mycloud.backup import Application
+from backup import Application
 
 
 class StatisticsCommandLineParser:

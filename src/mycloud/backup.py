@@ -1,7 +1,7 @@
 import argparse, os, sys, json
 from upload import Uploader
 from download import Downloader
-from statistics import StatisticsCommandLineParser
+# from statistics import StatisticsCommandLineParser
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker, LazyCloudCacheProgressTracker
 from enum import Enum
@@ -75,8 +75,9 @@ class Application:
 
 
     def statistics(self):
-        command_line_parser = StatisticsCommandLineParser()
-        command_line_parser.parse_and_execute(sys.argv[3:])        
+        pass
+        # command_line_parser = StatisticsCommandLineParser()
+        # command_line_parser.parse_and_execute(sys.argv[3:])        
 
 
     def __parse_sub_command_arguments(self, argument_parser):
