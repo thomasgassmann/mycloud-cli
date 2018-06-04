@@ -1,3 +1,3 @@
-from statistics.statistics import Statistics
+from statistics.statistics_command_line_parser import StatisticsCommandLineParser
 
-__all__ = [Statistics]
+__all__ = [StatisticsCommandLineParser]

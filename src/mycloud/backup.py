@@ -1,7 +1,7 @@
 import argparse, os, sys, json
 from upload import Uploader
 from download import Downloader
-from statistics import Statistics
+from statistics import StatisticsCommandLineParser
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker, LazyCloudCacheProgressTracker
 from enum import Enum
@@ -75,15 +75,8 @@ class Application:
 
 
     def statistics(self):
-        parser = argparse.ArgumentParser(description='Swisscom myCloud Statistics', formatter_class=argparse.RawTextHelpFormatter)
-        self.__add_remote_directory_argument(parser)
-        self.__add_token_argument(parser)
-        self.__add_log_file_argument(parser)
-        args = self.__parse_sub_command_arguments(parser)
-        self.__set_log_file(args.log_file)
-        bearer = get_bearer_token() if args.token is None else args.token
-        statistics = Statistics(args.mycloud_dir, bearer)
-        
+        command_line_parser = StatisticsCommandLineParser()
+        command_line_parser.parse_and_execute(sys.argv[3:])        
 
 
     def __parse_sub_command_arguments(self, argument_parser):
