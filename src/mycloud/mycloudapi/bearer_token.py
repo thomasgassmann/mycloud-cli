@@ -1,66 +1,67 @@
+import os, tempfile, zipfile, io
+
+if __name__ == '__main__':
+    import sys
+    sys.path.append(os.path.abspath('..'))
+
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from browsermobproxy import Server
-from time import sleep
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from logger import log
+from threading import Thread
 import urllib.parse as urlparse
 import urllib.request
-import os, tempfile, zipfile, io
 
 
 CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_win32.zip'
 CHROME_DIR = 'chrome'
 CHROME_DRIVER_NAME = 'chromedriver.exe'
 
-BROWSERMOB_URL = 'https://github.com/lightbody/browsermob-proxy/releases/download/browsermob-proxy-2.1.4/browsermob-proxy-2.1.4-bin.zip'
-BROWSERMOB_DIR = 'browsermob'
-BROWSERMOB_RELATIVE_PATH = 'browsermob-proxy-2.1.4\\bin\\browsermob-proxy'
-
-START_LOGIN_URL = 'https://start.mycloud.ch/'
+START_LOGIN_URL = 'https://www.mycloud.ch/login?type=login&cid=myc_LP_login'
 
 
-def get_bearer_token():
-    (proxy, server) = __get_proxy()
-    driver = __get_web_driver(proxy)
+def get_bearer_token(user_name, password):
+    driver = __get_web_driver()
     log('Please log in...')
+    
     driver.get(START_LOGIN_URL)
-    proxy.new_har()
+    
+    wait_time = 15
+    
+    input_element = WebDriverWait(driver, wait_time).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type=email]')))
+    input_element.send_keys(user_name)
+    input_element.send_keys(Keys.ENTER)
+
+    input_element = WebDriverWait(driver, wait_time).until(EC.presence_of_element_located((By.ID, 'password')))
+    input_element.send_keys(password)
+    input_element.send_keys(Keys.ENTER)
+
     token = None
     while token is None:
-        sleep(1)
-        token = __get_token_if_available(proxy)
-    server.stop()
+        token = get_token_from_list(driver.current_url)
     driver.quit()
     log(f'Found token {token}')
     return token
 
 
-def __get_token_if_available(proxy):
-    try:
-        all_requests = [entry['request']['url'] for entry in proxy.har['log']['entries']]
-        matching_requests = [s for s in all_requests if 'mycloud.ch/login' in s]
-        log('Searching for token...')
-        for matching_request in matching_requests:
-            parsed = urlparse.urlparse(matching_request)
-            parsed_access_token = urlparse.parse_qs(parsed.query)
-            if 'access_token' in parsed_access_token:
-                acccess_tokens = parsed_access_token['access_token']
-                return acccess_tokens[0]
-        return None
-    except:
-        return None
+def get_token_from_list(list):
+    token_name = 'access_token'
+    for item in list:
+        query_strings = urlparse.parse_qs(urlparse.urlparse(item).query)
+        if token_name in query_strings:
+            return query_strings[token_name][0]
+    return None
 
 
-def __get_proxy():
-    server = Server(__get_file(BROWSERMOB_DIR, BROWSERMOB_RELATIVE_PATH, BROWSERMOB_URL))
-    server.start()
-    proxy = server.create_proxy()
-    return (proxy, server)
+def __get_web_driver():
+    user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
 
-
-def __get_web_driver(proxy):
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--proxy-server={0}'.format(proxy.proxy))
+    chrome_options.add_argument('headless')
+    chrome_options.add_argument('user-agent={0}'.format(user_agent))
+    chrome_options.add_argument('proxy-server=localhost:8080')
     driver = webdriver.Chrome(__get_file(CHROME_DIR, CHROME_DRIVER_NAME, CHROME_DRIVER_URL), chrome_options=chrome_options)
     return driver
 

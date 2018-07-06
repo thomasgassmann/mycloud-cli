@@ -1,9 +1,8 @@
 import argparse
-from backup import Application
 
 
 class StatisticsCommandLineParser:
-    def __init__(self, application: Application):
+    def __init__(self, application):
         self.application = application
 
 

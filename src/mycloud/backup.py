@@ -1,7 +1,7 @@
 import argparse, os, sys, json
 from upload import Uploader
 from download import Downloader
-# from statistics import StatisticsCommandLineParser
+from statistics import StatisticsCommandLineParser
 from mycloudapi import get_bearer_token, ObjectResourceBuilder
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker, LazyCloudCacheProgressTracker
 from enum import Enum
@@ -111,7 +111,7 @@ class Application:
         def is_valid(value):
             Application.__must_be_not_empty_string(value, command)
             return value
-        argument_parser.add_argument(f'--{command}', metavar='t', type=is_valid, help='Swisscom myCloud bearer token', required=True)
+        argument_parser.add_argument(f'--{command}', metavar='t', type=is_valid, help='Swisscom myCloud bearer token', required=False)
 
 
     def __add_progress_file_argument(self, argument_parser):
