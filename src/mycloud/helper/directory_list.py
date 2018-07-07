@@ -1,16 +1,17 @@
-from mycloudapi import MetadataRequest
+from mycloudapi import MetadataRequest, MyCloudRequestExecutor
 from logger import log
 
 
-def recurse_directory(files, mycloud_directory: str, bearer: str, result_properties=None):
+def recurse_directory(files, mycloud_directory: str, request_executor: MyCloudRequestExecutor, result_properties=None):
     if result_properties is None:
         result_properties = ['Path']
     log(f'Listing directory {mycloud_directory}...')
-    metadata_request = MetadataRequest(mycloud_directory, bearer)
+    metadata_request = MetadataRequest(mycloud_directory)
     try:
-        (directories, fetched_files) = metadata_request.get_contents()
+        response = request_executor.execute_request(metadata_request)
+        (directories, fetched_files) = MetadataRequest.format_response(response)
         for directory in directories:
-            recurse_directory(files, directory['Path'], bearer, result_properties)
+            recurse_directory(files, directory['Path'], request_executor, result_properties)
         for file in fetched_files:
             if len(result_properties) == 1:
                 files.append(file[result_properties[0]])

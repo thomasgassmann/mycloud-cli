@@ -1,11 +1,12 @@
 from progress import ProgressTracker
 from progress.lazy_cloud_progress_tracker import LazyCloudProgressTracker
 from progress.file_progress_tracker import FileProgressTracker
+from mycloudapi import MyCloudRequestExecutor
 
 
 class LazyCloudCacheProgressTracker(ProgressTracker):
-    def __init__(self, bearer, progress_file):
-        self.lazy_cloud_progress_tracker = LazyCloudProgressTracker(bearer)
+    def __init__(self, request_executor: MyCloudRequestExecutor, progress_file):
+        self.lazy_cloud_progress_tracker = LazyCloudProgressTracker(request_executor)
         self.progress_file_tracker = FileProgressTracker(progress_file)
         super().__init__()
 

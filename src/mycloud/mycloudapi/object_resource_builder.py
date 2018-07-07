@@ -35,17 +35,17 @@ class ObjectResourceBuilder:
 
 
     def is_partial_file(self, mycloud_path: str):
-        unencrypted_mycloud_pathcloud = self.__remove_encryption_file_name_if_exists(mycloud_path)
+        unencrypted_mycloud_pathcloud = self._remove_encryption_file_name_if_exists(mycloud_path)
         ends_wtih_partial = unencrypted_mycloud_pathcloud.endswith(PARTIAL_EXTENSION)
         file_name = os.path.basename(mycloud_path)
         start_number = file_name[:START_NUMBER_LENGTH]
         starts_with_dash = file_name[START_NUMBER_LENGTH:].startswith('-')
-        is_integer = ObjectResourceBuilder.__is_int(start_number)
+        is_integer = ObjectResourceBuilder._is_int(start_number)
         return is_integer and ends_wtih_partial and starts_with_dash
 
 
     def build_partial_local_path(self, mycloud_path: str):
-        unencrypted_cloud_path = self.__remove_encryption_file_name_if_exists(mycloud_path)
+        unencrypted_cloud_path = self._remove_encryption_file_name_if_exists(mycloud_path)
         numbers_to_cut = START_NUMBER_LENGTH + 1 # +1 for dash
         file_name = os.path.basename(mycloud_path)
         chunk_number = int(file_name[:START_NUMBER_LENGTH])
@@ -57,7 +57,7 @@ class ObjectResourceBuilder:
 
 
     def build_local_path(self, mycloud_path: str):
-        mycloud_path = self.__remove_encryption_file_name_if_exists(mycloud_path)
+        mycloud_path = self._remove_encryption_file_name_if_exists(mycloud_path)
         str = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(str)
         return os.path.join(self.base_dir, normalized_relative_path)
@@ -89,18 +89,18 @@ class ObjectResourceBuilder:
         if self.encrypted:
             file_name += AES_EXTENSION
         built = self.build_directory(directory)
-        built = self.__replace_invalid_characters(built)
-        file_name = self.__replace_invalid_characters(file_name)
+        built = self._replace_invalid_characters(built)
+        file_name = self._replace_invalid_characters(file_name)
         return (built + file_name).replace('//', '/')
 
     
-    def __remove_encryption_file_name_if_exists(self, mycloud_file_name):
+    def _remove_encryption_file_name_if_exists(self, mycloud_file_name):
         if self.encrypted and self.is_path_encrypted(mycloud_file_name):
             return mycloud_file_name[:-len(AES_EXTENSION)]
         return mycloud_file_name
 
 
-    def __replace_invalid_characters(self, string: str) -> str:
+    def _replace_invalid_characters(self, string: str) -> str:
         for characters in self.replacement_table:
             if characters['character'] in string:
                 string = string.replace(characters['character'], characters['replacement'])
@@ -108,7 +108,7 @@ class ObjectResourceBuilder:
 
 
     @staticmethod
-    def __is_int(s):
+    def _is_int(s):
         try: 
             int(s)
             return True

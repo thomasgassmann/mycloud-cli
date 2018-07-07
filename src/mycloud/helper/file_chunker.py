@@ -15,7 +15,7 @@ class FileChunker:
 
     
     def get_next_chunk(self):
-        self.__initialize_stream()
+        self._initialize_stream()
         if self.is_final:
             return None
         if self.chunk_num * MY_CLOUD_BIG_FILE_CHUNK_SIZE > self.file_size:
@@ -35,7 +35,7 @@ class FileChunker:
             self.stream.close()
 
 
-    def __initialize_stream(self):
+    def _initialize_stream(self):
         if self.stream is None:
             self.stream = open(self.full_file_path, 'rb')
 

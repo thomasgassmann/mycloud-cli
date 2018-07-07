@@ -1,5 +1,5 @@
 import os, numpy
-from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataRequest, ObjectRequest
+from mycloudapi import ObjectResourceBuilder, ObjectResourceBuilder, MetadataRequest, GetObjectRequest, MyCloudRequestExecutor
 from progress import ProgressTracker
 from encryption import Encryptor
 from helper import SyncBase
@@ -8,15 +8,15 @@ from logger import log
 
 
 class Downloader(SyncBase):
-    def __init__(self, bearer: str, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str, builder: ObjectResourceBuilder):
-        super().__init__(bearer, local_directory, mycloud_directory, tracker, encryption_password, builder)
+    def __init__(self, request_executor: MyCloudRequestExecutor, local_directory: str, mycloud_directory: str, tracker: ProgressTracker, encryption_password: str, builder: ObjectResourceBuilder):
+        super().__init__(request_executor, local_directory, mycloud_directory, tracker, encryption_password, builder)
         self.partial_ignores = []
         
 
     def download(self):
-        self.__initialize()
+        self._initialize()
         current = 0
-        for chunked, files in self.__list_files(self.mycloud_directory):
+        for chunked, files in self._list_files(self.mycloud_directory):
             if chunked:
                 dictionary = {}
                 for file in files:
@@ -35,7 +35,7 @@ class Downloader(SyncBase):
                         os.remove(local_path)
                     log(f'Downloading partial file from {cloud_path} to {local_path}, chunk {str(key)}...')
                     try:
-                        self.__download_and_append_to(cloud_path, local_path)
+                        self._download_and_append_to(cloud_path, local_path)
                     except Exception as ex:
                         log(f'Could not download partial file {cloud_path} to {local_path}!', error=True)
                         log(f'Stopping download of partial file!', error=True)
@@ -53,7 +53,7 @@ class Downloader(SyncBase):
                     log(f'Skipping file {file_name}...')
                     continue
                 try:
-                    self.__download_and_append_to(cloud_path, file_name)
+                    self._download_and_append_to(cloud_path, file_name)
                 except Exception as ex:
                     log(f'Could not download file {cloud_path} to {file_name}!', error=True)
                     log(str(ex), error=True)
@@ -63,12 +63,12 @@ class Downloader(SyncBase):
             current += 1
 
 
-    def __download_and_append_to(self, mycloud_path: str, local_file: str):
+    def _download_and_append_to(self, mycloud_path: str, local_file: str):
         directory = os.path.dirname(local_file)
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        object_request = ObjectRequest(mycloud_path, self.bearer_token)
-        download_stream = object_request.get()
+        object_request = GetObjectRequest(mycloud_path)
+        download_stream = self.request_executor.execute_request(object_request)
         with open(local_file, 'ab') as file:
             chunk_num = 0
             last_iteration_chunk = None
@@ -91,14 +91,15 @@ class Downloader(SyncBase):
         self.progress_tracker.track_progress(local_file, mycloud_path)
 
 
-    def __initialize(self):
+    def _initialize(self):
         if not os.path.isdir(self.local_directory):
             os.makedirs(self.local_directory)
 
 
-    def __list_files(self, directory):
-        base_request = MetadataRequest(directory, self.bearer_token)
-        (dirs, files) = base_request.get_contents()
+    def _list_files(self, directory):
+        base_request = MetadataRequest(directory)
+        response = self.request_executor.execute_request(base_request)
+        (dirs, files) = MetadataRequest.format_response(response)
         chunked = len(dirs) == 0
         if len(dirs) == 0:
             for file in files:
@@ -116,6 +117,6 @@ class Downloader(SyncBase):
             if not file['Path'] in self.partial_ignores:
                 yield (False, [file['Path']])
         for directory in dirs:
-            listed = self.__list_files(directory['Path'])
+            listed = self._list_files(directory['Path'])
             for listed_item in listed:
                 yield listed_item

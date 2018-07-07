@@ -1,22 +1,39 @@
-import os, requests, json
-import mycloudapi.request as request
+import json
+from mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
+from mycloudapi.request import MyCloudRequest, Method
 
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/metadata?p='
 
 
-class MetadataRequest(request.MyCloudRequest):
-    def __init__(self, object_resource: str, bearer_token: str):
-        super().__init__(object_resource, bearer_token)
-        if not self.object.endswith('/'):
+class MetadataRequest(MyCloudRequest):
+    def __init__(self, object_resource: str, ignore_not_found=False):
+        if not object_resource.endswith('/'):
             raise ValueError('Cannot list a file')
+        raise_if_invalid_cloud_path(object_resource)
+        self.object_resource = object_resource
+        self.ignore_404 = ignore_not_found
 
 
-    def get_contents(self, ignore_not_found=False):
-        headers = super(MetadataRequest, self).get_headers('application/json')
-        url = REQUEST_URL + super(MetadataRequest, self).get_object_id()
-        response = requests.get(url, headers=headers)
-        super(MetadataRequest, self).raise_if_invalid(response, ignore_not_found)
+    def get_method(self) -> Method:
+        return Method.GET
+
+
+    def get_request_url(self):
+        resource = get_object_id(self.object_resource)
+        return REQUEST_URL + resource
+
+    
+    def ignore_not_found(self):
+        return self.ignore_404
+
+
+    def is_query_parameter_access_token(self):
+        return True
+
+
+    @staticmethod
+    def format_response(response):
         if response.status_code == 404:
             return ([], [])
         json_data = json.loads(response.text)

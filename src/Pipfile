@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+myCloudBackup = {git = "https://github.com/ThomasGassmann/swisscom-my-cloud-backup"}
+
+[dev-packages]
+TODO
+
+[requires]
+python_version = "3.7"

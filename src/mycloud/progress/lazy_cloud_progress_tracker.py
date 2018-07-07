@@ -1,15 +1,16 @@
 from progress import ProgressTracker
-from mycloudapi import MetadataRequest
+from mycloudapi import MyCloudRequestExecutor, MetadataRequest
+from mycloudapi.auth import MyCloudAuthenticator
 from dateutil import parser
 from logger import log
 import os, arrow
 
 
 class LazyCloudProgressTracker(ProgressTracker):
-    def __init__(self, bearer):
+    def __init__(self, request_executor:  MyCloudRequestExecutor):
         super().__init__()
+        self.request_executor = request_executor
         self.files = {}
-        self.bearer_token = bearer
         self.fetched_directories = []
 
 
@@ -23,14 +24,15 @@ class LazyCloudProgressTracker(ProgressTracker):
                 update_date = os.path.getmtime(file_path)
                 return not update_date > time
             return False
-        self.__search_directory(directory)
+        self._search_directory(directory)
         return self.file_handled(file_path, cloud_name)
 
 
-    def __search_directory(self, cloud_directory):
+    def _search_directory(self, cloud_directory):
         log(f'Searching directory {cloud_directory}...')
-        request = MetadataRequest(cloud_directory, self.bearer_token)
-        (_, fetched_files) = request.get_contents(ignore_not_found=True)
+        request = MetadataRequest(cloud_directory, ignore_not_found=True)
+        response = self.request_executor.execute_request(request)
+        (_, fetched_files) = MetadataRequest.format_response(response)
         for fetched_file in fetched_files:
             path = fetched_file['Path']
             modification_time = fetched_file['ModificationTime']

@@ -10,11 +10,11 @@ class StatisticsCommandLineParser:
 
 
         parser = argparse.ArgumentParser(description='Swisscom myCloud Statistics', formatter_class=argparse.RawTextHelpFormatter)
-        self.__add_remote_directory_argument(parser)
-        self.__add_token_argument(parser)
-        self.__add_log_file_argument(parser)
-        args = self.__parse_sub_command_arguments(parser)
-        self.__set_log_file(args.log_file)
+        self._add_remote_directory_argument(parser)
+        self._add_token_argument(parser)
+        self._add_log_file_argument(parser)
+        args = self._parse_sub_command_arguments(parser)
+        self._set_log_file(args.log_file)
         bearer = get_bearer_token() if args.token is None else args.token
 
 
