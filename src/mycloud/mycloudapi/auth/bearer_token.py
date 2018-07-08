@@ -17,12 +17,8 @@ import urllib.parse as urlparse
 import urllib.request
 
 
-if platform == 'win32':
-    CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_win32.zip'
-    CHROME_DRIVER_NAME = 'chromedriver.exe'
-else:
-    CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip'
-    CHROME_DRIVER_NAME = 'chromedriver'
+CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_win32.zip'
+CHROME_DRIVER_NAME = 'chromedriver.exe'
 CHROME_DIR = 'chrome'
 
 START_LOGIN_URL = 'https://www.mycloud.ch/login?type=login&cid=myc_LP_login'
@@ -73,8 +69,11 @@ def _get_web_driver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('headless')
     chrome_options.add_argument('user-agent={0}'.format(user_agent))
-    chrome_options.add_argument('proxy-server=localhost:8080')
-    driver = webdriver.Chrome(_get_file(CHROME_DIR, CHROME_DRIVER_NAME, CHROME_DRIVER_URL), chrome_options=chrome_options)
+    path = _get_file(CHROME_DIR, CHROME_DRIVER_NAME, CHROME_DRIVER_URL)
+    if platform != 'win32':
+        chrome_options.add_argument('proxy-server=localhost:8080')
+        path = '/usr/lib/chromium-browser/chromedriver'
+    driver = webdriver.Chrome(path, chrome_options=chrome_options)
     return driver
 
 
