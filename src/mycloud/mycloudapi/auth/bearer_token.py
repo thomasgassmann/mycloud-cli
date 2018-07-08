@@ -70,9 +70,9 @@ def _get_web_driver():
     chrome_options.add_argument('headless')
     chrome_options.add_argument('user-agent={0}'.format(user_agent))
     if platform != 'win32':
-        chrome_options.add_argument('proxy-server=localhost:8080')
         path = '/usr/lib/chromium-browser/chromedriver'
     else:
+        chrome_options.add_argument('proxy-server=localhost:8080')
         path = _get_file(CHROME_DIR, CHROME_DRIVER_NAME, CHROME_DRIVER_URL)
     driver = webdriver.Chrome(path, chrome_options=chrome_options)
     return driver
