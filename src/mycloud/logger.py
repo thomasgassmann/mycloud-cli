@@ -8,18 +8,18 @@ init()
 LOG_FILE = ''
 
 
-def log(str: str, error=False):
+def log(string: str, error=False):
     if error:
-        str = f'ERR: {str}'
+        string = f'ERR: {string}'
     formatted_time = datetime.datetime.now().strftime('%H:%M:%S')
-    str = f'{formatted_time}: {str}'
+    string = f'{formatted_time}: {string}'
     color = Fore.RED if error else Fore.WHITE
-    print(f'{color}{str}{Style.RESET_ALL}')
+    print(f'{color}{string}{Style.RESET_ALL}')
     if LOG_FILE == '':
         return
     try:
         with open(LOG_FILE, 'a', encoding='utf8') as file:
-            file.write(str)
+            file.write(string)
             file.write('\n')
     except Exception as ex:
         print(f'ERR: Failed to write to log file: {str(ex)}')
