@@ -1,4 +1,4 @@
-import os, io, time, signal
+import os, io, time, threading
 from io import BytesIO
 from threading import Thread
 from mycloudapi import PutObjectRequest
@@ -10,10 +10,6 @@ from logger import log
 from collections import deque
 from random import shuffle
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
-
-
-class TimeoutException(Exception):
-    pass
 
 
 class CouldNotReadFileException(Exception):
@@ -140,21 +136,27 @@ class Uploader(SyncBase):
         if len(final_chunk) > 0:
             yield final_chunk
 
+
+    @staticmethod
+    def _read_bytes(file_stream, length, procnum, dict):
+        result = file_stream.read(length)
+        dict[procnum] = result
+
     
     @staticmethod
     def _safe_file_stream_read(file_stream, length):
+        class FuncThread(threading.Thread):
+            def __init__(self):
+                threading.Thread.__init__(self)
+                self.result = None
 
-        def timeout_handler(signum, frame):
-            raise TimeoutException
+            def run(self):
+                self.result = file_stream.read(length)
 
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(15)
-        try:
-            result = file_stream.read(length)
-        except TimeoutException:
-            signal.alarm(0)
-            log('Could not read file in time', error=True)
-            raise CouldNotReadFileException
-
-        signal.alarm(0)
-        return result
+        it = FuncThread()
+        it.start()
+        it.join(15)
+        if it.isAlive():
+            raise CouldNotReadFileException()
+        else:
+            return it.result
