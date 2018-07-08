@@ -114,7 +114,7 @@ class Application:
         command = 'local_dir'
         def is_valid(value):
             Application._must_be_not_empty_string(value, command)
-            if directory_should_exist and not os.path.isdir(value):
+            if directory_should_exist and not os.path.isdir(value) and not value.endswith(os.sep):
                 raise argparse.ArgumentTypeError(f'{command} must be an existing directory', True)
                 sys.exit(2)
             return value

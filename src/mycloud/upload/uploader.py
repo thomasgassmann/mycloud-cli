@@ -153,6 +153,7 @@ class Uploader(SyncBase):
             result = file_stream.read(length)
         except TimeoutException:
             signal.alarm(0)
+            log('Could not read file in time', error=True)
             raise CouldNotReadFileException
 
         signal.alarm(0)
