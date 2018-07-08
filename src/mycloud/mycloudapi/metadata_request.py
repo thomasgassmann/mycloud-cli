@@ -37,13 +37,13 @@ class MetadataRequest(MyCloudRequest):
         if response.status_code == 404:
             return ([], [])
         json_data = json.loads(response.text)
-        files = MetadataRequest.__get_files(json_data)
-        dirs = MetadataRequest.__get_directories(json_data)
+        files = MetadataRequest._get_files(json_data)
+        dirs = MetadataRequest._get_directories(json_data)
         return (dirs, files)
 
     
     @staticmethod
-    def __get_files(json):
+    def _get_files(json):
         if 'Files' in json:
             files = json['Files']
             return files
@@ -51,7 +51,7 @@ class MetadataRequest(MyCloudRequest):
 
 
     @staticmethod
-    def __get_directories(json):
+    def _get_directories(json):
         if 'Directories' in json:
             directories = json['Directories']
             return directories

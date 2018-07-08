@@ -1,4 +1,4 @@
-import os, io, time
+import os, io, time, signal
 from io import BytesIO
 from threading import Thread
 from mycloudapi import PutObjectRequest
@@ -10,6 +10,14 @@ from logger import log
 from collections import deque
 from random import shuffle
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
+
+
+class TimeoutException(Exception):
+    pass
+
+
+class CouldNotReadFileException(Exception):
+    pass
 
 
 class Uploader(SyncBase):
@@ -104,8 +112,7 @@ class Uploader(SyncBase):
 
         while True:
             if last_chunk is None:
-                # TODO: hangs here? only with Python file stream
-                last_chunk = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
+                last_chunk = Uploader._safe_file_stream_read(file_stream, ENCRYPTION_CHUNK_LENGTH)
                 continue
             if self.is_encrypted:
                 last_chunk = self.encryptor.encrypt(last_chunk, last_block=True) if len(last_chunk) != ENCRYPTION_CHUNK_LENGTH else self.encryptor.encrypt(last_chunk)
@@ -132,3 +139,21 @@ class Uploader(SyncBase):
             final_chunk = self.encryptor.encrypt(final_chunk, last_block=True)
         if len(final_chunk) > 0:
             yield final_chunk
+
+    
+    @staticmethod
+    def _safe_file_stream_read(file_stream, length):
+
+        def timeout_handler(signum, frame):
+            raise TimeoutException
+
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(15)
+        try:
+            result = file_stream.read(length)
+        except TimeoutException:
+            signal.alarm(0)
+            raise CouldNotReadFileException
+
+        signal.alarm(0)
+        return result

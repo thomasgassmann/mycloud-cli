@@ -30,7 +30,6 @@ START_LOGIN_URL = 'https://www.mycloud.ch/login?type=login&cid=myc_LP_login'
 
 def get_bearer_token(user_name, password):
     driver = _get_web_driver()
-    log('Please log in...')
     
     driver.get(START_LOGIN_URL)
     
