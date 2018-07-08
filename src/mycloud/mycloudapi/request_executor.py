@@ -3,6 +3,7 @@ from logger import log
 from requests.models import PreparedRequest
 from mycloudapi.auth import MyCloudAuthenticator, AuthMode
 from mycloudapi import MyCloudRequest
+from mycloudapi.request import ContentType
 from mycloudapi.request import Method
 
 
@@ -22,13 +23,13 @@ class MyCloudRequestExecutor:
             req = PreparedRequest()
             req.prepare_url(request_url, {'access_token': token})
             request_url = req.url
-            
+
         if request_method == Method.GET:
             if data_generator:
                 raise ValueError('Cannot have a data generator for HTTP GET')
             response = requests.get(request_url)
         elif request_method == Method.PUT:
-            response = requests.put(request_url, headers=headers) if not data_generator else requests.put(url, headers=headers, data=data_generator)
+            response = requests.put(request_url, headers=headers) if not data_generator else requests.put(request_url, headers=headers, data=data_generator)
         else:
             raise ValueError('Invalid request method')
         ignore_not_found = request.ignore_not_found()
@@ -38,9 +39,9 @@ class MyCloudRequestExecutor:
         return response
 
 
-    def _get_headers(self, content_type: str, bearer_token: str):
+    def _get_headers(self, content_type: ContentType, bearer_token: str):
         headers = {
-            'Content-Type': content_type,
+            'Content-Type': str(content_type),
             'Authorization': 'Bearer ' + bearer_token
         }
         return headers
