@@ -1,4 +1,5 @@
 import os, tempfile, zipfile, io
+from sys import platform
 
 if __name__ == '__main__':
     import sys
@@ -16,9 +17,13 @@ import urllib.parse as urlparse
 import urllib.request
 
 
-CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_win32.zip'
+if platform == 'win32':
+    CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_win32.zip'
+    CHROME_DRIVER_NAME = 'chromedriver.exe'
+else:
+    CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip'
+    CHROME_DRIVER_NAME = 'chromedriver'
 CHROME_DIR = 'chrome'
-CHROME_DRIVER_NAME = 'chromedriver.exe'
 
 START_LOGIN_URL = 'https://www.mycloud.ch/login?type=login&cid=myc_LP_login'
 
