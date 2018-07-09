@@ -83,6 +83,11 @@ class Application:
         # command_line_parser.parse_and_execute(sys.argv[3:])        
 
 
+    def proxy(self):
+        pass
+
+
+
     def _parse_sub_command_arguments(self, argument_parser):
         return argument_parser.parse_args(sys.argv[2:])
 

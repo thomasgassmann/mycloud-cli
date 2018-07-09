@@ -1,5 +1,6 @@
-import os, io, time, threading
+import os, io, time, threading, signal
 from io import BytesIO
+from sys import platform
 from threading import Thread
 from mycloudapi import PutObjectRequest
 from progress import ProgressTracker
@@ -142,9 +143,31 @@ class Uploader(SyncBase):
         result = file_stream.read(length)
         dict[procnum] = result
 
+
+    @staticmethod
+    def _safe_file_stream_read_linux(file_stream, length):
+        def handler(signum, frame):
+            raise CouldNotReadFileException
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(15)
+        ret = None
+        try:
+            ret = file_stream.read(length)
+        except CouldNotReadFileException:
+            pass
+        
+        signal.alarm(0)
+        if ret is None:
+            raise CouldNotReadFileException
+        return ret
+
     
     @staticmethod
     def _safe_file_stream_read(file_stream, length):
+
+        if platform != 'win32':
+            return Uploader._safe_file_stream_read_linux(file_stream, length)
+
         class FuncThread(threading.Thread):
             def __init__(self):
                 threading.Thread.__init__(self)
