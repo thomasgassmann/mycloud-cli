@@ -14,7 +14,8 @@ from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 
 
 class CouldNotReadFileException(Exception):
-    pass
+    def __str__(self):
+        return 'Could not read the specified file within the time given'
 
 
 class Uploader(SyncBase):
