@@ -4,6 +4,7 @@ from download import Downloader
 from statistics import StatisticsCommandLineParser
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloudapi.auth import MyCloudAuthenticator
+from proxy import ProxyServer
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker, LazyCloudCacheProgressTracker
 from enum import Enum
 import logger
@@ -84,8 +85,19 @@ class Application:
 
 
     def proxy(self):
-        pass
+        parser = argparse.ArgumentParser(description='Swisscom myCloud Proxy', formatter_class=argparse.RawTextHelpFormatter)
+        self._add_user_name_password(parser)
+        self._add_token_argument(parser)
+        self._add_log_file_argument(parser)
+        self._add_remote_directory_argument(parser)
 
+        self._set_log_file(args.log_file)
+
+        args = self._parse_sub_command_arguments(parser)
+        request_executor = self._get_request_executor(args)
+
+        proxy = ProxyServer(request_executor, args.mycloud_dir)
+        proxy.run_server()
 
 
     def _parse_sub_command_arguments(self, argument_parser):
