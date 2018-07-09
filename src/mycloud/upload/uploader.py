@@ -86,6 +86,7 @@ class Uploader(SyncBase):
 
 
     def _upload(self, full_file_path: str):
+        # TODO: breka execution after certain amount of time here as well, everywhere else too
         stream = open(full_file_path, 'rb')
         cloud_file_name = self.builder.build(full_file_path)
         self._upload_stream(stream, cloud_file_name)
