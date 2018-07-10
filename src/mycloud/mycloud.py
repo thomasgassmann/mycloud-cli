@@ -91,12 +91,13 @@ class Application:
         self._add_log_file_argument(parser)
         self._add_remote_directory_argument(parser)
 
-        self._set_log_file(args.log_file)
+        parser.add_argument(f'--port', metavar='p', type=int, help='The port of the proxy', required=False, default=9001)
 
         args = self._parse_sub_command_arguments(parser)
+        self._set_log_file(args.log_file)
         request_executor = self._get_request_executor(args)
 
-        proxy = ProxyServer(request_executor, args.mycloud_dir)
+        proxy = ProxyServer(request_executor, args.mycloud_dir, args.port)
         proxy.run_server()
 
 
