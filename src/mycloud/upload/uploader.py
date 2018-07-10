@@ -115,7 +115,7 @@ class Uploader(SyncBase):
             if chunk_num % 1000 == 0:
                 log(f'Uploading iteration {chunk_num} and byte {str(chunk_num * ENCRYPTION_CHUNK_LENGTH)} ({str(bytes_per_second)} bytes per second)...')
             chunk_num += 1
-            last_chunk = file_stream.read(ENCRYPTION_CHUNK_LENGTH)
+            last_chunk = Uploader._safe_file_stream_read(file_stream, ENCRYPTION_CHUNK_LENGTH)
             if last_chunk == b'' or last_chunk is None or len(last_chunk) < ENCRYPTION_CHUNK_LENGTH:
                 break
             
@@ -134,24 +134,6 @@ class Uploader(SyncBase):
             final_chunk = self.encryptor.encrypt(final_chunk, last_block=True)
         if len(final_chunk) > 0:
             yield final_chunk
-
-
-    @staticmethod
-    def _safe_file_stream_read_linux(file_stream, length):
-        def handler(signum, frame):
-            raise CouldNotReadFileException
-        signal.signal(signal.SIGALRM, handler)
-        signal.alarm(15)
-        ret = None
-        try:
-            ret = file_stream.read(length)
-        except CouldNotReadFileException:
-            pass
-        
-        signal.alarm(0)
-        if ret is None:
-            raise CouldNotReadFileException
-        return ret
 
     
     @staticmethod
