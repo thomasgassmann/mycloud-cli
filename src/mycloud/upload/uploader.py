@@ -1,21 +1,16 @@
-import os, io, time, threading, signal
+import os, io, time, threading, signal, sys
 from io import BytesIO
 from sys import platform
 from threading import Thread
 from mycloudapi import PutObjectRequest
 from progress import ProgressTracker
 from encryption import Encryptor
-from helper import FileChunker, SyncBase
+from helper import FileChunker, SyncBase, CouldNotReadFileException, operation_timeout
 from constants import ENCRYPTION_CHUNK_LENGTH, RETRY_COUNT, SAVE_FREQUENCY
 from logger import log
 from collections import deque
 from random import shuffle
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
-
-
-class CouldNotReadFileException(Exception):
-    def __str__(self):
-        return 'Could not read the specified file within the time given'
 
 
 class Uploader(SyncBase):
@@ -86,8 +81,9 @@ class Uploader(SyncBase):
 
 
     def _upload(self, full_file_path: str):
-        # TODO: breka execution after certain amount of time here as well, everywhere else too
-        stream = open(full_file_path, 'rb')
+        def open_file(dict):
+            return open(dict['path'], 'rb')
+        stream = operation_timeout(open_file, path=full_file_path)
         cloud_file_name = self.builder.build(full_file_path)
         self._upload_stream(stream, cloud_file_name)
         stream.close()
@@ -141,12 +137,6 @@ class Uploader(SyncBase):
 
 
     @staticmethod
-    def _read_bytes(file_stream, length, procnum, dict):
-        result = file_stream.read(length)
-        dict[procnum] = result
-
-
-    @staticmethod
     def _safe_file_stream_read_linux(file_stream, length):
         def handler(signum, frame):
             raise CouldNotReadFileException
@@ -166,22 +156,6 @@ class Uploader(SyncBase):
     
     @staticmethod
     def _safe_file_stream_read(file_stream, length):
-
-        if platform != 'win32':
-            return Uploader._safe_file_stream_read_linux(file_stream, length)
-
-        class FuncThread(threading.Thread):
-            def __init__(self):
-                threading.Thread.__init__(self)
-                self.result = None
-
-            def run(self):
-                self.result = file_stream.read(length)
-
-        it = FuncThread()
-        it.start()
-        it.join(15)
-        if it.isAlive():
-            raise CouldNotReadFileException()
-        else:
-            return it.result
+        def read_safe(dict):
+            return dict['stream'].read(dict['len'])
+        return operation_timeout(read_safe, stream=file_stream, len=length)
