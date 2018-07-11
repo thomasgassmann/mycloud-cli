@@ -38,8 +38,17 @@ class PutObjectRequest(ObjectRequest):
 
 class GetObjectRequest(ObjectRequest):
 
-    def __init__(self, object_resource: str):
+    def __init__(self, object_resource: str, ignore_bad_request=False):
         super().__init__(object_resource)
+        self.ignore_400 = ignore_bad_request
+
+
+    def get_method(self) -> Method:
+        return Method.GET
+
+    
+    def ignore_bad_request(self):
+        return self.ignore_400
 
     
     def is_query_parameter_access_token(self):

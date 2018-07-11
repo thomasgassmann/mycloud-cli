@@ -4,7 +4,7 @@ from download import Downloader
 from statistics import StatisticsCommandLineParser
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloudapi.auth import MyCloudAuthenticator
-from proxy import ProxyServer
+from proxy import run_server
 from progress import ProgressTracker, LazyCloudProgressTracker, FileProgressTracker, CloudProgressTracker, NoProgressTracker, LazyCloudCacheProgressTracker
 from enum import Enum
 import logger
@@ -97,8 +97,7 @@ class Application:
         self._set_log_file(args.log_file)
         request_executor = self._get_request_executor(args)
 
-        proxy = ProxyServer(request_executor, args.mycloud_dir, args.port)
-        proxy.run_server()
+        run_server(request_executor, args.mycloud_dir, args.port)
 
 
     def _parse_sub_command_arguments(self, argument_parser):

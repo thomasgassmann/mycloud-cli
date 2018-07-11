@@ -1,4 +1,4 @@
-from proxy.server import ProxyServer
+from proxy.server import run_server
 
 
-__all__ = [ProxyServer]
+__all__ = [run_server]
