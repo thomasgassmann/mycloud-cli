@@ -56,7 +56,7 @@ def run_server(request_executor: MyCloudRequestExecutor, mycloud_base_dir: str, 
 
     def download(object_resource: str):
         log(f'Downloading file {object_resource}...')
-        get_request = GetObjectRequest(object_resource, True)
+        get_request = GetObjectRequest(object_resource, ignore_bad_request=True, ignore_not_found=True)
         response = request_executor.execute_request(get_request)
         if response.status_code != 200:
             # return try_return_directory(object_resource)
