@@ -92,12 +92,12 @@ class Uploader(SyncBase):
     def _upload_stream(self, stream, cloud_file_name):
         log(f'Uploading to {cloud_file_name}...')
         self.update_encryptor()
-        generator = self._get_generator_for_upload(stream)
+        generator = self._get_generator_for_upload(cloud_file_name, stream)
         request = PutObjectRequest(cloud_file_name, generator)
         _ = self.request_executor.execute_request(request)
 
 
-    def _get_generator_for_upload(self, file_stream):
+    def _get_generator_for_upload(self, cloud_file_name, file_stream):
         last_chunk = None
         chunk_num = 0
 
@@ -113,7 +113,7 @@ class Uploader(SyncBase):
                 last_chunk = self.encryptor.encrypt(last_chunk, last_block=True) if len(last_chunk) != ENCRYPTION_CHUNK_LENGTH else self.encryptor.encrypt(last_chunk)
             yield last_chunk
             if chunk_num % 1000 == 0:
-                log(f'Uploading iteration {chunk_num} and byte {str(chunk_num * ENCRYPTION_CHUNK_LENGTH)} ({str(bytes_per_second)} bytes per second)...')
+                log(f'Uploading to {cloud_file_name} | Iteration: {chunk_num} | Byte: {str(chunk_num * ENCRYPTION_CHUNK_LENGTH)} | bps: {str(bytes_per_second)}')
             chunk_num += 1
             last_chunk = Uploader._safe_file_stream_read(file_stream, ENCRYPTION_CHUNK_LENGTH)
             if last_chunk == b'' or last_chunk is None or len(last_chunk) < ENCRYPTION_CHUNK_LENGTH:
