@@ -79,9 +79,8 @@ class Application:
 
 
     def statistics(self):
-        pass
-        # command_line_parser = StatisticsCommandLineParser()
-        # command_line_parser.parse_and_execute(sys.argv[3:])        
+        command_line_parser = StatisticsCommandLineParser(self)
+        command_line_parser.parse_and_execute(sys.argv[2:])
 
 
     def proxy(self):
