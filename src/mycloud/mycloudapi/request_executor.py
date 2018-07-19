@@ -24,11 +24,10 @@ class MyCloudRequestExecutor:
             req.prepare_url(request_url, {'access_token': token})
             request_url = req.url
 
-        print(request_url)
         if request_method == Method.GET:
             if data_generator:
                 raise ValueError('Cannot have a data generator for HTTP GET')
-            response = requests.get(request_url)
+            response = requests.get(request_url, headers=headers)
         elif request_method == Method.PUT:
             response = requests.put(request_url, headers=headers) if not data_generator else requests.put(request_url, headers=headers, data=data_generator)
         else:

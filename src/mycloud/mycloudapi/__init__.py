@@ -3,5 +3,6 @@ from mycloudapi.object_request import GetObjectRequest, PutObjectRequest
 from mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloudapi.request import MyCloudRequest
 from mycloudapi.request_executor import MyCloudRequestExecutor
+from mycloudapi.change_request import ChangeRequest
 
-__all__ = [MyCloudRequest, MetadataRequest, GetObjectRequest, PutObjectRequest, ObjectResourceBuilder, MyCloudRequestExecutor]
+__all__ = [MyCloudRequest, MetadataRequest, GetObjectRequest, PutObjectRequest, ObjectResourceBuilder, MyCloudRequestExecutor, ChangeRequest]

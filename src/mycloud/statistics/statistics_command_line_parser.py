@@ -1,6 +1,7 @@
 import argparse
 from logger import log
 from statistics.summarizer import summarize
+from statistics.change_tracker import track_changes
 
 
 class StatisticsCommandLineParser:
@@ -36,6 +37,7 @@ class StatisticsCommandLineParser:
 
 
     def changes(self, args):
+        # TODO: FILE VERSIONING ON UPLOAD
         parser = argparse.ArgumentParser(description='Swisscom myCloud Change Detection', formatter_class=argparse.RawTextHelpFormatter)
         self.app._add_remote_directory_argument(parser)
         self.app._add_token_argument(parser)
@@ -45,4 +47,4 @@ class StatisticsCommandLineParser:
         args = parser.parse_args(args)
         executor = self.app._get_request_executor(args)
         self.app._set_log_file(args.log_file)
-        print(args)
+        track_changes(executor, args.mycloud_dir, args.top)
