@@ -91,12 +91,3 @@ def _get_file(dir_name, relative_path, url):
     zip_ref.extractall(dir)
     zip_ref.close()
     return file_path
-
-
-if __name__ == '__main__':
-    while True:
-        try:
-            token = get_bearer_token('thomas.gassmann@hotmail.com', '***REMOVED***')
-            print(f'Got token {token}')
-        except Exception as ex:
-            print(ex)
