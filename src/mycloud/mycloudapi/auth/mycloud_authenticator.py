@@ -44,10 +44,12 @@ class MyCloudAuthenticator:
                 if USE_TOKEN_CACHE and self._load_cached_token() and not self.tried_cached_token:
                     print('Trying to use cached token...')
                     self.tried_cached_token = True
+                    self.token_refresh_required = False
                     return self.current_token
 
                 self.current_token = get_bearer_token(self.user_name, self.password)
                 if USE_TOKEN_CACHE:
+                    self.tried_cached_token = False
                     self._save_token()
                 self.token_refresh_required = False
             return self.current_token
