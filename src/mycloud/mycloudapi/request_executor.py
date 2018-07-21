@@ -10,6 +10,7 @@ from mycloudapi.request import Method
 class MyCloudRequestExecutor:
     def __init__(self, authenticator: MyCloudAuthenticator):
         self.authenticator = authenticator
+        self.session = requests.Session()
 
     
     def execute_request(self, request: MyCloudRequest):
@@ -27,9 +28,9 @@ class MyCloudRequestExecutor:
         if request_method == Method.GET:
             if data_generator:
                 raise ValueError('Cannot have a data generator for HTTP GET')
-            response = requests.get(request_url, headers=headers)
+            response = self.session.get(request_url, headers=headers)
         elif request_method == Method.PUT:
-            response = requests.put(request_url, headers=headers) if not data_generator else requests.put(request_url, headers=headers, data=data_generator)
+            response = self.session.put(request_url, headers=headers) if not data_generator else requests.put(request_url, headers=headers, data=data_generator)
         else:
             raise ValueError('Invalid request method')
         ignore_not_found = request.ignore_not_found()
