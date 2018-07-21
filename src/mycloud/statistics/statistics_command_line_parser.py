@@ -2,6 +2,7 @@ import argparse
 from logger import log
 from statistics.summarizer import summarize
 from statistics.change_tracker import track_changes
+from statistics.usage import print_usage
 
 
 class StatisticsCommandLineParser:
@@ -14,6 +15,8 @@ class StatisticsCommandLineParser:
         parser.add_argument(f'command', help='''
             All statistics command:
                 summary
+                changes
+                usage
         ''')
         parsed = parser.parse_args(args[:1])
         if not hasattr(self, parsed.command):
@@ -37,7 +40,6 @@ class StatisticsCommandLineParser:
 
 
     def changes(self, args):
-        # TODO: FILE VERSIONING ON UPLOAD
         parser = argparse.ArgumentParser(description='Swisscom myCloud Change Detection', formatter_class=argparse.RawTextHelpFormatter)
         self.app._add_remote_directory_argument(parser)
         self.app._add_token_argument(parser)
@@ -48,3 +50,14 @@ class StatisticsCommandLineParser:
         executor = self.app._get_request_executor(args)
         self.app._set_log_file(args.log_file)
         track_changes(executor, args.mycloud_dir, args.top)
+
+
+    def usage(self, args):
+        parser = argparse.ArgumentParser(description='Swisccom myCloud Usage', formatter_class=argparse.RawTextHelpFormatter)
+        self.app._add_token_argument(parser)
+        self.app._add_log_file_argument(parser)
+        self.app._add_user_name_password(parser)
+        args = parser.parse_args(args)
+        executor = self.app._get_request_executor(args)
+        self.app._set_log_file(args.log_file)
+        print_usage(executor)

@@ -1,9 +1,21 @@
-# import os, requests, json, time
+import json, time
+from mycloudapi.request import MyCloudRequest, Method
 
 
-# REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/usage?nocache={0}'
+REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/usage?nocache={}'
 
 
-# class MetadataRequest():
-#     def __init__(self):
-#         pass
+class UsageRequest(MyCloudRequest):
+
+    def get_method(self) -> Method:
+        return Method.GET
+
+    
+    def get_request_url(self):
+        return REQUEST_URL.format(time.time())
+
+    
+    @staticmethod
+    def format_response(response):
+        json_data = json.loads(response.text)
+        return json_data
