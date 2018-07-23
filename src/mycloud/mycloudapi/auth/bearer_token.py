@@ -25,7 +25,6 @@ START_LOGIN_URL = 'https://www.mycloud.ch/login?type=login&cid=myc_LP_login'
 
 
 def get_bearer_token(user_name, password):
-    # TODO: token cache
     driver = _get_web_driver()
     
     driver.get(START_LOGIN_URL)
@@ -47,9 +46,9 @@ def get_bearer_token(user_name, password):
         if time.time() - start > wait_time:
             print(f'More than {str(wait_time)} seconds elapsed... Cancelling')
             break
+    driver.quit()
     if token is None:
         raise ValueError('Token could not be found')
-    driver.quit()
     log(f'Found token {token}')
     return token
 

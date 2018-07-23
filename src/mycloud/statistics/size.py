@@ -2,6 +2,7 @@ from mycloudapi import MyCloudRequestExecutor, MetadataRequest
 from logger import log
 import sys, os
 from hurry.filesize import size
+from helper import get_all_files_recursively
 
 
 def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):
@@ -10,7 +11,7 @@ def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):
     summed_up = 0
     longest_string = 0
     file_count = 0
-    for file in file_generator(request_executor, directory):
+    for file in get_all_files_recursively(request_executor, directory):
         file_count += 1
         original_out.write(str(' ' * longest_string) + '\r')
         to_print = f'Bytes: {summed_up} | Size (readable): {size(summed_up)} | Count: {file_count}'
@@ -21,14 +22,3 @@ def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):
         summed_up += int(file['Length'])
 
     sys.stdout = original_out
-
-
-def file_generator(request_executor: MyCloudRequestExecutor, directory: str):
-    metadata_request = MetadataRequest(directory)
-    response = request_executor.execute_request(metadata_request)
-    (directories, fetched_files) = MetadataRequest.format_response(response)
-    for file in fetched_files:
-        yield file
-    
-    for directory in directories:
-        yield from file_generator(request_executor, directory['Path'])

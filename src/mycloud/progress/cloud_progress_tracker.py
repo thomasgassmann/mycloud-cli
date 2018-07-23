@@ -1,6 +1,6 @@
 from mycloudapi import MyCloudRequestExecutor
 from progress.progress_tracker import ProgressTracker
-from helper import recurse_directory
+from helper import get_all_files_recursively
 from dateutil import parser
 import arrow
 
@@ -17,10 +17,8 @@ class CloudProgressTracker(ProgressTracker):
 
 
     def load(self):
-        files_list = []
         self.files = {}
-        recurse_directory(files_list, self.mycloud_base_directory, self.request_executor, ['Path', 'ModificationTime'])
-        for file in files_list:
-            datetime = parser.parse(file[1])
+        for file in get_all_files_recursively(self.request_executor, self.mycloud_base_directory):
+            datetime = parser.parse(file['ModificationTime'])
             timestamp = arrow.get(datetime).timestamp
-            self.files[file[0]] = timestamp
+            self.files[file['Path']] = timestamp
