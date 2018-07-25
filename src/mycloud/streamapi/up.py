@@ -1,4 +1,4 @@
-from mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, MetadataRequest, PutObjectRequest, GetObjectRequest
+from mycloudapi import MyCloudRequestExecutor, PutObjectRequest
 from streamapi import UpStream, FileMetadata, StreamDirection
 from constants import ENCRYPTION_CHUNK_LENGTH, MY_CLOUD_BIG_FILE_CHUNK_SIZE
 from helper import operation_timeout 
@@ -15,10 +15,6 @@ class UpStreamExecutor:
     def upload_stream(self, file_stream: UpStream, metadata: FileMetadata):
         if file_stream.stream_direction != StreamDirection.Up:
             raise ValueError('Invalid stream direction')
-
-        upload, _ = self._check_upload_validity_for_overwrite(metadata)
-        if not upload:
-            raise ValueError('Can not overwrite version. Version already exists')
         
         metadata_stream = self._get_metadata_stream(metadata)
         metadata_location = metadata.get_metadata_location()
@@ -47,14 +43,14 @@ class UpStreamExecutor:
             if break_execution:
                 read_bytes = bytes([])
             else:
-                read_bytes = stream.read(ENCRYPTION_CHUNK_LENGTH)
+                read_bytes = UpStreamExecutor._safe_file_stream_read(stream, ENCRYPTION_CHUNK_LENGTH)
 
             if (len(read_bytes) < ENCRYPTION_CHUNK_LENGTH or read_bytes == b'' or read_bytes is None) and not break_execution:
                 stream_finished = True
 
             if applied_transforms is not None:
                 for transform in applied_transforms:
-                    read_bytes = transform.transform(read_bytes)
+                    read_bytes = transform.transform(read_bytes, last=stream_finished or break_execution)
 
             yield read_bytes
 
@@ -68,20 +64,6 @@ class UpStreamExecutor:
             total_read += len(read_bytes)
             if total_read > max_length if max_length is not None else False:
                 break_execution = True
-        
-
-    def _check_upload_validity_for_overwrite(self, metadata: FileMetadata):
-        if metadata.is_overwrite_permissible():
-            return True, None
-
-        metadata_location = metadata.get_metadata_location()
-        put_request = GetObjectRequest(metadata_location, ignore_not_found=True)
-        response = self.request_executor.execute_request(put_request)
-        if response.status_code == 404:
-            return True, None
-        
-        loaded = FileMetadata.load_from_json_string(response.text)
-        return False, loaded
 
 
     def _get_metadata_stream(self, metadata: FileMetadata):
@@ -93,14 +75,17 @@ class UpStreamExecutor:
                 json.dump(metadata_json, tmp)
 
             with open(path, 'rb') as f:
-                metadata_stream = BytesIO(f.read())
+                values = UpStreamExecutor._safe_file_stream_read(f)
+                metadata_stream = BytesIO(values)
         finally:
             os.remove(path)
         return metadata_stream
 
     
     @staticmethod
-    def _safe_file_stream_read(file_stream, length):
+    def _safe_file_stream_read(file_stream, length=None):
         def read_safe(dict):
+            if dict['len'] is None:
+                return dict['stream'].read()
             return dict['stream'].read(dict['len'])
         return operation_timeout(read_safe, stream=file_stream, len=length)

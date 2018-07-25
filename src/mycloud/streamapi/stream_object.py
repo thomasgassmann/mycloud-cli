@@ -4,14 +4,6 @@ from enum import Enum
 from mycloudapi import ObjectResourceBuilder
 from constants import START_NUMBER_LENGTH
 
-# /Drive/object
-# /Drive/object/version
-# /Drive/object/version/metadata.json
-# /Drive/object/version/parts
-# /Drive/object/version/parts/part1.aes
-# Change Tracking?
-
-# or backwards compatibility?
 
 class StreamDirection(Enum):
     Up = 0
@@ -34,16 +26,15 @@ class StreamTransform(ABC):
 
     
     @abstractmethod
-    def transform(self, byte_sequence: bytes) -> bytes:
+    def transform(self, byte_sequence: bytes, last: bool=False) -> bytes:
         raise NotImplementedError()
 
 
 class FileMetadata:
     
-    def __init__(self, object_resource: str, version: str, overwrite: bool):
+    def __init__(self, object_resource: str, version: str):
         self._object_resource = object_resource
         self._version = version
-        self._overwrite = overwrite
         self._transforms = []
         self._properties = {}
 
@@ -60,10 +51,6 @@ class FileMetadata:
         return self._transforms
 
 
-    def is_overwrite_permissible(self):
-        return self._overwrite
-
-
     def load_from_json_string(self, json_string: str):
         json_representation = json.loads(json_string)
         metadata = FileMetadata(json_representation['resource'], json_representation['version'], json_representation['overwritten'])
@@ -78,7 +65,6 @@ class FileMetadata:
         json_representation = {
             'version': self._version,
             'resource': self._object_resource,
-            'overwritten': self._overwrite,
             'transforms': [transform.get_name() for transform in self._transforms],
             'properties': self._properties
         }
