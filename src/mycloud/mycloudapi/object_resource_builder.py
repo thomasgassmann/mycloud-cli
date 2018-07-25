@@ -1,10 +1,9 @@
-import base64, os, re
+import base64, os, re, json
 from constants import PARTIAL_EXTENSION, START_NUMBER_LENGTH, AES_EXTENSION, MY_CLOUD_MAX_FILE_SIZE, BASE_DIR
 
 
 class ObjectResourceBuilder:
-    def __init__(self, base_dir: str, mycloud_backup_dir: str, encrypted: bool, replacement_table):
-        self.replacement_table = replacement_table
+    def __init__(self, base_dir: str, mycloud_backup_dir: str, encrypted: bool):
         self.base_dir = base_dir
         self.encrypted = encrypted
         self.mycloud_dir = mycloud_backup_dir
@@ -14,8 +13,21 @@ class ObjectResourceBuilder:
             self.mycloud_dir += '/'
 
 
+    @staticmethod
+    def combine_cloud_path(left: str, right: str):
+        left = ObjectResourceBuilder._replace_invalid_characters(left)
+        right = ObjectResourceBuilder._replace_invalid_characters(right)
+        if left.endswith('/'):
+            left = left[:-1]
+
+        if right.startswith('/'):
+            right = right[1:]
+
+        return left + '/' + right
+
+
     def is_path_encrypted(self, path: str):
-        return path.endswith(AES_EXTENSION)    
+        return path.endswith(AES_EXTENSION)
     
     
     def build_partial(self, path: str, current_iteration: int):
@@ -89,8 +101,8 @@ class ObjectResourceBuilder:
         if self.encrypted:
             file_name += AES_EXTENSION
         built = self.build_directory(directory)
-        built = self._replace_invalid_characters(built)
-        file_name = self._replace_invalid_characters(file_name)
+        built = ObjectResourceBuilder._replace_invalid_characters(built)
+        file_name = ObjectResourceBuilder._replace_invalid_characters(file_name)
         return (built + file_name).replace('//', '/')
 
     
@@ -100,8 +112,9 @@ class ObjectResourceBuilder:
         return mycloud_file_name
 
 
-    def _replace_invalid_characters(self, string: str) -> str:
-        for characters in self.replacement_table:
+    @staticmethod
+    def _replace_invalid_characters(string: str) -> str:
+        for characters in ObjectResourceBuilder.replacement_table:
             if characters['character'] in string:
                 string = string.replace(characters['character'], characters['replacement'])
         return string
@@ -114,3 +127,7 @@ class ObjectResourceBuilder:
             return True
         except ValueError:
             return False
+
+
+with open('replacements.json', 'r') as f:
+    ObjectResourceBuilder.replacement_table = json.load(f)

@@ -5,7 +5,7 @@ data_dir = appdirs.user_data_dir('.mycloud', 'thomasgassmann')
 token_dir = os.path.join(data_dir, 'tokens')
 
 
-MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1280000000
+MY_CLOUD_BIG_FILE_CHUNK_SIZE = 12800
 ENCRYPTION_CHUNK_LENGTH = 1024
 MY_CLOUD_MAX_FILE_SIZE = 2560000000
 BASE_DIR = '/Drive/'

@@ -279,9 +279,7 @@ class Application:
 
 
     def _get_resource_builder(self, is_encrypted, local_dir, mycloud_dir) -> ObjectResourceBuilder:
-        with open('./replacements.json', 'r') as f:
-            replacement_table = json.load(f)
-        builder = ObjectResourceBuilder(local_dir, mycloud_dir, is_encrypted, replacement_table)
+        builder = ObjectResourceBuilder(local_dir, mycloud_dir, is_encrypted)
         return builder
 
 
