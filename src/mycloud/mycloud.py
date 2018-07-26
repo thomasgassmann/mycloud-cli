@@ -1,6 +1,5 @@
 import argparse, os, sys, json
-from upload import Uploader
-from download import Downloader
+from filesync import upload
 from statistics import StatisticsCommandLineParser
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloudapi.auth import MyCloudAuthenticator
@@ -50,12 +49,10 @@ class Application:
         self._add_user_name_password(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
-        is_encrypted = args.encryption_pwd is not None
         tracker = self._get_progress_tracker(args.progress_type, args.progress_file, executor, args.skip, True)
-        builder = self._get_resource_builder(is_encrypted, args.local_dir, args.mycloud_dir)
+        builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
-        uploader = Uploader(executor, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
-        uploader.upload()
+        upload(executor, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
 
 
     def download(self):
@@ -71,11 +68,10 @@ class Application:
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
         tracker = self._get_progress_tracker(args.progress_type, args.progress_file, executor, args.skip, False)
-        is_encrypted = args.encryption_pwd is not None
-        builder = self._get_resource_builder(is_encrypted, args.local_dir, args.mycloud_dir)
+        builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
-        downloader = Downloader(executor, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
-        downloader.download()
+        # downloader = Downloader(executor, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
+        # downloader.download()
 
 
     def statistics(self):
@@ -278,8 +274,8 @@ class Application:
         return tracker
 
 
-    def _get_resource_builder(self, is_encrypted, local_dir, mycloud_dir) -> ObjectResourceBuilder:
-        builder = ObjectResourceBuilder(local_dir, mycloud_dir, is_encrypted)
+    def _get_resource_builder(self, local_dir, mycloud_dir) -> ObjectResourceBuilder:
+        builder = ObjectResourceBuilder(local_dir, mycloud_dir)
         return builder
 
 

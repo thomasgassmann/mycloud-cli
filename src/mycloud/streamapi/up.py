@@ -1,32 +1,36 @@
 from mycloudapi import MyCloudRequestExecutor, PutObjectRequest
-from streamapi import UpStream, FileMetadata, StreamDirection
+from streamapi import UpStream, StreamDirection
+from streamapi.progress_report import ProgressReport, ProgressReporter
+from streamapi.stream_accessor import CloudStreamAccessor
 from constants import ENCRYPTION_CHUNK_LENGTH, MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from helper import operation_timeout 
-from io import BytesIO
-import tempfile, os, json
+from helper import operation_timeout
+import time
 
 
 class UpStreamExecutor:
 
-    def __init__(self, request_executor: MyCloudRequestExecutor):
+    def __init__(self, request_executor: MyCloudRequestExecutor, progress_reporter: ProgressReporter=None):
         self.request_executor = request_executor
+        self.progress_reporter = progress_reporter
 
 
-    def upload_stream(self, file_stream: UpStream, metadata: FileMetadata):
+    def upload_stream(self, stream_accessor: CloudStreamAccessor):
+        self._tmp_total_read = 0
+        self._tmp_bps = 0
+        self._tmp_iteration = 0
+        self._tmp_start_time = time.time()
+
+        file_stream = stream_accessor.get_stream()
         if file_stream.stream_direction != StreamDirection.Up:
             raise ValueError('Invalid stream direction')
-        
-        metadata_stream = self._get_metadata_stream(metadata)
-        metadata_location = metadata.get_metadata_location()
-        metadata_put_request = PutObjectRequest(metadata_location, metadata_stream)
-        self.request_executor.execute_request(metadata_put_request)
 
         current_part_index = file_stream.continued_append_starting_at_part_index or 0
         while not file_stream.is_finished():
-            for transform in metadata.get_transforms():
+            for transform in stream_accessor.get_transforms():
                 transform.reset_state()
-            generator = self._get_generator(file_stream, MY_CLOUD_BIG_FILE_CHUNK_SIZE, applied_transforms=metadata.get_transforms())
-            upload_to = metadata.get_part_file(current_part_index)
+            generator = self._get_generator(file_stream, MY_CLOUD_BIG_FILE_CHUNK_SIZE, applied_transforms=stream_accessor.get_transforms())
+            upload_to = stream_accessor.get_part_file(current_part_index)
+            self._tmp_current_object_resource = upload_to
             part_put_request = PutObjectRequest(upload_to, generator)
             _ = self.request_executor.execute_request(part_put_request)
             current_part_index += 1
@@ -38,6 +42,7 @@ class UpStreamExecutor:
         total_read = 0
         break_execution = False
         stream_finished = False
+
         while True:
             read_bytes = None
             if break_execution:
@@ -65,21 +70,12 @@ class UpStreamExecutor:
             if total_read > max_length if max_length is not None else False:
                 break_execution = True
 
+            self._tmp_total_read += len(read_bytes)
+            self._tmp_iteration += 1
+            self._tmp_bps = self._tmp_total_read / (time.time() - self._tmp_start_time)
 
-    def _get_metadata_stream(self, metadata: FileMetadata):
-        metadata_json = metadata.get_json_representation()
-        metadata_stream = None
-        fd, path = tempfile.mkstemp()
-        try:
-            with os.fdopen(fd, 'w') as tmp:
-                json.dump(metadata_json, tmp)
-
-            with open(path, 'rb') as f:
-                values = UpStreamExecutor._safe_file_stream_read(f)
-                metadata_stream = BytesIO(values)
-        finally:
-            os.remove(path)
-        return metadata_stream
+            if self.progress_reporter is not None:
+                self.progress_reporter.report_progress(ProgressReport(self._tmp_current_object_resource, self._tmp_bps, self._tmp_iteration, self._tmp_total_read))
 
     
     @staticmethod
