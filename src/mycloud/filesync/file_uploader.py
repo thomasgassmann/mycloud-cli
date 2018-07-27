@@ -49,5 +49,7 @@ def upload_file(upstreamer: UpStreamExecutor,
     stream_accessor = VersionedCloudStreamAccessor(local_path, remote_base_path, cloud_stream)
     if password is not None:
         stream_accessor.add_transform(AES256EncryptTransform(password))
+    # TODO: handle overwrite if version with same hash already exists
+    # TODO: implement continued_append_starting_at_part_index
     upstreamer.upload_stream(stream_accessor)
     

@@ -2,6 +2,7 @@ from streamapi import CloudStreamAccessor, CloudStream, StreamDirection
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor, GetObjectRequest, PutObjectRequest
 from constants import START_NUMBER_LENGTH, PARTIAL_EXTENSION
 from helper import operation_timeout
+from filesync.file_metadata import FileMetadata, Version
 import os, hashlib, tempfile, json, time
 
 
@@ -28,16 +29,13 @@ class VersionedCloudStreamAccessor(CloudStreamAccessor):
         if self._cloud_stream.stream_direction != StreamDirection.Up:
             return
         self._initialize_version_if_not_exists()
-        existing_metadata_file = self._get_existing_metadata_file(request_executor)
-        obj = {
-            'version': self._version,
-            'local': self._local_file,
-            'remote': self._object_resource,
-            'parts': self._current_version_file_parts,
-            'time': time.time()
-        }
-        existing_metadata_file['versions'][self._version] = obj
-        self._update_metadata_file(request_executor, existing_metadata_file)
+        file_metadata = self._get_existing_metadata_file(request_executor)
+        version = Version(self._version, self._local_file, self._object_resource)
+        for part_file in self._current_version_file_parts:
+            version.add_part_file(part_file)
+        # TODO: fill version properties
+        file_metadata.update_version(version)
+        self._update_metadata_file(request_executor, file_metadata)
 
     
     def get_part_file(self, index: int):
@@ -46,9 +44,10 @@ class VersionedCloudStreamAccessor(CloudStreamAccessor):
         return part_file_path
 
     
-    def _update_metadata_file(self, request_executor: MyCloudRequestExecutor, representation):
+    def _update_metadata_file(self, request_executor: MyCloudRequestExecutor, file_metadata: FileMetadata):
+        metadata_text = FileMetadata.to_json(file_metadata)
         metadata_file_path = self.get_metadata_file_path()
-        generator = VersionedCloudStreamAccessor._get_bytes(representation)
+        generator = VersionedCloudStreamAccessor._get_bytes(metadata_text)
         put_request = PutObjectRequest(metadata_file_path, generator)
         _ = request_executor.execute_request(put_request)
 
@@ -58,17 +57,15 @@ class VersionedCloudStreamAccessor(CloudStreamAccessor):
         get_request = GetObjectRequest(metadata_file_path, ignore_not_found=True)
         response = request_executor.execute_request(get_request)
         if response.status_code == 404:
-            # Do it in class
-            return {'versions':{}}
-        json_data = json.loads(response.text)
-        return json_data
+            return FileMetadata()
+        return FileMetadata.from_json(response.text)
 
 
     @staticmethod
-    def _get_bytes(json_representation):
+    def _get_bytes(string: str):
         fd, filename = tempfile.mkstemp()
         with os.fdopen(fd, 'w') as f:
-            json.dump(json_representation, f)
+            f.write(string)
         with open(filename, 'rb') as f:
             yield f.read()
 
