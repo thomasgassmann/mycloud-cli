@@ -16,6 +16,10 @@ class CloudStreamAccessor:
         self._base_name = os.path.basename(object_resource)
 
 
+    def finish(self):
+        return
+
+
     def get_stream(self):
         return self._cloud_stream
 

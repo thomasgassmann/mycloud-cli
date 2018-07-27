@@ -45,7 +45,7 @@ def _operation_timeout_sigalrm(operation, timeout, dict):
         ret = operation(dict)
     except CouldNotReadFileException:
         pass
-        
+
     signal.alarm(0)
     if ret is None:
         raise CouldNotReadFileException

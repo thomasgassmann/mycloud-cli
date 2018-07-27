@@ -61,4 +61,4 @@ class DownStreamExecutor:
             current_part_index += 1
 
         file_stream.close()
-
+        stream_accessor.finish(self.request_executor)

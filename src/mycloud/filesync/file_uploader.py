@@ -10,7 +10,6 @@ from collections import deque
 from random import shuffle
 from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from filesync.versioned_stream_accessor import VersionedCloudStreamAccessor
-from filesync.file_metadata import FileMetadata
 from streamapi import DefaultUpStream, UpStreamExecutor, ProgressReporter
 from streamapi.transforms import AES256EncryptTransform
 
@@ -45,12 +44,10 @@ def upload_file(upstreamer: UpStreamExecutor,
                 local_path: str,
                 remote_base_path: str,
                 password: str):
-    file_version = VersionedCloudStreamAccessor.derive_version_from_file(local_path)
     stream = get_file_stream(local_path)
     cloud_stream = DefaultUpStream(stream, continued_append_starting_at_part_index=0)
-    stream_accessor = VersionedCloudStreamAccessor(remote_base_path, cloud_stream, file_version)
+    stream_accessor = VersionedCloudStreamAccessor(local_path, remote_base_path, cloud_stream)
     if password is not None:
         stream_accessor.add_transform(AES256EncryptTransform(password))
     upstreamer.upload_stream(stream_accessor)
-    file_metadata = FileMetadata.construct(stream_accessor, local_path)
-    FileMetadata.push(upstreamer.request_executor, file_metadata)
+    
