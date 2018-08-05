@@ -34,6 +34,12 @@ class VersionedCloudStreamAccessor(CloudStreamAccessor):
         for part_file in self._current_version_file_parts:
             version.add_part_file(part_file)
         # TODO: fill version properties
+        def _get_mtime(dictionary):
+            return os.path.getmtime(dictionary['file'])
+        def _get_ctime(dictionary):
+            return os.path.getctime(dictionary['file'])
+        version.add_property('mtime', operation_timeout(_get_mtime, file=self._local_file))
+        version.add_property('ctime', operation_timeout(_get_ctime, file=self._local_file))
         file_metadata.update_version(version)
         self._update_metadata_file(request_executor, file_metadata)
 
