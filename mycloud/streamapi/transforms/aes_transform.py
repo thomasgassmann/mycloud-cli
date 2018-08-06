@@ -54,7 +54,7 @@ class AES256DecryptTransform(AES256CrytoTransformBase):
     def __init__(self, password):
         super().__init__('aes256_decrypt', password)
 
-    def transform(self, byte_sequence: bytes, last: bool=False) -> bytes:
+    def transform(self, byte_sequence: bytes, last: bool=False):
         if self._finished_last:
             return bytes([])
 

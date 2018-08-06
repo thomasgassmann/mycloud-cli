@@ -15,27 +15,21 @@ class MetadataRequest(MyCloudRequest):
         self.ignore_404 = ignore_not_found
         self.ignore_400 = ignore_bad_request
 
-
-    def get_method(self) -> Method:
+    def get_method(self):
         return Method.GET
-
 
     def get_request_url(self):
         resource = get_object_id(self.object_resource)
         return REQUEST_URL + resource
 
-    
     def ignore_not_found(self):
         return self.ignore_404
-
 
     def ignore_bad_request(self):
         return self.ignore_400
 
-
     def is_query_parameter_access_token(self):
         return True
-
 
     @staticmethod
     def format_response(response):
@@ -46,14 +40,12 @@ class MetadataRequest(MyCloudRequest):
         dirs = MetadataRequest._get_directories(json_data)
         return (dirs, files)
 
-    
     @staticmethod
     def _get_files(json):
         if 'Files' in json:
             files = json['Files']
             return files
         return []
-
 
     @staticmethod
     def _get_directories(json):

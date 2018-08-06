@@ -22,27 +22,21 @@ class MyCloudRequest(ABC):
     def get_request_url(self):
         return None
 
-
     @abstractmethod
-    def get_method(self) -> Method:
+    def get_method(self):
         return None
-
 
     def is_query_parameter_access_token(self):
         return False
 
-
     def ignore_not_found(self):
         return False
-
 
     def ignore_bad_request(self):
         return False
 
-
     def get_data_generator(self):
         return None
 
-
-    def get_content_type(self) -> str:
+    def get_content_type(self):
         return ContentType.APPLICATION_JSON

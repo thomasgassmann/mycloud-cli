@@ -1,24 +1,20 @@
 import os
 import time
+from abc import ABC, abstractmethod
 
 
-class ProgressTracker:
+# Define API for progress tracking
+class ProgressTracker(ABC):
     def __init__(self):
-        self.files = {}
         self.set_skipped_paths([])
 
-    def track_progress(self, file_path, cloud_name):
-        self.files[cloud_name] = os.path.getmtime(
-            file_path) if os.path.isfile(file_path) else time.time()
+    @abstractmethod
+    def track_progress(self, file_path: str, cloud_name: str, version: str):
+        raise NotImplementedError()
 
-    def file_handled(self, file_path, cloud_name):
-        is_available = cloud_name in self.files.keys()
-        if is_available and os.path.isfile(file_path):
-            update_date = os.path.getmtime(file_path)
-            current_time = self.files[cloud_name]
-            if update_date > current_time:
-                return False, -1
-        return is_available, -1 if not is_available else 0
+    @abstractmethod
+    def file_handled(self, file_path: str, cloud_name: str, version: str):
+        raise NotImplementedError()
 
     def load_if_exists(self):
         pass
@@ -32,7 +28,7 @@ class ProgressTracker:
     def try_save(self):
         pass
 
-    def skip_file(self, remote_file_path: str) -> bool:
+    def skip_file(self, remote_file_path: str):
         for path in self.skipped:
             if remote_file_path.startswith(path):
                 return True

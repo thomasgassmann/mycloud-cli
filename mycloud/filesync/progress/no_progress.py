@@ -6,4 +6,7 @@ class NoProgressTracker(ProgressTracker):
         super().__init__()
 
     def file_handled(self, file_path, cloud_name):
-        return False, -1
+        return True, -1
+
+    def track_progress(self, file_path, cloud_name):
+        pass

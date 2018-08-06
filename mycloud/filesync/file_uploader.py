@@ -89,5 +89,6 @@ def upload_file(upstreamer: UpStreamExecutor,
     # TODO: handle overwrite if version with same hash already exists
     # TODO: implement continued_append_starting_at_part_index
     # TODO: continued append may loose state in versionedstreamaccessor for parts array
+    # Solve using progress tracker correctly
     upstreamer.upload_stream(stream_accessor)
     tracker.track_progress(local_path, remote_base_path)

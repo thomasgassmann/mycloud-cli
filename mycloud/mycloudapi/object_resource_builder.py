@@ -1,4 +1,7 @@
-import base64, os, re, json
+import base64
+import os
+import re
+import json
 from constants import BASE_DIR
 
 
@@ -10,7 +13,6 @@ class ObjectResourceBuilder:
             raise ValueError('Backup directory must start with /Drive/')
         if not self.mycloud_dir.endswith('/'):
             self.mycloud_dir += '/'
-
 
     @staticmethod
     def combine_cloud_path(left: str, right: str):
@@ -24,21 +26,19 @@ class ObjectResourceBuilder:
 
         return left + '/' + right
 
-
     def build_local_file(self, mycloud_path: str):
         str = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(str)
         return os.path.join(self.base_dir, normalized_relative_path)
-
 
     def build_remote_file(self, full_file_path: str):
         file_name = os.path.basename(full_file_path)
         directory = os.path.dirname(full_file_path)
         built = self._build_remote_directory(directory)
         built = ObjectResourceBuilder._replace_invalid_characters(built)
-        file_name = ObjectResourceBuilder._replace_invalid_characters(file_name)
+        file_name = ObjectResourceBuilder._replace_invalid_characters(
+            file_name)
         return (built + file_name).replace('//', '/')
-
 
     def _build_remote_directory(self, directory_path: str):
         if directory_path.startswith(self.base_dir):
@@ -50,18 +50,17 @@ class ObjectResourceBuilder:
             directory_path = directory_path + '/'
         return (self.mycloud_dir + directory_path).replace('//', '/')
 
-
     @staticmethod
-    def _replace_invalid_characters(string: str) -> str:
+    def _replace_invalid_characters(string: str):
         for characters in ObjectResourceBuilder.replacement_table:
             if characters['character'] in string:
-                string = string.replace(characters['character'], characters['replacement'])
+                string = string.replace(
+                    characters['character'], characters['replacement'])
         return string
-
 
     @staticmethod
     def _is_int(s):
-        try: 
+        try:
             int(s)
             return True
         except ValueError:

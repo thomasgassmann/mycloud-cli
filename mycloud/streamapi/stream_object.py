@@ -21,7 +21,7 @@ class CloudStream(ABC):
     def close(self):
         raise NotImplementedError()
 
-    def is_finished(self) -> bool:
+    def is_finished(self):
         return self._finished
 
 

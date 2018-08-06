@@ -1,4 +1,5 @@
-import json, time
+import json
+import time
 from mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
 from mycloudapi.request import MyCloudRequest, Method
 
@@ -13,15 +14,12 @@ class ChangeRequest(MyCloudRequest):
         self.object_resource = object_resource
         self.top = top
 
-
-    def get_method(self) -> Method:
+    def get_method(self):
         return Method.GET
 
-    
     def get_request_url(self):
         return REQUEST_URL.format(get_object_id(self.object_resource), self.top, time.time())
 
-    
     @staticmethod
     def format_response(response):
         json_data = json.loads(response.text)

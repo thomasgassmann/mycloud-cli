@@ -274,7 +274,7 @@ class Application:
         return tracker
 
 
-    def _get_resource_builder(self, local_dir, mycloud_dir) -> ObjectResourceBuilder:
+    def _get_resource_builder(self, local_dir, mycloud_dir):
         builder = ObjectResourceBuilder(local_dir, mycloud_dir)
         return builder
 
