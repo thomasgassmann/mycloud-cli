@@ -14,5 +14,9 @@ class StreamTransform(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def transform(self, byte_sequence: bytes, last: bool=False):
+    def up_transform(self, byte_sequence: bytes, last: bool=False):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def down_transform(self, byte_sequence: bytes, last: bool=False):
         raise NotImplementedError()

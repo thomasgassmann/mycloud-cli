@@ -38,7 +38,6 @@ class UpStreamExecutor:
             current_part_index += 1
 
         file_stream.close()
-        stream_accessor.finish(self.request_executor)
 
     def _get_generator(self, stream: UpStream, max_length=None, applied_transforms=None):
         total_read = 0
@@ -58,7 +57,7 @@ class UpStreamExecutor:
 
             if applied_transforms is not None:
                 for transform in applied_transforms:
-                    read_bytes = transform.transform(
+                    read_bytes = transform.up_transform(
                         read_bytes, last=stream_finished or break_execution)
 
             yield read_bytes

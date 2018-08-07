@@ -38,7 +38,7 @@ class DownStreamExecutor:
 
             def _transform_chunk(current_chunk, is_last):
                 for transform in stream_accessor.get_transforms():
-                    current_chunk = transform.transform(
+                    current_chunk = transform.down_transform(
                         current_chunk, last=is_last)
                 file_stream.write(current_chunk)
 
@@ -62,4 +62,3 @@ class DownStreamExecutor:
             current_part_index += 1
 
         file_stream.close()
-        stream_accessor.finish(self.request_executor)

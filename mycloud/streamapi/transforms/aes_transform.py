@@ -12,10 +12,10 @@ def derive_key(password: str):
     return SHA256.new(password.encode()).digest()
 
 
-class AES256CrytoTransformBase(StreamTransform):
+class AES256CryptoTransform(AES256CrytoTransformBase):
 
-    def __init__(self, name: str, password: str):
-        super().__init__('aes256_encrypt')
+    def __init__(self, password: str):
+        super().__init__('aes256_transform')
         self._key = derive_key(password)
         self._first = True
         self._finished_last = False
@@ -24,13 +24,7 @@ class AES256CrytoTransformBase(StreamTransform):
         self._first = True
         self._finished_last = False
 
-
-class AES256EncryptTransform(AES256CrytoTransformBase):
-
-    def __init__(self, password):
-        super().__init__('aes256_encrypt', password)
-
-    def transform(self, byte_sequence: bytes, last: bool=False):
+    def up_transform(self, byte_sequence: bytes, last: bool=False):
         if self._finished_last:
             return bytes([])
 
@@ -48,13 +42,7 @@ class AES256EncryptTransform(AES256CrytoTransformBase):
 
         return self._aes.encrypt(byte_sequence)
 
-
-class AES256DecryptTransform(AES256CrytoTransformBase):
-
-    def __init__(self, password):
-        super().__init__('aes256_decrypt', password)
-
-    def transform(self, byte_sequence: bytes, last: bool=False):
+    def down_transform(self, byte_sequence: bytes, last: bool=False):
         if self._finished_last:
             return bytes([])
 

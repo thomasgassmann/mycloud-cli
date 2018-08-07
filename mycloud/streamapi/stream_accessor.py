@@ -1,7 +1,7 @@
 import os
 from mycloud.streamapi.transforms import StreamTransform
 from mycloud.streamapi.stream_object import CloudStream
-from mycloud.mycloudapi import ObjectResourceBuilder
+from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.constants import START_NUMBER_LENGTH, PARTIAL_EXTENSION
 
 
@@ -11,12 +11,6 @@ class CloudStreamAccessor:
         self._object_resource = object_resource
         self._cloud_stream = cloud_stream
         self._transforms = []
-        if object_resource.endswith('/'):
-            object_resource = object_resource[:-1]
-        self._base_name = os.path.basename(object_resource)
-
-    def finish(self):
-        return
 
     def get_stream(self):
         return self._cloud_stream

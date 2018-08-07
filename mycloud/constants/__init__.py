@@ -7,7 +7,9 @@ from mycloud.constants.constants import (
     RETRY_COUNT,
     SAVE_FREQUENCY,
     USE_TOKEN_CACHE,
-    TOKEN_CACHE_FOLDER
+    TOKEN_CACHE_FOLDER,
+    VERSION_HASH_LENGTH,
+    METADATA_FILE_NAME
 )
 
 __all__ = [
@@ -19,5 +21,7 @@ __all__ = [
     RETRY_COUNT,
     SAVE_FREQUENCY,
     USE_TOKEN_CACHE,
-    TOKEN_CACHE_FOLDER
+    TOKEN_CACHE_FOLDER,
+    VERSION_HASH_LENGTH,
+    METADATA_FILE_NAME
 ]
