@@ -1,10 +1,10 @@
-from mycloudapi import MyCloudRequestExecutor, GetObjectRequest
-from streamapi import DownStream, StreamDirection
-from streamapi.progress_report import ProgressReport, ProgressReporter
-from streamapi.stream_accessor import CloudStreamAccessor
-from constants import ENCRYPTION_CHUNK_LENGTH
-from helper import operation_timeout
 import time
+from mycloud.mycloudapi import MyCloudRequestExecutor, GetObjectRequest
+from mycloud.streamapi import DownStream, StreamDirection
+from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
+from mycloud.streamapi.stream_accessor import CloudStreamAccessor
+from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
+from mycloud.helper import operation_timeout
 
 
 class DownStreamExecutor:

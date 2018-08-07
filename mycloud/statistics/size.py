@@ -1,8 +1,9 @@
-from mycloudapi import MyCloudRequestExecutor, MetadataRequest
-from logger import log
-import sys, os
+import sys
+import os
 from hurry.filesize import size
-from helper import get_all_files_recursively
+from mycloud.helper import get_all_files_recursively
+from mycloud.mycloudapi import MyCloudRequestExecutor, MetadataRequest
+from mycloud.logger import log
 
 
 def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):

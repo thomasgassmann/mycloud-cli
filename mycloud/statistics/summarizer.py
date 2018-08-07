@@ -1,5 +1,5 @@
-from mycloudapi import MyCloudRequestExecutor
-from logger import log
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.logger import log
 
 
 def summarize(reuqest_executor: MyCloudRequestExecutor, mycloud_dir: str):

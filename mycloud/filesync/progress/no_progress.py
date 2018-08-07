@@ -1,12 +1,12 @@
-from filesync.progress import ProgressTracker
+from mycloud.filesync.progress.progress_tracker import ProgressTracker
 
 
 class NoProgressTracker(ProgressTracker):
-    def __init__(self):
+    def __init__():
         super().__init__()
 
-    def file_handled(self, file_path, cloud_name):
-        return True, -1
+    def track_progress(self, local_file: str, remote_file: str, version: str):
+        return
 
-    def track_progress(self, file_path, cloud_name):
-        pass
+    def file_handled(self, local_file: str, remote_file: str, version: str):
+        return []

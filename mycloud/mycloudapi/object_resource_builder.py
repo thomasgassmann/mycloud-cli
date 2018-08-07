@@ -2,7 +2,7 @@ import base64
 import os
 import re
 import json
-from constants import BASE_DIR
+from mycloud.constants import BASE_DIR
 
 
 class ObjectResourceBuilder:
@@ -67,5 +67,5 @@ class ObjectResourceBuilder:
             return False
 
 
-with open('replacements.json', 'r') as f:
+with open('mycloud/replacements.json', 'r') as f:
     ObjectResourceBuilder.replacement_table = json.load(f)

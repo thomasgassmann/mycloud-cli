@@ -1,13 +1,13 @@
-from streamapi import CloudStreamAccessor, CloudStream, StreamDirection
-from mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor, GetObjectRequest, PutObjectRequest
-from constants import START_NUMBER_LENGTH
-from helper import operation_timeout
-from filesync.file_metadata import FileMetadata, Version
 import os
 import hashlib
 import tempfile
 import json
 import time
+from mycloud.streamapi import CloudStreamAccessor, CloudStream, StreamDirection
+from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor, GetObjectRequest, PutObjectRequest
+from mycloud.constants import START_NUMBER_LENGTH
+from mycloud.helper import operation_timeout
+from mycloud.filesync.file_metadata import FileMetadata, Version
 
 
 class VersionedCloudStreamAccessor(CloudStreamAccessor):
@@ -17,6 +17,10 @@ class VersionedCloudStreamAccessor(CloudStreamAccessor):
         self._local_file = local_file
         self._version = None
         self._current_version_file_parts = []
+
+    def get_version(self):
+        self._initialize_version_if_not_exists()
+        return self._version
 
     def get_base_path(self):
         self._initialize_version_if_not_exists()

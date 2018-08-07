@@ -1,6 +1,6 @@
 import json
 import time
-from mycloudapi.request import MyCloudRequest, Method
+from mycloud.mycloudapi.request import MyCloudRequest, Method
 
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/usage?nocache={}'

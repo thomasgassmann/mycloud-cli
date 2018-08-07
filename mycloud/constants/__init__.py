@@ -1,4 +1,4 @@
-from constants.constants import (
+from mycloud.constants.constants import (
     BASE_DIR,
     ENCRYPTION_CHUNK_LENGTH,
     MY_CLOUD_BIG_FILE_CHUNK_SIZE,

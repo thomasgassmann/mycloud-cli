@@ -1,8 +1,8 @@
 import requests
 import base64
 import os
-from mycloudapi.request import MyCloudRequest, Method, ContentType
-from mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
+from mycloud.mycloudapi.request import MyCloudRequest, Method, ContentType
+from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
 
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='

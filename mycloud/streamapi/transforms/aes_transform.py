@@ -1,11 +1,11 @@
-from streamapi.transforms.stream_transform import StreamTransform
 from Crypto import Random
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 from Crypto.Util.py3compat import bchr, bord
-from constants import ENCRYPTION_CHUNK_LENGTH
 import os
 import base64
+from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
+from mycloud.streamapi.transforms.stream_transform import StreamTransform
 
 
 def derive_key(password: str):

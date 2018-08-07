@@ -1,5 +1,5 @@
-from mycloudapi import MetadataRequest, MyCloudRequestExecutor
-from logger import log
+from mycloud.mycloudapi import MetadataRequest, MyCloudRequestExecutor
+from mycloud.logger import log
 
 
 def get_all_files_recursively(request_executor: MyCloudRequestExecutor, directory: str):

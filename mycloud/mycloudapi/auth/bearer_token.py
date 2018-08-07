@@ -13,11 +13,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from logger import log
 import time
 from threading import Thread
 import urllib.parse as urlparse
 import urllib.request
+from mycloud.logger import log
 
 
 CHROME_DRIVER_URL = 'https://chromedriver.storage.googleapis.com/2.37/chromedriver_win32.zip'
@@ -49,7 +49,7 @@ def get_bearer_token(user_name: str, password: str):
     while token is None:
         token = get_token_from_url(driver.current_url)
         if time.time() - start > wait_time:
-            print(f'More than {str(wait_time)} seconds elapsed... Cancelling')
+            log(f'More than {str(wait_time)} seconds elapsed... Cancelling')
             break
     driver.quit()
     if token is None:

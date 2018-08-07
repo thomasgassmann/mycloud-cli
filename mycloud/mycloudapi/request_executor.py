@@ -1,10 +1,10 @@
 import requests
-from logger import log
 from requests.models import PreparedRequest
-from mycloudapi.auth import MyCloudAuthenticator, AuthMode
-from mycloudapi import MyCloudRequest
-from mycloudapi.request import ContentType
-from mycloudapi.request import Method
+from mycloud.logger import log
+from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
+from mycloud.mycloudapi import MyCloudRequest
+from mycloud.mycloudapi.request import ContentType
+from mycloud.mycloudapi.request import Method
 
 
 class MyCloudRequestExecutor:

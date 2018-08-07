@@ -1,8 +1,8 @@
-from streamapi.transforms import StreamTransform
-from streamapi.stream_object import CloudStream
-from mycloudapi import ObjectResourceBuilder
-from constants import START_NUMBER_LENGTH, PARTIAL_EXTENSION
 import os
+from mycloud.streamapi.transforms import StreamTransform
+from mycloud.streamapi.stream_object import CloudStream
+from mycloud.mycloudapi import ObjectResourceBuilder
+from mycloud.constants import START_NUMBER_LENGTH, PARTIAL_EXTENSION
 
 
 class CloudStreamAccessor:

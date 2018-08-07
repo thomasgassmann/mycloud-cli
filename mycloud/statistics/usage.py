@@ -1,6 +1,6 @@
-from mycloudapi import MyCloudRequestExecutor, UsageRequest
-from logger import log
 from tabulate import tabulate
+from mycloud.mycloudapi import MyCloudRequestExecutor, UsageRequest
+from mycloud.logger import log
 
 
 def print_usage(request_executor: MyCloudRequestExecutor):

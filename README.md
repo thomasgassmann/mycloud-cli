@@ -7,18 +7,3 @@ Files larger than approx. 3GB are not allowed by Swisscom. Therefore this backup
 mitmproxy is required to run this application. Install mitmproxy with the corresponding certificates in the Root CA. 
 To get the access token (when not passed manually), the proxy needs to run. To start the proxy run in directory `mycloud/mycloudapi`:
 `mitmdump -p 8080 -s "proxy.py"`
-
-## So how do I back something up?
-Navigate to `src/mycloud` directory.
-
-`python mycloud.py upload --token MY_TOKEN --local_dir LOCAL_PATH --mycloud_dir /Drive/LOCAL_PATH/ --encryption_pwd MY_SUPER_SECRET_PASSWORD --skip C:\$RECYCLE.BIN --progress_type LAZY_CLOUD_CACHE --progress_file C:\progress.json`
-
-## And how would I download these files again?
-Navigate to `src/mycloud` directory.
-
-`python mycloud.py download --token MY_TOKEN --local_dir LOCAL_PATH --mycloud_dir /Drive/LOCAL_PATH/ --encryption_pwd MY_SUPER_SECRET_PASSWORD --progress_type FILE --progress_file C:\progress.json`
-
-## Need more help?
-1. Run `python mycloud.py -h`
-2. Google
-3. Contact developer
