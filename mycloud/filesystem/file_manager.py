@@ -17,6 +17,12 @@ from mycloud.filesystem.metadata_manager import MetadataManager
 from mycloud.filesystem.file_metadata import FileMetadata, Version
 
 
+"""
+    streamapi manages partial files
+    filesystem manages paths and metadata
+"""
+
+
 class FileManager:
 
     def __init__(self, request_executor: MyCloudRequestExecutor, transforms: List[StreamTransform], reporter: ProgressReporter):
