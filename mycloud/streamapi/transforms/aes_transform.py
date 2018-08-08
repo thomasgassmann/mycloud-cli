@@ -23,6 +23,7 @@ class AES256CryptoTransform(AES256CrytoTransformBase):
     def reset_state(self):
         self._first = True
         self._finished_last = False
+        self._aes = None
 
     def up_transform(self, byte_sequence: bytes, last: bool=False):
         if self._finished_last:

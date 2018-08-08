@@ -7,20 +7,16 @@ from mycloud.streamapi import (
     DownStream,
     UpStreamExecutor,
     DownStreamExecutor,
-    ProgressReporter
+    ProgressReporter,
+    CloudStream
 )
 from mycloud.streamapi.transforms import StreamTransform
-from mycloud.filesystem.translatable_path import TranslatablePath
+from mycloud.filesystem.translatable_path import TranslatablePath, BasicRemotePath
 from mycloud.filesystem.file_version import CalculatableVersion
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.filesystem.metadata_manager import MetadataManager
 from mycloud.filesystem.file_metadata import FileMetadata, Version
-
-
-"""
-    streamapi manages partial files
-    filesystem manages paths and metadata
-"""
+from mycloud.constants import METADATA_FILE_NAME
 
 
 class FileManager:
@@ -33,19 +29,42 @@ class FileManager:
 
     def read_directory(self,
                        translatable_path: TranslatablePath,
-                       recursive=False):
-        # Returns a list of translatable paths?
-        pass
+                       recursive=False,
+                       **kwargs):
+        base = translatable_path.calculate_remote()
+        metadata_request = MetadataRequest(base, ignore_not_found=True)
+        response = self._request_executor.execute_request(metadata_request)
+        if response.status_code = 404:
+            yield from []
+        (dirs, files) = MetadataRequest.format_response(response)
+        if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
+            yield translatable_path
+        if recursive:
+            for dir in dirs:
+                remote_path = BasicRemotePath(dir)
+                yield from self.read_directory(translatable_path, True)
+        elif not bool(kwargs['second']):
+            yield from self.read_directory(translatable_path, False, second=True)
 
     def read_file(self,
                   downstream: DownStream,
                   translatable_path: TranslatablePath,
                   calculatable_version: CalculatableVersion):
-        pass
+        metadata = self._metadata_manager.get_metadata(translatable_path)
+        calculated_version = calculatable_version.calculate_version()
+        if not metadata.contains_version(calculated_version):
+            raise ValueError('Version does not exist for given file')
+
+        versioned_stream_accessor = self._prepare_versioned_stream(
+            translatable_path, calculatable_version, upstream)
+        downstreamer = DownStreamExecutor(
+            self._request_executor, self._reporter)
+        downstreamer.download_stream(versioned_stream_accessor)
 
     def read_file_metadata(self,
                            translatable_path: TranslatablePath):
-        pass
+        metadata = self._metadata_manager.get_metadata(translatable_path)
+        return metadata
 
     def write_file(self,
                    upstream: UpStream,
@@ -53,12 +72,13 @@ class FileManager:
                    calculatable_version: CalculatableVersion):
         existing_metadata = self._metadata_manager.get_metadata(
             translatable_path)
+        existing_metadata = existing_metadata if existing_metadata is not None else FileMetadata()
         version_identifier = calculatable_version.calculate_version()
 
         if existing_metadata.contains_version(version_identifier):
             raise ValueError('Version does already exist')
 
-        versioned_stream_accessor = VersionedCloudStreamAccessor(
+        versioned_stream_accessor = self._prepare_versioned_stream(
             translatable_path, calculatable_version, upstream)
 
         version = Version(version_identifier, remote_base_path)
@@ -99,3 +119,10 @@ class FileManager:
 
         self._metadata_manager.update_metadata(
             translatable_path, existing_metadata)
+
+    def _prepare_versioned_stream(self, translatable_path: TranslatablePath, calculatable_version: CalculatableVersion, cloud_stream: CloudStream):
+        versioned_cloud_stream_accessor = VersionedCloudStreamAccessor(
+            translatable_path, version, cloud_stream)
+        for transform in self._transforms:
+            versioned_cloud_stream_accessor.add_transform(transform)
+        return versioned_cloud_stream_accessor

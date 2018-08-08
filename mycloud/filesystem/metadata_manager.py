@@ -13,7 +13,7 @@ class MetadataManager:
         metadata_path = MetadataManager._get_metadata_path(path)
         get_request = GetObjectRequest(metadata_path, ignore_not_found=True)
         response = self._request_executor.execute_request(get_request)
-        return FileMetadata() if response.status_code == 404 else FileMetadata.from_json(response.text)
+        return None if response.status_code == 404 else FileMetadata.from_json(response.text)
 
     def update_metadata(self, path: TranslatablePath, metadata: FileMetadata):
         metadata_path = MetadataManager._get_metadata_path(path)

@@ -54,6 +54,12 @@ class FileMetadata:
     def contains_version(self, identifier: str):
         return identifier in self._versions
 
+    def get_version(self, identifier: str):
+        return self._versions[identifier]
+
+    def get_version_count(self):
+        return len(self._versions)
+
     def update_version(self, version: Version):
         self._versions[version.get_identifier()] = version
 
