@@ -1,4 +1,3 @@
-from mycloud.filesync.file_uploader import upload
-from mycloud.filesync.versioned_stream_accessor import VersionedCloudStreamAccessor
+from mycloud.filesync.upsync import upsync_file, upsync_folder
 
-__all__ = [upload, VersionedCloudStreamAccessor]
+__all__ = [upsync_file, upsync_folder]

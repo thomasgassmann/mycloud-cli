@@ -1,3 +1,5 @@
+import tempfile
+import os
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, GetObjectRequest, PutObjectRequest
 from mycloud.filesystem.file_metadata import FileMetadata, Version
 from mycloud.filesystem.translatable_path import TranslatablePath
@@ -32,6 +34,8 @@ class MetadataManager:
 
     @staticmethod
     def _get_string_generator(string: str):
-        encoded = str(string).encode()
-        for byte in encoded:
-            yield byte
+        fd, filename = tempfile.mkstemp()
+        with os.fdopen(fd, 'w') as f:
+            f.write(string)
+        with open(filename, 'rb') as f:
+            yield f.read()

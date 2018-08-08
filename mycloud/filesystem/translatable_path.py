@@ -29,24 +29,20 @@ class BasicRemotePath(TranslatablePath):
 
 class LocalTranslatablePath(TranslatablePath):
 
-    def __init__(self, local_base: str, mycloud_base: str, local_file: str):
-        if not mycloud_base.endswith('/'):
-            raise ValueError('mycloud_base must be a directory')
-        self.local_base = local_base
-        self.mycloud_base = mycloud_base
-        self.local_file = local_file
+    def __init__(self, resource_builder: ObjectResourceBuilder, local_file: str):
+        self._resource_builder = resource_builder
+        self._local_file = local_file
 
     def calculate_remote(self):
-        builder = ObjectResourceBuilder(self.local_base, self.mycloud_base)
-        return builder.build_remote_file(self.local_file)
+        return self._resource_builder.build_remote_file(self._local_file)
 
     def calculate_properties(self):
         dictionary = {}
-        dictionary['local'] = self.local_file
-        dictionary['remote_base'] = self.mycloud_base
-        dictionary['local_base'] = self.local_base
+        dictionary['local'] = self._local_file
+        dictionary['remote_base'] = self._resource_builder.mycloud_dir
+        dictionary['local_base'] = self._resource_builder.base_dir
         dictionary['ctime'] = operation_timeout(
-            lambda x: os.path.getctime(x['file']), file=self.local_file)
+            lambda x: os.path.getctime(x['file']), file=self._local_file)
         dictionary['utime'] = operation_timeout(
-            lambda x: os.path.getmtime(x['file']), file=self.local_file)
+            lambda x: os.path.getmtime(x['file']), file=self._local_file)
         return dictionary

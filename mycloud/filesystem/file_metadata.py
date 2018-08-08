@@ -37,8 +37,7 @@ class Version:
 
     @staticmethod
     def _from_json_object(json_object: object):
-        version = Version(json_object['version'],
-                          json_object['local'], json_object['remote'])
+        version = Version(json_object['version'], json_object['remote'])
         version._part_files = json_object['parts']
         version._properties = json_object['properties']
         version._transforms = json_object['transforms']

@@ -12,7 +12,7 @@ def derive_key(password: str):
     return SHA256.new(password.encode()).digest()
 
 
-class AES256CryptoTransform(AES256CrytoTransformBase):
+class AES256CryptoTransform(StreamTransform):
 
     def __init__(self, password: str):
         super().__init__('aes256_transform')

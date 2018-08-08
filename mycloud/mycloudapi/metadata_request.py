@@ -9,7 +9,7 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/metadata?p='
 class MetadataRequest(MyCloudRequest):
     def __init__(self, object_resource: str, ignore_not_found=False, ignore_bad_request=False):
         if not object_resource.endswith('/'):
-            raise ValueError('Cannot list a file')
+            object_resource += '/'
         raise_if_invalid_cloud_path(object_resource)
         self.object_resource = object_resource
         self.ignore_404 = ignore_not_found

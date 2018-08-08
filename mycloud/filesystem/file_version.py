@@ -48,4 +48,4 @@ class HashCalculatedVersion(CalculatableVersion):
                 read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
         stream.close()
         sha.update(bytes(str(time).encode()))
-        return sha.hexdigest()[:VERSION_HASH_LENGTH]
+        self._cached_hash = sha.hexdigest()[:VERSION_HASH_LENGTH]

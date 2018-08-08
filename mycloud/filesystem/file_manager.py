@@ -21,7 +21,7 @@ from mycloud.constants import METADATA_FILE_NAME
 
 class FileManager:
 
-    def __init__(self, request_executor: MyCloudRequestExecutor, transforms: List[StreamTransform], reporter: ProgressReporter):
+    def __init__(self, request_executor: MyCloudRequestExecutor, transforms, reporter: ProgressReporter):
         self._request_executor = request_executor
         self._transforms = transforms
         self._metadata_manager = MetadataManager(request_executor)
@@ -34,7 +34,7 @@ class FileManager:
         base = translatable_path.calculate_remote()
         metadata_request = MetadataRequest(base, ignore_not_found=True)
         response = self._request_executor.execute_request(metadata_request)
-        if response.status_code = 404:
+        if response.status_code == 404:
             yield from []
         (dirs, files) = MetadataRequest.format_response(response)
         if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
@@ -45,6 +45,19 @@ class FileManager:
                 yield from self.read_directory(translatable_path, True)
         elif not bool(kwargs['second']):
             yield from self.read_directory(translatable_path, False, second=True)
+
+    def started_partial_upload(self,
+                               translatable_path: TranslatablePath,
+                               calculatable_version: CalculatableVersion):
+        versioned_stream_accessor = VersionedCloudStreamAccessor(
+            translatable_path, calculatable_version, None)
+        path = versioned_stream_accessor.get_base_path()
+        metadata_request = MetadataRequest(path, ignore_not_found=True)
+        response = self._request_executor.execute_request(metadata_request)
+        if response.status_code == 404:
+            return False, 0
+        (dirs, files) = MetadataRequest.format_response(response)
+        return True, len(files)
 
     def read_file(self,
                   downstream: DownStream,
@@ -81,6 +94,7 @@ class FileManager:
         versioned_stream_accessor = self._prepare_versioned_stream(
             translatable_path, calculatable_version, upstream)
 
+        remote_base_path = translatable_path.calculate_remote()
         version = Version(version_identifier, remote_base_path)
 
         if upstream.continued_append_starting_at_part_index > 0:
@@ -96,16 +110,15 @@ class FileManager:
             if len(files) != upstream.continued_append_starting_at_part_index:
                 raise ValueError('Must append at correct position')
             for file in files:
-                file_name = os.path.basename(file)
+                file_name = os.path.basename(file['Path'])
                 path = Path(file_name).with_suffix('').stem
                 if not is_int(path):
                     raise ValueError('Non-integer indexed part file found')
-                version.add_part_file(file)
+                version.add_part_file(file['Path'])
 
-        upstreamer = UpStreamExecutor(self.request_executor, self._reporter)
+        upstreamer = UpStreamExecutor(self._request_executor, self._reporter)
         upstreamer.upload_stream(versioned_stream_accessor)
 
-        remote_base_path = translatable_path.calculate_remote()
         for transform in self._transforms:
             version.add_transform(transform.get_name())
         remote_properties = translatable_path.calculate_properties()
@@ -122,7 +135,7 @@ class FileManager:
 
     def _prepare_versioned_stream(self, translatable_path: TranslatablePath, calculatable_version: CalculatableVersion, cloud_stream: CloudStream):
         versioned_cloud_stream_accessor = VersionedCloudStreamAccessor(
-            translatable_path, version, cloud_stream)
+            translatable_path, calculatable_version, cloud_stream)
         for transform in self._transforms:
             versioned_cloud_stream_accessor.add_transform(transform)
         return versioned_cloud_stream_accessor

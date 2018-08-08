@@ -2,19 +2,14 @@ import argparse
 import os
 import sys
 import json
-from mycloud.filesync import upload
+from enum import Enum
+import mycloud.logger as logger
+from mycloud.filesync import upsync_folder
 from mycloud.statistics import StatisticsCommandLineParser
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.mycloudapi.auth import MyCloudAuthenticator
 from mycloud.proxy import run_server
-from mycloud.filesync.progress import ProgressTracker, NoProgressTracker, LazyCloudProgressTracker
-from enum import Enum
-import mycloud.logger as logger
-
-
-class ProgressType(Enum):
-    NONE = 0
-    LAZY_CLOUD = 1
+from mycloud.filesync.progress import ProgressTracker
 
 
 class Application:
@@ -43,19 +38,17 @@ class Application:
         self._add_remote_directory_argument(parser)
         self._add_local_directory_argument(parser)
         self._add_token_argument(parser)
-        self._add_progress_argument(parser)
         self._add_encryption_password_argument(parser)
         self._add_skip_argument(parser)
         self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
-        tracker = self._get_progress_tracker(
-            args.progress_type, args.progress_file, executor, args.skip, True)
+        tracker = self._get_progress_tracker(args.skip)
         builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
-        upload(executor, args.local_dir,
-               tracker, args.encryption_pwd, builder)
+        upsync_folder(executor, builder, args.local_dir,
+                      tracker, args.encryption_pwd)
 
     def download(self):
         parser = argparse.ArgumentParser(
@@ -63,15 +56,13 @@ class Application:
         self._add_remote_directory_argument(parser)
         self._add_local_directory_argument(parser, False)
         self._add_token_argument(parser)
-        self._add_progress_argument(parser)
         self._add_encryption_password_argument(parser)
         self._add_skip_argument(parser)
         self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
-        tracker = self._get_progress_tracker(
-            args.progress_type, args.progress_file, executor, args.skip, False)
+        tracker = self._get_progress_tracker(args.skip)
         builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
         # downloader = Downloader(executor, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
@@ -182,37 +173,6 @@ class Application:
         argument_parser.add_argument(
             f'--{command}', metavar='p', type=is_valid, help='Path to the progress file')
 
-    def _add_progress_argument(self, argument_parser):
-        command = 'progress_type'
-        valid_types = [
-            'NONE',
-            'LAZY_CLOUD'
-        ]
-
-        def is_valid(value):
-            value = value.upper() if type(value) is str else ''
-            if value not in valid_types:
-                concatenated = ', '.join(valid_types)
-                raise argparse.ArgumentTypeError(
-                    f'{command} must be one of {concatenated}', True)
-                sys.exit(2)
-            if value == valid_types[0]:
-                return ProgressType.NONE
-            elif value == valid_types[1]:
-                return ProgressType.LAZY_CLOUD
-            else:
-                return ProgressType.NONE
-        description_help = '''
-            Progress type to be used to measure progress of the current action.
-
-            Valid types are:
-                NONE: No progress measurement. (DEFAULT)
-                LAZY_CLOUD: Use files in cloud to measure progress lazily.
-        '''.strip()
-        argument_parser.add_argument(
-            f'--{command}', metavar='p', type=is_valid, help=description_help)
-        self._add_progress_file_argument(argument_parser)
-
     def _add_encryption_password_argument(self, argument_parser):
         command = 'encryption_pwd'
 
@@ -243,20 +203,12 @@ class Application:
         argument_parser.add_argument(
             f'--{command}', metavar='g', help='Path to log file', type=is_valid)
 
-    def _get_progress_tracker(self, progress_type, progress_file, executor, skip_paths, upload):
-        tracker = None
-        if progress_type == ProgressType.NONE or progress_type is None:
-            tracker = NoProgressTracker()
-        elif progress_type == ProgressType.LAZY_CLOUD:
-            tracker = LazyCloudProgressTracker(executor)
-        else:
-            tracker = NoProgressTracker()
-        tracker.load_if_exists()
+    def _get_progress_tracker(self, skip_paths):
+        tracker = ProgressTracker()
         if skip_paths is not None:
             skipped = ', '.join(skip_paths)
             logger.log(f'Skipping files: {skipped}')
             tracker.set_skipped_paths(skip_paths)
-        logger.log(f'Using progress tracker {type(tracker).__name__}')
         return tracker
 
     def _get_resource_builder(self, local_dir, mycloud_dir):
