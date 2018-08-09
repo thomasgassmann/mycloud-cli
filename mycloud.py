@@ -4,7 +4,8 @@ import sys
 import json
 from enum import Enum
 import mycloud.logger as logger
-from mycloud.filesync import upsync_folder
+from mycloud.filesync import upsync_folder, downsync_folder
+from mycloud.filesystem import BasicRemotePath
 from mycloud.statistics import StatisticsCommandLineParser
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.mycloudapi.auth import MyCloudAuthenticator
@@ -65,8 +66,8 @@ class Application:
         tracker = self._get_progress_tracker(args.skip)
         builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
-        # downloader = Downloader(executor, args.local_dir, args.mycloud_dir, tracker, args.encryption_pwd, builder)
-        # downloader.download()
+        translatable_path = BasicRemotePath(args.mycloud_dir)
+        downsync_folder(executor, builder, translatable_path, tracker, args.encryption_pwd)
 
     def statistics(self):
         command_line_parser = StatisticsCommandLineParser(self)

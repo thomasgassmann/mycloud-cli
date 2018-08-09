@@ -12,11 +12,12 @@ from mycloud.streamapi import (
 )
 from mycloud.streamapi.transforms import StreamTransform
 from mycloud.filesystem.translatable_path import TranslatablePath, BasicRemotePath
-from mycloud.filesystem.file_version import CalculatableVersion
+from mycloud.filesystem.file_version import CalculatableVersion, HashCalculatedVersion
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.filesystem.metadata_manager import MetadataManager
 from mycloud.filesystem.file_metadata import FileMetadata, Version
-from mycloud.constants import METADATA_FILE_NAME
+from mycloud.constants import METADATA_FILE_NAME, MY_CLOUD_BIG_FILE_CHUNK_SIZE
+from mycloud.helper import operation_timeout
 
 
 class FileManager:
@@ -30,7 +31,7 @@ class FileManager:
     def read_directory(self,
                        translatable_path: TranslatablePath,
                        recursive=False,
-                       **kwargs):
+                       second=False):
         base = translatable_path.calculate_remote()
         metadata_request = MetadataRequest(base, ignore_not_found=True)
         response = self._request_executor.execute_request(metadata_request)
@@ -39,12 +40,16 @@ class FileManager:
         (dirs, files) = MetadataRequest.format_response(response)
         if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
             yield translatable_path
-        if recursive:
+
+        def loop_dirs(rec, sec):
             for dir in dirs:
-                remote_path = BasicRemotePath(dir)
-                yield from self.read_directory(translatable_path, True)
-        elif not bool(kwargs['second']):
-            yield from self.read_directory(translatable_path, False, second=True)
+                remote_path = BasicRemotePath(dir['Path'])
+                yield from self.read_directory(remote_path, rec, sec)
+
+        if recursive:
+            yield from loop_dirs(True, False)
+        elif not second:
+            yield from loop_dirs(False, True)
 
     def started_partial_upload(self,
                                translatable_path: TranslatablePath,
@@ -59,6 +64,40 @@ class FileManager:
         (dirs, files) = MetadataRequest.format_response(response)
         return True, len(files)
 
+    def started_partial_download(self,
+                                 translatable_path: TranslatablePath,
+                                 calculatable_version: CalculatableVersion,
+                                 local_path: str):
+        if not operation_timeout(lambda x: os.path.isfile(x['local_path']), local_path=local_path):
+            return False, False, 0
+        stats = operation_timeout(lambda x: os.stat(
+            x['local_path']), local_path=local_path)
+        file_length = stats.st_size
+        metadata = self.read_file_metadata(translatable_path)
+        version = metadata.get_version(
+            calculatable_version.calculate_version())
+        parts = version.get_parts()
+        directory = os.path.dirname(parts[0])
+        metadata_request = MetadataRequest(directory)
+        response = self._request_executor.execute_request(metadata_request)
+        (dirs, files) = MetadataRequest.format_response(response)
+        if len(dirs) != 0:
+            raise ValueError(
+                'Cannot have directories in directory of partial files')
+        summed_up_size = sum([file['Length'] for file in files])
+        if file_length >= summed_up_size:
+            return True, False, 0
+        # Can't compare exact size because remote and local sizes are different
+        hash = version.get_property('hash')
+        if hash is None:
+            return False, True, file_length // MY_CLOUD_BIG_FILE_CHUNK_SIZE
+
+        local_hash = calculatable_version.get_hash() if isinstance(calculatable_version,
+                                                                   HashCalculatedVersion) else HashCalculatedVersion(local_path).calculate_version()
+        if local_hash == hash:
+            return True, False, 0
+        return False, True, file_length // MY_CLOUD_BIG_FILE_CHUNK_SIZE
+
     def read_file(self,
                   downstream: DownStream,
                   translatable_path: TranslatablePath,
@@ -69,7 +108,7 @@ class FileManager:
             raise ValueError('Version does not exist for given file')
 
         versioned_stream_accessor = self._prepare_versioned_stream(
-            translatable_path, calculatable_version, upstream)
+            translatable_path, calculatable_version, downstream)
         downstreamer = DownStreamExecutor(
             self._request_executor, self._reporter)
         downstreamer.download_stream(versioned_stream_accessor)

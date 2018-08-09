@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from mycloud.mycloudapi import ObjectResourceBuilder
 from mycloud.helper import operation_timeout
+from mycloud.filesystem.file_version import HashCalculatedVersion
 
 
 class TranslatablePath(ABC):
@@ -29,9 +30,10 @@ class BasicRemotePath(TranslatablePath):
 
 class LocalTranslatablePath(TranslatablePath):
 
-    def __init__(self, resource_builder: ObjectResourceBuilder, local_file: str):
+    def __init__(self, resource_builder: ObjectResourceBuilder, local_file: str, hash_calculatable_version: HashCalculatedVersion = None):
         self._resource_builder = resource_builder
         self._local_file = local_file
+        self._calculatable_version = hash_calculatable_version
 
     def calculate_remote(self):
         return self._resource_builder.build_remote_file(self._local_file)
@@ -45,4 +47,6 @@ class LocalTranslatablePath(TranslatablePath):
             lambda x: os.path.getctime(x['file']), file=self._local_file)
         dictionary['utime'] = operation_timeout(
             lambda x: os.path.getmtime(x['file']), file=self._local_file)
+        if self._calculatable_version is not None:
+            dictionary['hash'] = self._calculatable_version.get_hash()
         return dictionary

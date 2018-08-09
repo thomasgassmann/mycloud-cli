@@ -18,11 +18,20 @@ class Version:
     def add_property(self, key: str, value: object):
         self._properties[key] = value
 
+    def get_property(self, key: str):
+        return self._properties[key] if key in self._properties else None
+
+    def get_uploadtime(self):
+        return self._time
+
     def add_transform(self, name: str):
         self._transforms.append(name)
 
     def get_identifier(self):
         return self._version
+
+    def get_parts(self):
+        return self._part_files
 
     @staticmethod
     def _to_json_object(version):
@@ -55,6 +64,16 @@ class FileMetadata:
 
     def get_version(self, identifier: str):
         return self._versions[identifier]
+
+    def get_latest_version(self):
+        max_time = 0
+        max_version = None
+        for key in self._versions:
+            version = self._versions[key]
+            if version.get_uploadtime() > max_time:
+                max_time = version.get_uploadtime()
+                max_version = version
+        return max_version
 
     def get_version_count(self):
         return len(self._versions)

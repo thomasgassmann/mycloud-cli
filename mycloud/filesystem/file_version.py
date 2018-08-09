@@ -30,6 +30,11 @@ class HashCalculatedVersion(CalculatableVersion):
     def calculate_version(self):
         if self._cached_hash is None:
             self._calculate_hash()
+        return self._cached_hash[:VERSION_HASH_LENGTH]
+
+    def get_hash(self):
+        if self._cached_hash is None:
+            self._calculate_hash()
         return self._cached_hash
 
     def _calculate_hash(self):
@@ -48,4 +53,4 @@ class HashCalculatedVersion(CalculatableVersion):
                 read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
         stream.close()
         sha.update(bytes(str(time).encode()))
-        self._cached_hash = sha.hexdigest()[:VERSION_HASH_LENGTH]
+        self._cached_hash = sha.hexdigest()

@@ -13,6 +13,8 @@ class ObjectResourceBuilder:
             raise ValueError('Backup directory must start with /Drive/')
         if not self.mycloud_dir.endswith('/'):
             self.mycloud_dir += '/'
+        if self.base_dir.endswith(os.sep):
+            self.base_dir = self.base_dir[:-1]
 
     @staticmethod
     def combine_cloud_path(left: str, right: str):

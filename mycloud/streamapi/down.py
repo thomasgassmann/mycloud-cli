@@ -15,7 +15,6 @@ class DownStreamExecutor:
 
     def download_stream(self, stream_accessor: CloudStreamAccessor):
         tmp_total_read = 0
-        tmp_bps = 0
         tmp_iteration = 0
         tmp_start_time = time.time()
 
@@ -37,6 +36,9 @@ class DownStreamExecutor:
             previous_chunk = None
 
             def _transform_chunk(current_chunk, is_last):
+                nonlocal tmp_total_read
+                nonlocal tmp_iteration
+                nonlocal tmp_start_time
                 for transform in stream_accessor.get_transforms():
                     current_chunk = transform.down_transform(
                         current_chunk, last=is_last)
@@ -44,7 +46,7 @@ class DownStreamExecutor:
 
                 tmp_total_read += len(current_chunk)
                 tmp_bps = tmp_total_read / (time.time() - tmp_start_time)
-                tmp_iteration += 1
+                tmp_iteration += 10
 
                 if self.progress_reporter is not None:
                     self.progress_reporter.report_progress(ProgressReport(

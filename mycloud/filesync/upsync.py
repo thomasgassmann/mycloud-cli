@@ -1,5 +1,4 @@
 import os
-import traceback
 from random import shuffle
 from mycloud.logger import log
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
@@ -29,7 +28,6 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                 log(f'{str(ex)}', error=True)
             except Exception as ex:
                 log(f'Unhandled exception: {str(ex)}', error=True)
-                traceback.print_exc()
 
 
 def upsync_file(request_executor: MyCloudRequestExecutor,
@@ -41,14 +39,15 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
         log(f'Skipping file {local_file}')
         return
 
-    transforms = []
-    if encryption_pwd is not None:
-        transforms.append(AES256CryptoTransform(encryption_pwd))
+    transforms = [] if encryption_pwd is None else [
+        AES256CryptoTransform(encryption_pwd)]
+    del encryption_pwd
     file_manager = FileManager(
         request_executor, transforms, ProgressReporter())
     remote_path = resource_builder.build_remote_file(local_file)
-    translatable_path = LocalTranslatablePath(resource_builder, local_file)
     calculatable_version = HashCalculatedVersion(local_file)
+    translatable_path = LocalTranslatablePath(
+        resource_builder, local_file, calculatable_version)
     started_partial_upload, index = file_manager.started_partial_upload(
         translatable_path, calculatable_version)
     local_stream = operation_timeout(
