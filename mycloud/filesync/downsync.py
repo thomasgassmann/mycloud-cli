@@ -1,5 +1,5 @@
 import os
-import traceback
+import tempfile
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
 from mycloud.filesystem import TranslatablePath, FileManager, BasicStringVersion
@@ -7,7 +7,7 @@ from mycloud.streamapi import ProgressReporter, DefaultDownStream
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.logger import log
 from mycloud.helper import TimeoutException, operation_timeout
-from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
+from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, ENCRYPTION_CHUNK_LENGTH
 
 
 def downsync_folder(request_executor: MyCloudRequestExecutor,
@@ -28,7 +28,6 @@ def downsync_folder(request_executor: MyCloudRequestExecutor,
             log(f'{str(ex)}', error=True)
         except Exception as ex:
             log(f'Unhandled exception: {str(ex)}', error=True)
-            traceback.print_exc()
 
 
 def downsync_file(request_executor: MyCloudRequestExecutor,
@@ -56,11 +55,38 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     if skip:
         return
 
-    local_stream = operation_timeout(lambda x: open(
-        x['local_file'], 'ab'), local_file=local_file)
+    # Can't use append
+    # https://stackoverflow.com/questions/29013495/opening-file-in-append-mode-and-seeking-to-start
     if started_partial:
-        operation_timeout(lambda x: x['stream'].seek(
-            x['len']), stream=local_stream, len=partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE)
+        # Delete file content after partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE -> then append
+        delete_bytes_after = partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE
+        file_length = operation_timeout(lambda x: os.stat(
+            x['local_file']).st_size, local_file=local_file)
+        if file_length != delete_bytes_after:
+            fd, temp_path = tempfile.mkstemp()
+            if MY_CLOUD_BIG_FILE_CHUNK_SIZE % ENCRYPTION_CHUNK_LENGTH != 0:
+                raise ValueError(
+                    'Chunk size in myCloud must be a multiple of encryption chunk length')
+
+            read_stream = operation_timeout(lambda x: open(
+                x['local_file'], 'rb'), local_file=local_file)
+            with os.fdopen(fd, 'wb') as f:
+                read_length = 0
+                while read_length != delete_bytes_after:
+                    read_values = read_stream.read(ENCRYPTION_CHUNK_LENGTH)
+                    f.write(read_values)
+                    read_length += ENCRYPTION_CHUNK_LENGTH
+            read_stream.close()
+            os.remove(local_file)
+
+            os.rename(temp_path, local_file)
+
+        local_stream = operation_timeout(lambda x: open(
+            x['local_file'], 'ab'), local_file=local_file)
+    else:
+        local_stream = operation_timeout(lambda x: open(
+            x['local_file'], 'wb'), local_file=local_file)
 
     downstream = DefaultDownStream(local_stream, partial_index)
     file_manager.read_file(downstream, remote_file, basic_version)
+    local_stream.close()

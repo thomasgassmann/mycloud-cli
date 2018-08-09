@@ -13,6 +13,7 @@ class MyCloudRequestExecutor:
         self.session = requests.Session()
 
     def execute_request(self, request: MyCloudRequest):
+        # TODO: cache
         content_type = request.get_content_type()
         token = self.authenticator.get_token()
         headers = self._get_headers(content_type, token)

@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from mycloud.mycloudapi import ObjectResourceBuilder
 from mycloud.helper import operation_timeout
 from mycloud.filesystem.file_version import HashCalculatedVersion
+from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
 
 
 class TranslatablePath(ABC):
@@ -43,6 +44,7 @@ class LocalTranslatablePath(TranslatablePath):
         dictionary['local'] = self._local_file
         dictionary['remote_base'] = self._resource_builder.mycloud_dir
         dictionary['local_base'] = self._resource_builder.base_dir
+        dictionary['chunk_size'] = MY_CLOUD_BIG_FILE_CHUNK_SIZE
         dictionary['ctime'] = operation_timeout(
             lambda x: os.path.getctime(x['file']), file=self._local_file)
         dictionary['utime'] = operation_timeout(
