@@ -2,7 +2,7 @@ import base64
 import os
 import re
 import json
-from mycloud.constants import BASE_DIR
+from mycloud.constants import BASE_DIR, AES_EXTENSION
 
 
 class ObjectResourceBuilder:
@@ -13,8 +13,8 @@ class ObjectResourceBuilder:
             raise ValueError('Backup directory must start with /Drive/')
         if not self.mycloud_dir.endswith('/'):
             self.mycloud_dir += '/'
-        if self.base_dir.endswith(os.sep):
-            self.base_dir = self.base_dir[:-1]
+        if not self.base_dir.endswith(os.sep):
+            self.base_dir = self.base_dir + os.sep
 
     @staticmethod
     def combine_cloud_path(left: str, right: str):
@@ -28,10 +28,27 @@ class ObjectResourceBuilder:
 
         return left + '/' + right
 
-    def build_local_file(self, mycloud_path: str):
+    @staticmethod
+    def correct_suffix_sep(remote_path: str, is_file: str):
+        if is_file and remote_path.endswith('/'):
+            remote_path = remote_path[:-1]
+        if not is_file and not remote_path.endswith('/'):
+            remote_path += '/'
+        return remote_path
+
+    def build_local_file(self, mycloud_path: str, remove_aes_extension=False):
         str = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(str)
+        normalized_relative_path = self.remove_aes_extension(normalized_relative_path)
         return os.path.join(self.base_dir, normalized_relative_path)
+
+    def ends_with_aes_extension(self, mycloud_path: str):
+        return mycloud_path.endswith(AES_EXTENSION)
+
+    def remove_aes_extension(self, mycloud_path: str):
+        if mycloud_path.endswith(AES_EXTENSION):
+            mycloud_path = mycloud_path[:-len(AES_EXTENSION)]
+        return mycloud_path
 
     def build_remote_file(self, full_file_path: str):
         file_name = os.path.basename(full_file_path)
@@ -43,8 +60,9 @@ class ObjectResourceBuilder:
         return (built + file_name).replace('//', '/')
 
     def _build_remote_directory(self, directory_path: str):
-        if directory_path.startswith(self.base_dir):
-            directory_path = directory_path.replace(self.base_dir, '', 1)
+        base_dir = self.base_dir[:-1]
+        if directory_path.startswith(base_dir):
+            directory_path = directory_path.replace(base_dir, '', 1)
         directory_path = directory_path.replace('\\', '/')
         if directory_path.startswith('/'):
             directory_path = directory_path[1:]

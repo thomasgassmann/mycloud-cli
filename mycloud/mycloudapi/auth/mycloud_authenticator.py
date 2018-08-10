@@ -2,7 +2,7 @@ import os
 from enum import Enum
 from mycloud.logger import log
 from mycloud.mycloudapi.auth.bearer_token import get_bearer_token
-from mycloud.constants import USE_TOKEN_CACHE, TOKEN_CACHE_FOLDER
+from mycloud.constants import USE_TOKEN_CACHE, TOKEN_CACHE_FOLDER, CACHED_TOKEN_IDENTIFIER
 
 
 class AuthMode(Enum):
@@ -30,7 +30,14 @@ class MyCloudAuthenticator:
 
     def set_bearer_auth(self, bearer_token):
         self.auth_mode = AuthMode.Token
-        self.bearer_token = bearer_token
+        if bearer_token == CACHED_TOKEN_IDENTIFIER:
+            success = self._load_cached_token()
+            if success:
+                self.bearer_token = self.current_token
+            else:
+                raise ValueError('No cached token available')
+        else:
+            self.bearer_token = bearer_token
 
     def invalidate_token(self):
         self.token_refresh_required = True

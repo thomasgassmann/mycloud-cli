@@ -5,6 +5,7 @@ from mycloud.mycloudapi.request import MyCloudRequest
 from mycloud.mycloudapi.request_executor import MyCloudRequestExecutor
 from mycloud.mycloudapi.change_request import ChangeRequest
 from mycloud.mycloudapi.usage_request import UsageRequest
+from mycloud.mycloudapi.rename_request import RenameRequest
 
 __all__ = [MyCloudRequest, MetadataRequest, GetObjectRequest, PutObjectRequest,
-           ObjectResourceBuilder, MyCloudRequestExecutor, ChangeRequest, UsageRequest]
+           ObjectResourceBuilder, MyCloudRequestExecutor, ChangeRequest, UsageRequest, RenameRequest]

@@ -4,7 +4,7 @@ import sys
 import json
 from enum import Enum
 import mycloud.logger as logger
-from mycloud.filesync import upsync_folder, downsync_folder
+from mycloud.filesync import upsync_folder, downsync_folder, convert_remote_files
 from mycloud.filesystem import BasicRemotePath
 from mycloud.statistics import StatisticsCommandLineParser
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
@@ -24,6 +24,7 @@ class Application:
                 statistics
                 upload
                 download
+                convert (Deprecated)
         ''')
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command) or args.command == self.run.__name__:
@@ -67,7 +68,19 @@ class Application:
         builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
         translatable_path = BasicRemotePath(args.mycloud_dir)
-        downsync_folder(executor, builder, translatable_path, tracker, args.encryption_pwd)
+        downsync_folder(executor, builder, translatable_path,
+                        tracker, args.encryption_pwd)
+
+    def convert(self):
+        parser = argparse.ArgumentParser(
+            description='Swisscom myCloud Remote File Converter', formatter_class=argparse.RawTextHelpFormatter)
+        self._add_remote_directory_argument(parser)
+        self._add_local_directory_argument(parser)
+        self._add_user_name_password(parser)
+        self._add_token_argument(parser)
+        args = self._parse_sub_command_arguments(parser)
+        executor = self._get_request_executor(args)
+        convert_remote_files(executor, args.mycloud_dir, args.local_dir)
 
     def statistics(self):
         command_line_parser = StatisticsCommandLineParser(self)

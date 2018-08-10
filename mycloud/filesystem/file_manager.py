@@ -98,6 +98,10 @@ class FileManager:
             return True, False, 0
         return False, True, file_length // MY_CLOUD_BIG_FILE_CHUNK_SIZE
 
+    def move_file(self):
+        # TODO
+        pass
+
     def read_file(self,
                   downstream: DownStream,
                   translatable_path: TranslatablePath,

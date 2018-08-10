@@ -1,9 +1,8 @@
-import tempfile
-import os
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, GetObjectRequest, PutObjectRequest
 from mycloud.filesystem.file_metadata import FileMetadata, Version
 from mycloud.filesystem.translatable_path import TranslatablePath
 from mycloud.constants import METADATA_FILE_NAME
+from mycloud.helper import get_string_generator
 
 
 class MetadataManager:
@@ -20,8 +19,7 @@ class MetadataManager:
     def update_metadata(self, path: TranslatablePath, metadata: FileMetadata):
         metadata_path = MetadataManager._get_metadata_path(path)
         json_representation = FileMetadata.to_json(metadata)
-        byte_generator = MetadataManager._get_string_generator(
-            json_representation)
+        byte_generator = get_string_generator(json_representation)
         put_request = PutObjectRequest(metadata_path, byte_generator)
         _ = self._request_executor.execute_request(put_request)
 
@@ -31,11 +29,3 @@ class MetadataManager:
         metadata_path = ObjectResourceBuilder.combine_cloud_path(
             full_path, METADATA_FILE_NAME)
         return metadata_path
-
-    @staticmethod
-    def _get_string_generator(string: str):
-        fd, filename = tempfile.mkstemp()
-        with os.fdopen(fd, 'w') as f:
-            f.write(string)
-        with open(filename, 'rb') as f:
-            yield f.read()

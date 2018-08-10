@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 
 
+"""
+    Input of up_transform must always equal output of down_transform.
+"""
+
+
 class StreamTransform(ABC):
 
     def __init__(self, name):
