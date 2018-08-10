@@ -75,8 +75,14 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
     temporary_file = remote_file + TEMP_FILE_EXTENSION
-    log(f'Renaming file {remote_file} to {partial_destination} through {temporary_file}...')
-    request_executor.execute_request(RenameRequest(remote_file, temporary_file, is_file=True))
+    log(f'Renaming file {remote_file} to {partial_destination}...')
+    while True:
+        rename_request = RenameRequest(remote_file, temporary_file, is_file=True, ignore_conflict=True)
+        response = request_executor.execute_request(rename_request)
+        if response.status_code == 409:
+            temporary_file += TEMP_FILE_EXTENSION
+        else:
+            break
     request_executor.execute_request(RenameRequest(temporary_file, partial_destination, is_file=True))
     log(f'Renamed file successfully')
 

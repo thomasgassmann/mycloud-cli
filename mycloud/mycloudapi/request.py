@@ -35,6 +35,9 @@ class MyCloudRequest(ABC):
     def ignore_bad_request(self):
         return False
 
+    def ignore_conflict(self):
+        return False
+
     def get_data_generator(self):
         return None
 

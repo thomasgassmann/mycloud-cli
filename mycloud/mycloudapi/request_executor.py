@@ -36,8 +36,9 @@ class MyCloudRequestExecutor:
             raise ValueError('Invalid request method')
         ignore_not_found = request.ignore_not_found()
         ignore_bad_request = request.ignore_bad_request()
+        ignore_conflict = request.ignore_conflict()
         retry = self._check_validity(
-            response, ignore_not_found, ignore_bad_request, request_url)
+            response, ignore_not_found, ignore_bad_request, ignore_conflict, request_url)
         if retry:
             return self.execute_request(request)
         return response
@@ -49,8 +50,8 @@ class MyCloudRequestExecutor:
         }
         return headers
 
-    def _check_validity(self, response, ignore_not_found, ignore_bad_request, request_url: str):
-        separately_handled = [400, 401, 404]
+    def _check_validity(self, response, ignore_not_found, ignore_bad_request, ignore_conflict, request_url: str):
+        separately_handled = [400, 401, 404, 409]
 
         retry = False
         if response.status_code == 401:
@@ -66,6 +67,9 @@ class MyCloudRequestExecutor:
 
         if response.status_code == 400 and not ignore_bad_request:
             raise ValueError(f'Bad Request: {response.text}')
+
+        if response.status_code == 409 and not ignore_conflict:
+            raise ValueError(f'Conflict: {response.text}')
 
         if not str(response.status_code).startswith('2') and response.status_code not in separately_handled:
             log(f'ERR: Status code {str(response.status_code)}!')
