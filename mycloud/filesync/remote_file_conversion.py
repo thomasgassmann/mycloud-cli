@@ -9,7 +9,9 @@ from mycloud.filesystem import (
     BasicRemotePath,
     LocalTranslatablePath,
     FileMetadata,
-    Version
+    Version,
+    CalculatableVersion,
+    TranslatablePath
 )
 from mycloud.constants import (
     MY_CLOUD_BIG_FILE_CHUNK_SIZE,
@@ -47,6 +49,8 @@ def convert_partials(request_executor: MyCloudRequestExecutor,
                      remote_dir: str,
                      files):
     base_directory = os.path.dirname(files[0])
+    log(f'Converting partial files in {base_directory}...')
+
 
 
 def convert_file(request_executor: MyCloudRequestExecutor,
@@ -70,27 +74,18 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     versioned_stream_accessor = VersionedCloudStreamAccessor(translatable_path, version, None)
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
-    log(f'Renaming file {remote_file} to {partial_destination}...')
     temporary_file = remote_file + TEMP_FILE_EXTENSION
+    log(f'Renaming file {remote_file} to {partial_destination} through {temporary_file}...')
     request_executor.execute_request(RenameRequest(remote_file, temporary_file, is_file=True))
     request_executor.execute_request(RenameRequest(temporary_file, partial_destination, is_file=True))
     log(f'Renamed file successfully')
 
-    file_version = Version(version.calculate_version(), remote_file)
-    file_version.add_part_file(partial_destination)
-    if resource_builder.ends_with_aes_extension(remote_file):
-        transform = AES256CryptoTransform(AES_EXTENSION)
-        file_version.add_transform(transform.get_name())
-    properties = translatable_path.calculate_properties()
-    for key in properties:
-        file_version.add_property(key, properties[key])
-    metadata = FileMetadata()
-    metadata.update_version(file_version)
-
-    log(f'Uploading vesion {file_version.get_identifier()}...')
-    manager = MetadataManager(request_executor)
-    manager.update_metadata(translatable_path, metadata)
-    log(f'Successfully converted file {remote_file}')
+    _create_file_metadata(request_executor,
+                          version,
+                          translatable_path,
+                          remote_file,
+                          [partial_destination],
+                          resource_builder)
 
 
 def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
@@ -98,7 +93,8 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     response = request_executor.execute_request(req)
     (dirs, files) = MetadataRequest.format_response(response)
     if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
-        print('skipping')
+        metadata_path = files[0]['Path']
+        log(f'Skipping {metadata_path} and subdirectories, because it was already converted...')
         return
         yield
 
@@ -124,3 +120,27 @@ def _is_partial_directory(files):
             return False
 
     return True
+
+
+def _create_file_metadata(request_executor: MyCloudRequestExecutor,
+                          version: CalculatableVersion,
+                          translatable_path: TranslatablePath,
+                          remote_file: str,
+                          partial_files,
+                          resource_builder: ObjectResourceBuilder):
+    file_version = Version(version.calculate_version(), remote_file)
+    for partial_file in partial_files:
+        file_version.add_part_file(partial_file)
+    if resource_builder.ends_with_aes_extension(remote_file):
+        transform = AES256CryptoTransform(AES_EXTENSION)
+        file_version.add_transform(transform.get_name())
+    properties = translatable_path.calculate_properties()
+    for key in properties:
+        file_version.add_property(key, properties[key])
+    metadata = FileMetadata()
+    metadata.update_version(file_version)
+
+    log(f'Uploading vesion {file_version.get_identifier()}...')
+    manager = MetadataManager(request_executor)
+    manager.update_metadata(translatable_path, metadata)
+    log(f'Successfully converted file {remote_file}')
