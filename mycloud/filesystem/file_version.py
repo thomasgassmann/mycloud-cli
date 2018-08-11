@@ -56,8 +56,9 @@ class HashCalculatedVersion(CalculatableVersion):
             file_buffer = operation_timeout(
                 read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
             read_length += ENCRYPTION_CHUNK_LENGTH
-            percentage = '{0:.4f}'.format(read_length / file_size)
-            log(f'Hashing file {self.local_file}: {percentage}% complete...', end='\r')
+            if (read_length / ENCRYPTION_CHUNK_LENGTH) % 1000 == 0:
+                percentage = '{0:.2f}'.format((read_length / file_size) * 100)
+                log(f'Hashing file {self.local_file}: {percentage}% complete...', end='\r')
         stream.close()
         sha.update(bytes(str(time).encode()))
         self._cached_hash = sha.hexdigest()
