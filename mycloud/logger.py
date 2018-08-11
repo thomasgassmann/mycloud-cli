@@ -8,13 +8,13 @@ init()
 LOG_FILE = ''
 
 
-def log(string: str, error=False):
+def log(string: str, error=False, end='\n'):
     if error:
         string = f'ERR: {string}'
     formatted_time = datetime.datetime.now().strftime('%H:%M:%S')
     string = f'{formatted_time}: {string}'
     color = Fore.RED if error else Fore.WHITE
-    print(f'{color}{string}{Style.RESET_ALL}')
+    print(f'{color}{string}{Style.RESET_ALL}', end=end)
     if LOG_FILE == '':
         return
     try:

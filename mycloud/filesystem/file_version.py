@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import hashlib
 import os
 from mycloud.helper import operation_timeout
+from mycloud.logger import log
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH, VERSION_HASH_LENGTH
 
 
@@ -38,6 +39,7 @@ class HashCalculatedVersion(CalculatableVersion):
         return self._cached_hash
 
     def _calculate_hash(self):
+        # TODO: calculate hash in main loop as well, don't read file twice
         def read_file(x):
             return x['file'].read(x['length'])
         sha = hashlib.sha256()
@@ -47,10 +49,15 @@ class HashCalculatedVersion(CalculatableVersion):
             x['file']), file=self.local_file)
         file_buffer = operation_timeout(
             read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
+        read_length = 0
+        file_size = operation_timeout(lambda x: os.stat(x['file']).st_size, file=self.local_file)
         while len(file_buffer) > 0:
             sha.update(file_buffer)
             file_buffer = operation_timeout(
                 read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
+            read_length += ENCRYPTION_CHUNK_LENGTH
+            percentage = '{0:.4f}'.format(read_length / file_size)
+            log(f'Hashing file {self.local_file}: {percentage}% complete...', end='\r')
         stream.close()
         sha.update(bytes(str(time).encode()))
         self._cached_hash = sha.hexdigest()

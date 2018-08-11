@@ -36,10 +36,11 @@ class ObjectResourceBuilder:
             remote_path += '/'
         return remote_path
 
-    def build_local_file(self, mycloud_path: str, remove_aes_extension=False):
+    def build_local_file(self, mycloud_path: str, remove_extension: bool=True):
         str = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(str)
-        normalized_relative_path = self.remove_aes_extension(normalized_relative_path)
+        if remove_extension:
+            normalized_relative_path = self.remove_aes_extension(normalized_relative_path)
         return os.path.join(self.base_dir, normalized_relative_path)
 
     def ends_with_aes_extension(self, mycloud_path: str):

@@ -2,7 +2,7 @@ import os
 import tempfile
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
-from mycloud.filesystem import TranslatablePath, FileManager, BasicStringVersion
+from mycloud.filesystem import TranslatablePath, FileManager, BasicStringVersion, FileMetadata, Version
 from mycloud.streamapi import ProgressReporter, DefaultDownStream
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.logger import log
@@ -45,8 +45,8 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
         request_executor, transforms, ProgressReporter())
 
     remote_base_path = remote_file.calculate_remote()
-    metadata = file_manager.read_file_metadata(remote_file)
-    latest_version = metadata.get_latest_version()
+    metadata: FileMetadata = file_manager.read_file_metadata(remote_file)
+    latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())
     local_file = resource_builder.build_local_file(remote_base_path)
     skip, started_partial, partial_index = file_manager.started_partial_download(remote_file,
@@ -59,12 +59,13 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     # https://stackoverflow.com/questions/29013495/opening-file-in-append-mode-and-seeking-to-start
     if started_partial:
         # Delete file content after partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE -> then append
-        delete_bytes_after = partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE
+        chunk_size = latest_version.get_property('chunk_size') or MY_CLOUD_BIG_FILE_CHUNK_SIZE
+        delete_bytes_after = partial_index * chunk_size
         file_length = operation_timeout(lambda x: os.stat(
             x['local_file']).st_size, local_file=local_file)
         if file_length != delete_bytes_after:
             fd, temp_path = tempfile.mkstemp()
-            if MY_CLOUD_BIG_FILE_CHUNK_SIZE % ENCRYPTION_CHUNK_LENGTH != 0:
+            if chunk_size % ENCRYPTION_CHUNK_LENGTH != 0:
                 raise ValueError(
                     'Chunk size in myCloud must be a multiple of encryption chunk length')
 

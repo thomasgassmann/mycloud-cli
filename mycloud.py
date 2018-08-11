@@ -24,6 +24,7 @@ class Application:
                 statistics
                 upload
                 download
+                shell
                 convert (Deprecated)
         ''')
         args = parser.parse_args(sys.argv[1:2])
@@ -33,6 +34,11 @@ class Application:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
+
+    def shell(self):
+        # TODO: implement shell
+        input('> ')
+        pass
 
     def upload(self):
         parser = argparse.ArgumentParser(
