@@ -1,5 +1,4 @@
 import os
-import traceback
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, RenameRequest, MetadataRequest
 from mycloud.filesystem import (
     FileManager,
@@ -41,8 +40,6 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor, mycloud_dir: 
             log('Timeout while accessing resources', error=True)
         except Exception as ex:
             log(str(ex), error=True)
-            traceback.print_exc()
-
 
 def convert_partials(request_executor: MyCloudRequestExecutor,
                      local_dir: str,
@@ -103,7 +100,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
     temporary_file = remote_file + TEMP_FILE_EXTENSION
-    log(f'Renaming file {remote_file} to {partial_destination}...')
+    log(f'Renaming filxe {remote_file} to {partial_destination}...')
     while True:
         rename_request = RenameRequest(remote_file, temporary_file, is_file=True, ignore_conflict=True)
         response = request_executor.execute_request(rename_request)
@@ -111,7 +108,13 @@ def convert_file(request_executor: MyCloudRequestExecutor,
             temporary_file += TEMP_FILE_EXTENSION
         else:
             break
-    request_executor.execute_request(RenameRequest(temporary_file, partial_destination, is_file=True))
+    rename_request = RenameRequest(temporary_file, partial_destination, is_file=True, ignore_conflict=True)
+    response = request_executor.execute_request(rename_request)
+    if response.status_code == 409:
+        log(f'', error=True)
+        # TODO: delete file?
+        return
+
     log(f'Renamed file successfully')
 
     _create_file_metadata(request_executor,

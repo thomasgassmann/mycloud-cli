@@ -1,4 +1,5 @@
 import argparse
+import traceback
 import os
 import sys
 import json
@@ -278,3 +279,4 @@ if __name__ == '__main__':
         Application().run()
     except Exception as ex:
         logger.log(f'FATAL: {str(ex)}', error=True)
+        traceback.print_exc()
