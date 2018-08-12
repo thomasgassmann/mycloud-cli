@@ -128,7 +128,11 @@ def convert_file(request_executor: MyCloudRequestExecutor,
 
 def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
     req = MetadataRequest(mycloud_dir, ignore_not_found=True)
-    response = request_executor.execute_request(req)
+    try:
+        response = request_executor.execute_request(req)
+    except TimeoutException:
+        return
+
     (dirs, files) = MetadataRequest.format_response(response)
     if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) != 0:
         metadata_path = files[0]['Path']
