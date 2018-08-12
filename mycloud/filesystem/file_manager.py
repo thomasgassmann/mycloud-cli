@@ -89,9 +89,10 @@ class FileManager:
         if file_length >= summed_up_size:
             return True, False, 0
         chunk_size = version.get_property('chunk_size') or MY_CLOUD_BIG_FILE_CHUNK_SIZE
-        percent_diff = chunk_size / max(file_lengths) if chunk_size > max(file_lengths) else max(file_lengths) / chunk_size
-        if percent_diff > 1.1:
-            raise ValueError('Expected chunk size differs more than 10% from actual chunk size... Aborting')
+        if len(files) > 1:
+            percent_diff = chunk_size / max(file_lengths) if chunk_size > max(file_lengths) else max(file_lengths) / chunk_size
+            if percent_diff > 1.1:
+                raise ValueError('Expected chunk size differs more than 10% from actual chunk size... Aborting')
 
         # Can't compare exact size because remote and local sizes are different
         hash = version.get_property('hash')

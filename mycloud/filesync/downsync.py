@@ -28,6 +28,7 @@ def downsync_folder(request_executor: MyCloudRequestExecutor,
             log(f'{str(ex)}', error=True)
         except Exception as ex:
             log(f'Unhandled exception: {str(ex)}', error=True)
+            import traceback
 
 
 def downsync_file(request_executor: MyCloudRequestExecutor,
@@ -43,6 +44,8 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     del decryption_pwd
     file_manager = FileManager(
         request_executor, transforms, ProgressReporter())
+
+    log(f'Downsyncing file {remote_file}...')
 
     remote_base_path = remote_file.calculate_remote()
     metadata: FileMetadata = file_manager.read_file_metadata(remote_file)
