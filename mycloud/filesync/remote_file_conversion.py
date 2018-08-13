@@ -1,4 +1,5 @@
 import os
+from random import shuffle
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, RenameRequest, MetadataRequest
 from mycloud.filesystem import (
     FileManager,
@@ -148,6 +149,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         for file in files:
             yield False, [file['Path']]
 
+    shuffle(dirs)
     for dir in dirs:
         yield from list_candidates_recursively(request_executor, dir['Path'])
 
