@@ -10,6 +10,8 @@ cached_hashes = {
 
 
 def sha256_file(local_file: str):
+    # TODO: check possibility to read file just once in upload loop and calculate hash on the fly:
+    # Problem: hash needs to be known before upload -> Upload files and rename afterwards?
     def read_file(x):
         return x['file'].read(x['length'])
     sha = hashlib.sha256()

@@ -7,3 +7,15 @@ Files larger than approx. 3GB are not allowed by Swisscom. Therefore this backup
 mitmproxy is required to run this application. Install mitmproxy with the corresponding certificates in the Root CA. 
 To get the access token (when not passed manually), the proxy needs to run. To start the proxy run in directory `mycloud/mycloudapi`:
 `mitmdump -p 8080 -s "proxy.py"`
+
+## Roadmap
+- [ ] Auto-Setup command
+- [ ] Loop faster through files locally
+- [ ] Improve upload and statistics speed
+- [ ] Statistics: List all files with certain extension
+- [ ] Delete all files with specified extension
+- [ ] Delete all unencrypted files
+- [ ] Watch command: Watch file system and sync
+- [ ] Update proxy mode
+- [ ] Improve TCP performance
+- [ ] Machine Learning to prioritize files to upload
