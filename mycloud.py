@@ -85,9 +85,10 @@ class Application:
         self._add_local_directory_argument(parser)
         self._add_user_name_password(parser)
         self._add_token_argument(parser)
+        self._add_skip_argument(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
-        convert_remote_files(executor, args.mycloud_dir, args.local_dir)
+        convert_remote_files(executor, args.mycloud_dir, args.local_dir, args.skip or [])
 
     def statistics(self):
         command_line_parser = StatisticsCommandLineParser(self)

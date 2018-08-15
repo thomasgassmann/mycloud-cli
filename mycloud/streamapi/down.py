@@ -33,8 +33,6 @@ class DownStreamExecutor:
                 file_stream.finished()
                 break
 
-            previous_chunk = None
-
             def _transform_chunk(current_chunk, is_last):
                 nonlocal tmp_total_read
                 nonlocal tmp_iteration
@@ -51,6 +49,8 @@ class DownStreamExecutor:
                 if self.progress_reporter is not None:
                     self.progress_reporter.report_progress(ProgressReport(
                         resource_url, tmp_bps, tmp_iteration, tmp_total_read))
+
+            previous_chunk = None
 
             for chunk in response.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
                 if previous_chunk is None:

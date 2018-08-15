@@ -19,3 +19,4 @@ To get the access token (when not passed manually), the proxy needs to run. To s
 - [ ] Update proxy mode
 - [ ] Improve TCP performance
 - [ ] Machine Learning to prioritize files to upload
+- [ ] Request caching

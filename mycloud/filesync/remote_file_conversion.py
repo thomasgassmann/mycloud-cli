@@ -28,15 +28,23 @@ from mycloud.helper import get_all_files_recursively, is_int, TimeoutException
 from mycloud.logger import log
 
 
-def convert_remote_files(request_executor: MyCloudRequestExecutor, mycloud_dir: str, local_dir: str):
+def convert_remote_files(request_executor: MyCloudRequestExecutor,
+                         mycloud_dir: str,
+                         local_dir: str,
+                         skip):
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
     generator = list_candidates_recursively(request_executor, mycloud_dir)
+    def _skip(file):
+        for item in skip:
+            if file.startswith(item):
+                return True
+        return False
     for is_partial, files in generator:
         try:
             if is_partial:
-                convert_partials(request_executor, local_dir, mycloud_dir, files)
+                convert_partials(request_executor, local_dir, mycloud_dir, files, _skip)
             else:
-                convert_file(request_executor, local_dir, mycloud_dir, files[0])
+                convert_file(request_executor, local_dir, mycloud_dir, files[0], _skip)
         except TimeoutException:
             log('Timeout while accessing resources', error=True)
         except Exception as ex:
@@ -45,14 +53,18 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor, mycloud_dir: 
 def convert_partials(request_executor: MyCloudRequestExecutor,
                      local_dir: str,
                      remote_dir: str,
-                     files):
+                     files,
+                     skip_fn):
     base_directory = os.path.dirname(files[0])
     log(f'Converting partial files in {base_directory}...')
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = resource_builder.build_local_file(base_directory, remove_extension=False)
     log(f'Mapped partial files in directory {base_directory} to local file {local_file}')
 
-    translatable_path, version = _get_path_and_version_for_local_file(local_file, base_directory, resource_builder)
+    translatable_path, version = _get_path_and_version_for_local_file(local_file,
+                                                                      base_directory,
+                                                                      resource_builder,
+                                                                      skip_fn(local_file))
 
     versioned_stream_accessor = VersionedCloudStreamAccessor(translatable_path, version, None)
     sorted_files = sorted(files)
@@ -82,7 +94,8 @@ def convert_partials(request_executor: MyCloudRequestExecutor,
 def convert_file(request_executor: MyCloudRequestExecutor,
                  local_dir: str,
                  remote_dir: str,
-                 remote_file: str):
+                 remote_file: str,
+                 skip_fn):
     log(f'Converting file {remote_file}...')
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = resource_builder.build_local_file(remote_file)
@@ -94,7 +107,8 @@ def convert_file(request_executor: MyCloudRequestExecutor,
 
     translatable_path, version = _get_path_and_version_for_local_file(local_file,
                                                                     remote_file_without_aes_extension,
-                                                                    resource_builder)
+                                                                    resource_builder,
+                                                                    skip_fn(local_file))
 
     TEMP_FILE_EXTENSION = '.temporary'
     versioned_stream_accessor = VersionedCloudStreamAccessor(translatable_path, version, None)
@@ -135,19 +149,18 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         return
 
     (dirs, files) = MetadataRequest.format_response(response)
-    if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) != 0:
+    if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) > 0:
         metadata_path = files[0]['Path']
         log(f'Skipping {metadata_path} and subdirectories, because it was already converted...')
         return
-        yield
 
     partial_directory = _is_partial_directory(files)
 
     if partial_directory:
-        yield True, [file['Path'] for file in files]
+        yield partial_directory, [file['Path'] for file in files]
     else:
         for file in files:
-            yield False, [file['Path']]
+            yield partial_directory, [file['Path']]
 
     shuffle(dirs)
     for dir in dirs:
@@ -166,8 +179,8 @@ def _is_partial_directory(files):
     return True
 
 
-def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder):
-    if not os.path.isfile(local_file):
+def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):
+    if not os.path.isfile(local_file) or no_hash:
         log(f'File {local_file} not found. Defaulting to version {DEFAULT_VERSION}')
         version = BasicStringVersion(DEFAULT_VERSION)
         translatable_path = BasicRemotePath(remote_file)

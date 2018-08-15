@@ -1,19 +1,21 @@
 import requests
+from time import sleep
 from requests.models import PreparedRequest
 from mycloud.logger import log
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
 from mycloud.mycloudapi import MyCloudRequest
 from mycloud.mycloudapi.request import ContentType
 from mycloud.mycloudapi.request import Method
+from mycloud.constants import WAIT_TIME_MULTIPLIER
 
 
 class MyCloudRequestExecutor:
     def __init__(self, authenticator: MyCloudAuthenticator):
         self.authenticator = authenticator
         self.session = requests.Session()
+        self.wait_time = 10
 
     def execute_request(self, request: MyCloudRequest):
-        # TODO: cache
         content_type = request.get_content_type()
         token = self.authenticator.get_token()
         headers = self._get_headers(content_type, token)
@@ -37,8 +39,11 @@ class MyCloudRequestExecutor:
         ignore_not_found = request.ignore_not_found()
         ignore_bad_request = request.ignore_bad_request()
         ignore_conflict = request.ignore_conflict()
-        retry = self._check_validity(
-            response, ignore_not_found, ignore_bad_request, ignore_conflict, request_url)
+        retry = self._check_validity(response,
+                                     ignore_not_found,
+                                     ignore_bad_request,
+                                     ignore_conflict,
+                                     request_url)
         if retry:
             return self.execute_request(request)
         return response
@@ -51,7 +56,7 @@ class MyCloudRequestExecutor:
         return headers
 
     def _check_validity(self, response, ignore_not_found, ignore_bad_request, ignore_conflict, request_url: str):
-        separately_handled = [400, 401, 404, 409]
+        separately_handled = [400, 401, 404, 409, 500]
 
         retry = False
         if response.status_code == 401:
@@ -60,6 +65,14 @@ class MyCloudRequestExecutor:
             else:
                 self.authenticator.invalidate_token()
                 retry = True
+
+        if response.status_code == 500:
+            log('HTTP 500 returned from server', error=True)
+            log(f'ERR: {str(response.content)}', error=True)
+            log(f'Waiting {self.wait_time} seconds until retry...')
+            sleep(self.wait_time)
+            retry = True
+            self.wait_time *= WAIT_TIME_MULTIPLIER
 
         log(f'Checking status code {request_url} (Status {str(response.status_code)})...')
         if response.status_code == 404 and not ignore_not_found:
