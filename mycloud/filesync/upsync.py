@@ -23,11 +23,11 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                 upsync_file(request_executor, resource_builder,
                             local_file, progress_tracker, encryption_pwd)
             except TimeoutException:
-                log(f'Failed to access file {local_file} within the given time', error=True)
+                log('Failed to access file {} within the given time'.format(local_file), error=True)
             except ValueError as ex:
-                log(f'{str(ex)}', error=True)
+                log(str(ex), error=True)
             except Exception as ex:
-                log(f'Unhandled exception: {str(ex)}', error=True)
+                log('Unhandled exception: {}'.format(str(ex)), error=True)
 
 
 def upsync_file(request_executor: MyCloudRequestExecutor,
@@ -36,7 +36,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
                 progress_tracker: ProgressTracker,
                 encryption_pwd: str = None):
     if progress_tracker.skip_file(local_file):
-        log(f'Skipping file {local_file}')
+        log('Skipping file {}'.format(local_file))
         return
 
     transforms = [] if encryption_pwd is None else [

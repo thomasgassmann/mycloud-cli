@@ -23,11 +23,11 @@ def downsync_folder(request_executor: MyCloudRequestExecutor,
             downsync_file(request_executor, resource_builder,
                           file, progress_tracker, decryption_pwd)
         except TimeoutException:
-            log(f'Failed to write to the local file within the given time', error=True)
+            log('Failed to write to the local file within the given time', error=True)
         except ValueError as ex:
-            log(f'{str(ex)}', error=True)
+            log('{}'.format(str(ex)), error=True)
         except Exception as ex:
-            log(f'Unhandled exception: {str(ex)}', error=True)
+            log('Unhandled exception: {}'.format(str(ex)), error=True)
             import traceback
 
 
@@ -46,7 +46,7 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
         request_executor, transforms, ProgressReporter())
 
     remote_base_path = remote_file.calculate_remote()
-    log(f'Downsyncing file {remote_base_path}...')
+    log('Downsyncing file {}...'.format(remote_base_path))
     metadata: FileMetadata = file_manager.read_file_metadata(remote_file)
     latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())

@@ -25,6 +25,6 @@ class CloudStreamAccessor:
         return self._object_resource
 
     def get_part_file(self, index: int):
-        formatted_part_index = format(index, f'0{START_NUMBER_LENGTH}d')
+        formatted_part_index = format(index, '0{}d'.format(START_NUMBER_LENGTH))
         return ObjectResourceBuilder.combine_cloud_path(
-            self.get_base_path(), f'{formatted_part_index}{PARTIAL_EXTENSION}')
+            self.get_base_path(), '{}{}'.format(formatted_part_index, PARTIAL_EXTENSION))

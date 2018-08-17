@@ -102,7 +102,7 @@ class Application:
         self._add_log_file_argument(parser)
         self._add_remote_directory_argument(parser)
 
-        parser.add_argument(f'--port', metavar='p', type=int,
+        parser.add_argument('--port', metavar='p', type=int,
                             help='The port of the proxy', required=False, default=9001)
 
         args = self._parse_sub_command_arguments(parser)
@@ -133,11 +133,11 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             if not value.startswith('/Drive/'):
                 raise argparse.ArgumentTypeError(
-                    f'{command} must start with /Drive/', True)
+                    '{} must start with /Drive/'.format(command), True)
                 sys.exit(2)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='m', type=is_valid, help='Base path in Swisscom myCloud', required=True)
+            '--{}'.format(command), metavar='m', type=is_valid, help='Base path in Swisscom myCloud', required=True)
 
     def _add_local_directory_argument(self, argument_parser, directory_should_exist=True):
         command = 'local_dir'
@@ -146,11 +146,11 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             if directory_should_exist and not os.path.isdir(value) and not value.endswith(os.sep):
                 raise argparse.ArgumentTypeError(
-                    f'{command} must be an existing directory', True)
+                    '{} must be an existing directory'.format(command), True)
                 sys.exit(2)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='l', type=is_valid, help='Local directory', required=True)
+            '--{}'.format(command), metavar='l', type=is_valid, help='Local directory', required=True)
 
     def _add_token_argument(self, argument_parser):
         command = 'token'
@@ -159,7 +159,7 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='t', type=is_valid, help='Swisscom myCloud bearer token', required=False)
+            '--{}'.format(command), metavar='t', type=is_valid, help='Swisscom myCloud bearer token', required=False)
 
     def _add_user_name_password(self, argument_parser):
         command = 'username'
@@ -168,11 +168,11 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             if '@' not in value:
                 raise argparse.ArgumentTypeError(
-                    f'{command} must be an email address', True)
+                    '{} must be an email address'.format(command), True)
                 sys.exit(2)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='u', type=is_valid_username, help='Email of the user for myCloud', required=False)
+            '--{}'.format(command), metavar='u', type=is_valid_username, help='Email of the user for myCloud', required=False)
 
         command = 'password'
 
@@ -180,7 +180,7 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='p', type=is_valid_password, help='Password for the myCloud user', required=False)
+            '--{}'.format(command), metavar='p', type=is_valid_password, help='Password for the myCloud user', required=False)
 
     def _add_progress_file_argument(self, argument_parser):
         command = 'progress_file'
@@ -193,7 +193,7 @@ class Application:
             Application._path_is_in_valid_directory(value, command)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='p', type=is_valid, help='Path to the progress file')
+            '--{}'.format(command), metavar='p', type=is_valid, help='Path to the progress file')
 
     def _add_encryption_password_argument(self, argument_parser):
         command = 'encryption_pwd'
@@ -204,12 +204,12 @@ class Application:
             Application._min_length(value, command, min_length=4)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='w', type=is_valid, help='Password used for encryption')
+            '--{}'.format(command), metavar='w', type=is_valid, help='Password used for encryption')
 
     def _add_skip_argument(self, argument_parser):
         command = 'skip'
         argument_parser.add_argument(
-            f'--{command}', metavar='s', help='Paths to skip', nargs='+')
+            '--{}'.format(command), metavar='s', help='Paths to skip', nargs='+')
 
     def _add_log_file_argument(self, argument_parser):
         command = 'log_file'
@@ -223,13 +223,13 @@ class Application:
             Application._path_is_in_valid_directory(value, command)
             return value
         argument_parser.add_argument(
-            f'--{command}', metavar='g', help='Path to log file', type=is_valid)
+            '--{}'.format(command), metavar='g', help='Path to log file', type=is_valid)
 
     def _get_progress_tracker(self, skip_paths):
         tracker = ProgressTracker()
         if skip_paths is not None:
             skipped = ', '.join(skip_paths)
-            logger.log(f'Skipping files: {skipped}')
+            logger.log('Skipping files: {}'.format(skipped))
             tracker.set_skipped_paths(skip_paths)
         return tracker
 
@@ -246,14 +246,14 @@ class Application:
         Application._must_be_string(value, command)
         if value == '':
             raise argparse.ArgumentTypeError(
-                f'{command} must not be empty', True)
+                '{} must not be empty'.format(command), True)
             sys.exit(2)
 
     @staticmethod
     def _must_be_string(value, command):
         if type(value) is not str:
             raise argparse.ArgumentTypeError(
-                f'{command} must be a string', True)
+                '{} must be a string'.format(command), True)
             sys.exit(2)
 
     @staticmethod
@@ -263,7 +263,7 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             if len(value) <= min_length:
                 raise argparse.ArgumentTypeError(
-                    f'{command} must be at least {min_length} characters long', True)
+                    '{} must be at least {} characters long'.format(command, min_length), True)
                 sys.exit(2)
 
     @staticmethod
@@ -271,7 +271,7 @@ class Application:
         dir = os.path.dirname(value)
         if not os.path.isdir(dir):
             raise argparse.ArgumentTypeError(
-                f'{command} must be in a valid directory', True)
+                '{} must be in a valid directory'.format(command), True)
             sys.exit(2)
 
 
@@ -279,5 +279,5 @@ if __name__ == '__main__':
     try:
         Application().run()
     except Exception as ex:
-        logger.log(f'FATAL: {str(ex)}', error=True)
+        logger.log('FATAL: {}'.format(str(ex)), error=True)
         traceback.print_exc()

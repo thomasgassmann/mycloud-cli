@@ -39,7 +39,7 @@ def run_server(request_executor: MyCloudRequestExecutor, mycloud_base_dir: str, 
         if len(request.files) != 1:
             return 'Request must contain 1 file', 400
 
-        log(f'Uploading file to {object_resource}...')
+        log('Uploading file to {}...'.format(object_resource))
         file_key = [key for key in request.files.keys()][0]
         file = request.files[file_key]
         generator = _up_generator(file)
@@ -51,7 +51,7 @@ def run_server(request_executor: MyCloudRequestExecutor, mycloud_base_dir: str, 
             return 'Upload failed', 400
 
     def download(object_resource: str):
-        log(f'Downloading file {object_resource}...')
+        log('Downloading file {}...'.format(object_resource))
         get_request = GetObjectRequest(
             object_resource, ignore_bad_request=True, ignore_not_found=True)
         response = request_executor.execute_request(get_request)
@@ -73,4 +73,4 @@ def run_server(request_executor: MyCloudRequestExecutor, mycloud_base_dir: str, 
         return Response(response.text, 200, mimetype='application/json')
 
     app.run(port=port)
-    log(f'Successfully started local proxy on port {str(port)}...')
+    log('Successfully started local proxy on port {}...'.format(str(port)))

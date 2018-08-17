@@ -10,11 +10,11 @@ LOG_FILE = ''
 
 def log(string: str, error=False, end='\n'):
     if error:
-        string = f'ERR: {string}'
+        string = 'ERR: {}'.format(string)
     formatted_time = datetime.datetime.now().strftime('%H:%M:%S')
-    string = f'{formatted_time}: {string}'
+    string = '{}: {}'.format(formatted_time, string)
     color = Fore.RED if error else Fore.WHITE
-    print(f'{color}{string}{Style.RESET_ALL}', end=end)
+    print('{}{}{}'.format(color, string, Style.RESET_ALL), end=end)
     if LOG_FILE == '':
         return
     try:
@@ -22,4 +22,4 @@ def log(string: str, error=False, end='\n'):
             file.write(string)
             file.write('\n')
     except Exception as ex:
-        print(f'ERR: Failed to write to log file: {str(ex)}')
+        print('ERR: Failed to write to log file: {}'.format(str(ex)))

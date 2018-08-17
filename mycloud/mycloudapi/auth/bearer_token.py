@@ -49,12 +49,12 @@ def get_bearer_token(user_name: str, password: str):
     while token is None:
         token = get_token_from_url(driver.current_url)
         if time.time() - start > wait_time:
-            log(f'More than {str(wait_time)} seconds elapsed... Cancelling')
+            log('More than {} seconds elapsed... Cancelling'.format(str(wait_time)))
             break
     driver.quit()
     if token is None:
         raise ValueError('Token could not be found')
-    log(f'Found token {token}')
+    log('Found token {}'.format(token))
     return token
 
 
@@ -63,7 +63,7 @@ def get_token_from_url(url):
     query_strings = urlparse.parse_qs(
         urlparse.urlparse(url).query, keep_blank_values=True)
     if token_name in query_strings:
-        log(f'Found token in URL: {url}')
+        log('Found token in URL: {}'.format(url))
         token = query_strings[token_name][0]
         return token.replace(' ', '+')
     return None

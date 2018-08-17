@@ -68,24 +68,24 @@ class MyCloudRequestExecutor:
 
         if response.status_code == 500:
             log('HTTP 500 returned from server', error=True)
-            log(f'ERR: {str(response.content)}', error=True)
-            log(f'Waiting {self.wait_time} seconds until retry...')
+            log('ERR: {}'.format(str(response.content)), error=True)
+            log('Waiting {} seconds until retry...'.format(self.wait_time))
             sleep(self.wait_time)
             retry = True
             self.wait_time *= WAIT_TIME_MULTIPLIER
 
-        log(f'Checking status code {request_url} (Status {str(response.status_code)})...')
+        log('Checking status code {} (Status {})...'.format(request_url, str(response.status_code)))
         if response.status_code == 404 and not ignore_not_found:
             raise ValueError('File not found in myCloud')
 
         if response.status_code == 400 and not ignore_bad_request:
-            raise ValueError(f'Bad Request: {response.text}')
+            raise ValueError('Bad Request: {}'.format(response.text))
 
         if response.status_code == 409 and not ignore_conflict:
-            raise ValueError(f'Conflict: {response.text}')
+            raise ValueError('Conflict: {}'.format(response.text))
 
         if not str(response.status_code).startswith('2') and response.status_code not in separately_handled:
-            log(f'ERR: Status code {str(response.status_code)}!')
-            log(f'ERR: {str(response.content)}')
+            log('ERR: Status code {}!'.format(str(response.status_code)))
+            log('ERR: {}'.format(str(response.content)))
             raise ValueError('Error while performing myCloud request')
         return retry

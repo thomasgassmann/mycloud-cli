@@ -56,10 +56,10 @@ def convert_partials(request_executor: MyCloudRequestExecutor,
                      files,
                      skip_fn):
     base_directory = os.path.dirname(files[0])
-    log(f'Converting partial files in {base_directory}...')
+    log('Converting partial files in {}...'.format(base_directory))
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = resource_builder.build_local_file(base_directory, remove_extension=False)
-    log(f'Mapped partial files in directory {base_directory} to local file {local_file}')
+    log('Mapped partial files in directory {} to local file {}'.format(base_directory, local_file))
 
     translatable_path, version = _get_path_and_version_for_local_file(local_file,
                                                                       base_directory,
@@ -96,10 +96,10 @@ def convert_file(request_executor: MyCloudRequestExecutor,
                  remote_dir: str,
                  remote_file: str,
                  skip_fn):
-    log(f'Converting file {remote_file}...')
+    log('Converting file {}...'.format(remote_file))
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = resource_builder.build_local_file(remote_file)
-    log(f'Mapped {remote_file} to local file {local_file}')
+    log('Mapped {} to local file {}'.format(remote_file, local_file))
 
     remote_file_without_aes_extension = remote_file
     if resource_builder.ends_with_aes_extension(remote_file):
@@ -115,7 +115,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
     temporary_file = remote_file + TEMP_FILE_EXTENSION
-    log(f'Renaming filxe {remote_file} to {partial_destination}...')
+    log('Renaming filxe {} to {}...'.format(remote_file, partial_destination))
     while True:
         rename_request = RenameRequest(remote_file, temporary_file, is_file=True, ignore_conflict=True)
         response = request_executor.execute_request(rename_request)
@@ -126,11 +126,11 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     rename_request = RenameRequest(temporary_file, partial_destination, is_file=True, ignore_conflict=True)
     response = request_executor.execute_request(rename_request)
     if response.status_code == 409:
-        log(f'', error=True)
+        log('', error=True)
         # TODO: delete file?
         return
 
-    log(f'Renamed file successfully')
+    log('Renamed file successfully')
 
     _create_file_metadata(request_executor,
                           version,
@@ -151,7 +151,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     (dirs, files) = MetadataRequest.format_response(response)
     if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) > 0:
         metadata_path = files[0]['Path']
-        log(f'Skipping {metadata_path} and subdirectories, because it was already converted...')
+        log('Skipping {} and subdirectories, because it was already converted...'.format(metadata_path))
         return
 
     partial_directory = _is_partial_directory(files)
@@ -181,11 +181,11 @@ def _is_partial_directory(files):
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):
     if not os.path.isfile(local_file) or no_hash:
-        log(f'File {local_file} not found. Defaulting to version {DEFAULT_VERSION}')
+        log('File {} not found. Defaulting to version {}'.format(local_file, DEFAULT_VERSION))
         version = BasicStringVersion(DEFAULT_VERSION)
         translatable_path = BasicRemotePath(remote_file)
     else:
-        log(f'Found local file {local_file}. Using hash calculated version and uploading properties...')
+        log('Found local file {}. Using hash calculated version and uploading properties...'.format(local_file))
         version = HashCalculatedVersion(local_file)
         translatable_path = LocalTranslatablePath(resource_builder, local_file, version)
     return translatable_path, version
@@ -210,7 +210,7 @@ def _create_file_metadata(request_executor: MyCloudRequestExecutor,
     metadata = FileMetadata()
     metadata.update_version(file_version)
 
-    log(f'Uploading version {file_version.get_identifier()}...')
+    log('Uploading version {}...'.format(file_version.get_identifier()))
     manager = MetadataManager(request_executor)
     manager.update_metadata(translatable_path, metadata)
-    log(f'Successfully converted file {remote_file}')
+    log('Successfully converted file {}'.format(remote_file))
