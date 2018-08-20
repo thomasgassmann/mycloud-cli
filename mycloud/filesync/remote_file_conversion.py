@@ -147,6 +147,11 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         response = request_executor.execute_request(req)
     except TimeoutException:
         return
+    except Exception as ex:
+        log('Failed to list directory: {}'.format(str(ex)))
+        log('Retrying to list directory {}...'.format(mycloud_dir))
+        yield from list_candidates_recursively(request_executor, mycloud_dir)
+        return
 
     (dirs, files) = MetadataRequest.format_response(response)
     if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) > 0:
