@@ -8,7 +8,9 @@ mitmproxy is required to run this application. Install mitmproxy with the corres
 To get the access token (when not passed manually), the proxy needs to run. To start the proxy run in directory `mycloud/mycloudapi`:
 `mitmdump -p 8080 -s "proxy.py"`
 
-## Roadmap
+## Todos
+- [ ] Do things in parallel (especially hashing)
+- [ ] Replace argparse with fire
 - [ ] Auto-Setup command
 - [ ] Loop faster through files locally
 - [ ] Improve upload and statistics speed

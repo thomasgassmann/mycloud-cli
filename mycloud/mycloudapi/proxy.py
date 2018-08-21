@@ -1,4 +1,4 @@
-import os
+import os, datetime
 from bs4 import BeautifulSoup
 from mitmproxy import ctx
 from mitmproxy import http
@@ -15,7 +15,8 @@ def response(flow: http.HTTPFlow):
         return
     html = BeautifulSoup(flow.response.text, 'lxml')
     ctx.log.info(flow.id)
-    log('Found HTML request... Injecting JavaScript')
+    formatted_time = datetime.datetime.now().strftime('%H:%M:%S')
+    ctx.log.info('{}: Found HTML request... Injecting JavaScript'.format(formatted_time))
     container = html.head or html.body
     if container:
         script = html.new_tag('script', type='text/javascript')
