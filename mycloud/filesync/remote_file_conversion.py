@@ -1,5 +1,6 @@
 import os
 from random import shuffle
+from threading import Thread
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, RenameRequest, MetadataRequest
 from mycloud.filesystem import (
     FileManager,
@@ -41,10 +42,15 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
         return False
     for is_partial, files in generator:
         try:
-            if is_partial:
-                convert_partials(request_executor, local_dir, mycloud_dir, files, _skip)
-            else:
-                convert_file(request_executor, local_dir, mycloud_dir, files[0], _skip)
+            def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
+                if is_partial:
+                    convert_partials(request_executor, local_dir, mycloud_dir, files, _skip)
+                else:
+                    convert_file(request_executor, local_dir, mycloud_dir, files[0], _skip)
+
+            thread = Thread(target=convert, args=(is_partial, files, request_executor, local_dir, mycloud_dir, _skip))
+            thread.start()
+            thread.join()
         except TimeoutException:
             log('Timeout while accessing resources', error=True)
         except Exception as ex:
