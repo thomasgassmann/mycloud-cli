@@ -1,4 +1,5 @@
 import os
+from collections import deque
 from random import shuffle
 from threading import Thread
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, RenameRequest, MetadataRequest
@@ -20,7 +21,8 @@ from mycloud.constants import (
     START_NUMBER_LENGTH,
     DEFAULT_VERSION,
     AES_EXTENSION,
-    METADATA_FILE_NAME
+    METADATA_FILE_NAME,
+    MAX_THREADS_FOR_REMOTE_FILE_CONVERSION
 )
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.streamapi import ProgressReporter
@@ -40,6 +42,7 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
             if file.startswith(item):
                 return True
         return False
+    threads = deque()
     for is_partial, files in generator:
         try:
             def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
@@ -50,11 +53,18 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
 
             thread = Thread(target=convert, args=(is_partial, files, request_executor, local_dir, mycloud_dir, _skip))
             thread.start()
-            thread.join()
+            threads.append(thread)
         except TimeoutException:
             log('Timeout while accessing resources', error=True)
         except Exception as ex:
             log(str(ex), error=True)
+
+        if len(threads) >= MAX_THREADS_FOR_REMOTE_FILE_CONVERSION:
+            thread_to_join = threads.popleft()
+            if thread_to_join is None:
+                continue
+
+            thread_to_join.join()
 
 def convert_partials(request_executor: MyCloudRequestExecutor,
                      local_dir: str,

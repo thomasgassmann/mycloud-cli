@@ -17,5 +17,5 @@
     ],
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
-    "python.pythonPath": "C:\\Program Files (x86)\\Anaconda3\\python.exe"
+    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\envs\\mycloud\\python.exe"
 }
