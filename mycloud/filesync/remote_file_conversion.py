@@ -1,4 +1,5 @@
 import os
+import sys
 from collections import deque
 from random import shuffle
 from threading import Thread
@@ -51,9 +52,13 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                 else:
                     convert_file(request_executor, local_dir, mycloud_dir, files[0], _skip)
 
-            thread = Thread(target=convert, args=(is_partial, files, request_executor, local_dir, mycloud_dir, _skip))
-            thread.start()
-            threads.append(thread)
+            if sys.platform == 'win32':
+                thread = Thread(target=convert, args=(is_partial, files, request_executor, local_dir, mycloud_dir, _skip))
+                thread.start()
+                threads.append(thread)
+            else:
+                # TODO: temporarily disabled threading on linux because SIGALRM interrupt does not support to be called in a thread
+                convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip)
         except TimeoutException:
             log('Timeout while accessing resources', error=True)
         except Exception as ex:
