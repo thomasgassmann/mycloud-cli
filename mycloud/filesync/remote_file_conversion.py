@@ -64,6 +64,8 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
         except Exception as ex:
             log(str(ex), error=True)
 
+        # TODO: Handle case where we pop off the longest running thread.
+        # In that case all other threads will finish before it and only one file will be hashed at once
         if len(threads) >= MAX_THREADS_FOR_REMOTE_FILE_CONVERSION:
             thread_to_join = threads.popleft()
             if thread_to_join is None:

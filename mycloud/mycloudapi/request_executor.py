@@ -1,4 +1,8 @@
 import requests
+import socket
+import psutil
+import struct
+from sys import platform
 from time import sleep
 from requests.models import PreparedRequest
 from mycloud.logger import log
@@ -48,6 +52,17 @@ class MyCloudRequestExecutor:
             return self.execute_request(request)
         return response
 
+    @staticmethod
+    def _get_ip_address(ifname):
+        network_ifs = psutil.net_if_addrs()
+        if ifname not in network_ifs:
+            raise ValueError('Could not find network if {}'.format(ifname))
+
+        selected = network_ifs[ifname]
+        addr = list(filter(lambda x: x.family ==
+                           socket.AddressFamily.AF_INET, selected))[0]
+        return addr.address
+
     def _get_headers(self, content_type: ContentType, bearer_token: str):
         headers = {
             'Content-Type': str(content_type),
@@ -74,7 +89,8 @@ class MyCloudRequestExecutor:
             retry = True
             self.wait_time *= WAIT_TIME_MULTIPLIER
 
-        log('Checking status code {} (Status {})...'.format(request_url, str(response.status_code)))
+        log('Checking status code {} (Status {})...'.format(
+            request_url, str(response.status_code)))
         if response.status_code == 404 and not ignore_not_found:
             raise ValueError('File not found in myCloud')
 
