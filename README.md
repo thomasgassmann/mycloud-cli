@@ -9,6 +9,7 @@ To get the access token (when not passed manually), the proxy needs to run. To s
 `mitmdump -p 8080 -s "proxy.py"`
 
 ## Todos
+- [ ] Use multiple network interfaces to send requests (for example WiFi and 4G)
 - [ ] Faster check if file was already uploaded: Hashing for local files? Update date for bigger ones?
 - [ ] Do things in parallel (especially hashing)
 - [ ] Replace argparse with fire
