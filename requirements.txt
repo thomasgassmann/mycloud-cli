@@ -10,3 +10,4 @@ tabulate==0.8.2
 appdirs==1.4.3
 hurry.filesize==0.9
 psutil==5.4.7
+mitmproxy==4.0.4
