@@ -71,19 +71,25 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
         except Exception as ex:
             log(str(ex), error=True)
 
-        for thread in threads:
-            if not thread.is_alive():
-                threads.remove(thread)
-                del thread_file_sizes[thread.ident]
+        to_be_removed = [thread for thread in threads if not thread.is_alive()]
+        for thread_to_be_removed in to_be_removed:
+            del thread_file_sizes[thread_to_be_removed.ident]
+            threads.remove(thread_to_be_removed)
 
         if len(threads) >= MAX_THREADS_FOR_REMOTE_FILE_CONVERSION:
+            log('More than 10 threads active... Searching for a thread to join...')
             min_file_size_thread = min(
                 thread_file_sizes, key=thread_file_sizes.get)
+            log('Found thread with least amount of work to join (id {})'.format(
+                min_file_size_thread))
             thread = list(filter(lambda t: t.ident ==
                                  min_file_size_thread, threads))[0]
+            log('Got thread {} from list... Joining thread...'.format(thread.ident))
             thread.join()
-            threads.remove(thread)
+            log('Finished joining thread... Removing thread from list {}'.format(
+                thread.ident))
             del thread_file_sizes[thread.ident]
+            threads.remove(thread)
 
 
 def get_local_file(is_partial: bool, files: List[str], remote_dir: str, local_dir: str):
