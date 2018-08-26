@@ -27,3 +27,27 @@ To get the access token (when not passed manually), the proxy needs to run. To s
 - [ ] Improve TCP performance
 - [ ] Machine Learning to prioritize files to upload
 - [ ] Request caching
+
+## General Notes on API (TDB)
+
+ZIP DOWNLOAD:
+POST: https://storage.prod.mdl.swisscom.ch/jobs/zip
+
+MOVE TRASH:
+PUT: https://storage.prod.mdl.swisscom.ch/trash/items
+
+GET MAX FILE SIZE:
+POST https://storage.prod.mdl.swisscom.ch/lfs
+
+PARTIAL UPLOAD FOR FILE (still max 3 GB?)
+POST https://storage.prod.mdl.swisscom.ch/lfs/[id]/[partIndex]
+where id returned from previous endpoint
+
+SESSIONS:
+GET https://identity.prod.mdl.swisscom.ch/sessions?nocache=1532216378144
+
+CONFIG
+GET https://swisscom.zendesk.com/embeddable/config
+
+ME
+GET https://identity.prod.mdl.swisscom.ch/me
