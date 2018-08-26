@@ -45,10 +45,14 @@ class LocalTranslatablePath(TranslatablePath):
         dictionary['remote_base'] = self._resource_builder.mycloud_dir
         dictionary['local_base'] = self._resource_builder.base_dir
         dictionary['chunk_size'] = MY_CLOUD_BIG_FILE_CHUNK_SIZE
+        dictionary['size'] = operation_timeout(
+            lambda x: os.stat(x['path']).st_size, path=self._local_file)
         dictionary['ctime'] = operation_timeout(
             lambda x: os.path.getctime(x['file']), file=self._local_file)
         dictionary['utime'] = operation_timeout(
             lambda x: os.path.getmtime(x['file']), file=self._local_file)
         if self._calculatable_version is not None:
+            # TODO: this is a potential security risk. For really small files, hash could be brute-forced
+            # Hash is of unencrypted file!!!
             dictionary['hash'] = self._calculatable_version.get_hash()
         return dictionary
