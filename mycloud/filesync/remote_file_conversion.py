@@ -47,27 +47,22 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
         return False
     threads = []
     thread_file_sizes = {}
+
     def del_thread(thread):
         log('Deleting thread {}'.format(thread.ident))
         if thread in threads:
             threads.remove(thread)
         else:
-            log('Thread {} not found in thread list'.format(thread.ident), error=True)
+            log('Thread {} not found in thread list'.format(
+                thread.ident), error=True)
         if thread.ident in thread_file_sizes:
             del thread_file_sizes[thread.ident]
         else:
-            log('Thread file size for thread {} not found in dictionary'.format(thread.ident), error=True)
+            log('Thread file size for thread {} not found in dictionary'.format(
+                thread.ident), error=True)
 
     for is_partial, files in generator:
         try:
-            def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
-                if is_partial:
-                    convert_partials(request_executor, local_dir,
-                                     mycloud_dir, files, _skip)
-                else:
-                    convert_file(request_executor, local_dir,
-                                 mycloud_dir, files[0], _skip)
-
             thread = Thread(target=convert, args=(
                 is_partial, files, request_executor, local_dir, mycloud_dir, _skip))
             local_file = get_local_file(
@@ -99,6 +94,15 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
             log('Finished joining thread... Removing thread from list {}'.format(
                 thread.ident))
             del_thread(thread)
+
+
+def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
+    if is_partial:
+        convert_partials(request_executor, local_dir,
+                         mycloud_dir, files, _skip)
+    else:
+        convert_file(request_executor, local_dir,
+                     mycloud_dir, files[0], _skip)
 
 
 def get_local_file(is_partial: bool, files: List[str], remote_dir: str, local_dir: str):
