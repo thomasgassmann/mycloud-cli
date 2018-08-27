@@ -220,13 +220,6 @@ class FileManager:
         if response.status_code == 404:
             return
 
-        files = DirectoryListRequest.format_response(response)
-        for file in files:
-            file_name = os.path.basename(file['Path'])
-            dir_name = os.path.dirname(file['Path'])
-            if file_name == METADATA_FILE_NAME and self._directory_contains_only_one_file(files, dir_name):
-                yield file['Path']
-
         if DirectoryListRequest.is_timeout(response):
             metadata_request = MetadataRequest(remote_path)
             metadata_response = self._request_executor.execute_request(
@@ -234,10 +227,18 @@ class FileManager:
             (dirs, files) = MetadataRequest.format_response(metadata_response)
             if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME:
                 yield files[0]['Path']
+                return
 
             for dir in dirs:
                 dir_path = BasicRemotePath(dir['Path'])
                 yield from self._read_directory_using_directory_list_request(dir_path)
+
+        files = DirectoryListRequest.format_response(response)
+        for file in files:
+            file_name = os.path.basename(file['Path'])
+            dir_name = os.path.dirname(file['Path'])
+            if file_name == METADATA_FILE_NAME and self._directory_contains_only_one_file(files, dir_name):
+                yield file['Path']
 
     def _directory_contains_only_one_file(self, paths, directory: str):
         return len(list(filter(lambda x: os.path.dirname(x['Path']) == directory, paths))) == 1

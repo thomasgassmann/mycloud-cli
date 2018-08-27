@@ -47,15 +47,12 @@ class DirectoryListRequest(MyCloudRequest):
         unix_time = time()
         return REQUEST_URL.format(resource, list_type, unix_time)
 
-    def ignored_error_status_codes(self):
-        return [404] if self._ignore_404 else []
-
     @staticmethod
     def format_response(response):
         if response.status_code == 404:
             if not self._ignore_404:
                 raise ConnectionError('404')
-            return ([], [])
+            return []
         files_or_dirs = json.loads(response.text)
         return files_or_dirs
 

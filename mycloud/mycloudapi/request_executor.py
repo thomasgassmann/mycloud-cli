@@ -40,10 +40,8 @@ class MyCloudRequestExecutor:
                 request_url, headers=headers, data=data_generator)
         else:
             raise ValueError('Invalid request method')
-        ignored_error_status_codes = request.ignored_error_status_codes()
-        retry = self._check_validity(response,
-                                     ignored_error_status_codes,
-                                     request_url)
+        ignored = request.ignored_error_status_codes()
+        retry = self._check_validity(response, ignored, request_url)
         if retry:
             return self.execute_request(request)
         return response
@@ -66,7 +64,9 @@ class MyCloudRequestExecutor:
         }
         return headers
 
-    def _check_validity(self, response, separately_handled, request_url: str):
+    def _check_validity(self, response, ignored, request_url: str):
+        separately_handled = [401, 500, 404, 400, 409]
+
         retry = False
         if response.status_code == 401:
             if self.authenticator.auth_mode == AuthMode.Token:
@@ -75,7 +75,7 @@ class MyCloudRequestExecutor:
                 self.authenticator.invalidate_token()
                 retry = True
 
-        if response.status_code == 500:
+        if response.status_code == 500 and 500 not in ignored:
             log('HTTP 500 returned from server', error=True)
             log('ERR: {}'.format(str(response.content)), error=True)
             log('Waiting {} seconds until retry...'.format(self.wait_time))
@@ -85,13 +85,13 @@ class MyCloudRequestExecutor:
 
         log('Checking status code {} (Status {})...'.format(
             request_url, str(response.status_code)))
-        if response.status_code == 404 and not ignore_not_found:
+        if response.status_code == 404 and 404 not in ignored:
             raise ValueError('File not found in myCloud')
 
-        if response.status_code == 400 and not ignore_bad_request:
+        if response.status_code == 400 and 400 not in ignored:
             raise ValueError('Bad Request: {}'.format(response.text))
 
-        if response.status_code == 409 and not ignore_conflict:
+        if response.status_code == 409 and 409 not in ignored:
             raise ValueError('Conflict: {}'.format(response.text))
 
         if not str(response.status_code).startswith('2') and response.status_code not in separately_handled:

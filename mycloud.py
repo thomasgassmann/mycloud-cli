@@ -88,7 +88,8 @@ class Application:
         self._add_skip_argument(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
-        convert_remote_files(executor, args.mycloud_dir, args.local_dir, args.skip or [])
+        convert_remote_files(executor, args.mycloud_dir,
+                             args.local_dir, args.skip or [])
 
     def statistics(self):
         command_line_parser = StatisticsCommandLineParser(self)
@@ -278,6 +279,8 @@ class Application:
 if __name__ == '__main__':
     try:
         Application().run()
+    except KeyboardInterrupt:
+        logger.log('Keyboard Interrupt')
     except Exception as ex:
         logger.log('FATAL: {}'.format(str(ex)), error=True)
         traceback.print_exc()
