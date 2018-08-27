@@ -29,14 +29,8 @@ class MyCloudRequest(ABC):
     def is_query_parameter_access_token(self):
         return False
 
-    def ignore_not_found(self):
-        return False
-
-    def ignore_bad_request(self):
-        return False
-
-    def ignore_conflict(self):
-        return False
+    def ignored_error_status_codes(self):
+        return []
 
     def get_data_generator(self):
         return None

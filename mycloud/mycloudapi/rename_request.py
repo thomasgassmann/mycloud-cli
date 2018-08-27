@@ -21,8 +21,8 @@ class RenameRequest(MyCloudRequest):
     def get_request_url(self):
         return REQUEST_URL
 
-    def ignore_conflict(self):
-        return self._ignore_conflict
+    def ignored_error_status_codes(self):
+        return [409] if self._ignore_conflict else []
 
     def get_data_generator(self):
         req = {

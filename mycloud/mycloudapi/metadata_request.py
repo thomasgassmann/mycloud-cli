@@ -12,8 +12,8 @@ class MetadataRequest(MyCloudRequest):
             object_resource += '/'
         raise_if_invalid_cloud_path(object_resource)
         self.object_resource = object_resource
-        self.ignore_404 = ignore_not_found
-        self.ignore_400 = ignore_bad_request
+        self._ignore_404 = ignore_not_found
+        self._ignore_400 = ignore_bad_request
 
     def get_method(self):
         return Method.GET
@@ -22,11 +22,13 @@ class MetadataRequest(MyCloudRequest):
         resource = get_object_id(self.object_resource)
         return REQUEST_URL + resource
 
-    def ignore_not_found(self):
-        return self.ignore_404
-
-    def ignore_bad_request(self):
-        return self.ignore_400
+    def ignored_error_status_codes(self):
+        ignored = []
+        if self._ignore_400:
+            ignored.append(400)
+        if self._ignore_404:
+            ignored.append(404)
+        return ignored
 
     def is_query_parameter_access_token(self):
         return True

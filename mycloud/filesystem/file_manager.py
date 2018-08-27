@@ -31,25 +31,17 @@ class FileManager:
     def read_directory(self,
                        translatable_path: TranslatablePath,
                        recursive=False,
-                       second=False):
-        base = translatable_path.calculate_remote()
-        metadata_request = MetadataRequest(base, ignore_not_found=True)
-        response = self._request_executor.execute_request(metadata_request)
-        if response.status_code == 404:
-            yield from []
-        (dirs, files) = MetadataRequest.format_response(response)
-        if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
-            yield translatable_path
-
-        def loop_dirs(rec, sec):
-            for dir in dirs:
-                remote_path = BasicRemotePath(dir['Path'])
-                yield from self.read_directory(remote_path, rec, sec)
-
-        if recursive:
-            yield from loop_dirs(True, False)
-        elif not second:
-            yield from loop_dirs(False, True)
+                       deep=False,
+                       _second=False):
+        if deep:
+            if not recursive:
+                raise ValueError(
+                    'Cannot perform non-recursive deep directory list using directory list request')
+            yield from self._read_directory_using_directory_list_request(
+                translatable_path)
+        else:
+            yield from self._read_directory_using_metadata_request(
+                translatable_path, recursive, False)
 
     def started_partial_upload(self,
                                translatable_path: TranslatablePath,
@@ -88,11 +80,15 @@ class FileManager:
         summed_up_size = sum(file_lengths)
         if file_length >= summed_up_size:
             return True, False, 0
-        chunk_size = version.get_property('chunk_size') or MY_CLOUD_BIG_FILE_CHUNK_SIZE
+        chunk_size = version.get_property(
+            'chunk_size') or MY_CLOUD_BIG_FILE_CHUNK_SIZE
         if len(files) > 1:
-            percent_diff = chunk_size / max(file_lengths) if chunk_size > max(file_lengths) else max(file_lengths) / chunk_size
+            percent_diff = chunk_size / \
+                max(file_lengths) if chunk_size > max(
+                    file_lengths) else max(file_lengths) / chunk_size
             if percent_diff > 1.1:
-                raise ValueError('Expected chunk size differs more than 10% from actual chunk size... Aborting')
+                raise ValueError(
+                    'Expected chunk size differs more than 10% from actual chunk size... Aborting')
 
         # Can't compare exact size because remote and local sizes are different
         hash = version.get_property('hash')
@@ -189,3 +185,26 @@ class FileManager:
         for transform in self._transforms:
             versioned_cloud_stream_accessor.add_transform(transform)
         return versioned_cloud_stream_accessor
+
+    def _read_directory_using_metadata_request(self, translatable_path: TranslatablePath, recursive: bool, _second: bool):
+        base = translatable_path.calculate_remote()
+        metadata_request = MetadataRequest(base, ignore_not_found=True)
+        response = self._request_executor.execute_request(metadata_request)
+        if response.status_code == 404:
+            yield from []
+        (dirs, files) = MetadataRequest.format_response(response)
+        if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
+            yield translatable_path
+
+        def loop_dirs(rec, sec):
+            for dir in dirs:
+                remote_path = BasicRemotePath(dir['Path'])
+                yield from self._read_directory_using_metadata_request(remote_path, recursive=rec, _second=sec)
+
+        if recursive:
+            yield from loop_dirs(True, False)
+        elif not _second:
+            yield from loop_dirs(False, True)
+
+    def _read_directory_using_directory_list_request(self, translatable_path: TranslatablePath):
+        pass
