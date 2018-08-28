@@ -11,6 +11,7 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/sync/list?p={}&$type={}&noca
 class ListType(Enum):
     Directory = 0
     File = 1
+    Both = 2
 
 
 class DirectoryListRequest(MyCloudRequest):
@@ -42,6 +43,8 @@ class DirectoryListRequest(MyCloudRequest):
             list_type = 'directory'
         elif self._list_type == ListType.File:
             list_type = 'file'
+        elif self._list_type == ListType.Both:
+            list_type = 'file,directory'
         else:
             raise ValueError('List type could not be found')
         unix_time = time()
