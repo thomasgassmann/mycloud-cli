@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from pathlib import Path
 from mycloud.helper import is_int
 from mycloud.mycloudapi import (
@@ -232,13 +233,15 @@ class FileManager:
             for dir in dirs:
                 dir_path = BasicRemotePath(dir['Path'])
                 yield from self._read_directory_using_directory_list_request(dir_path)
+        else:
+            files = DirectoryListRequest.format_response(response)
+            directory_file_count = defaultdict(int)
+            for file in files:
+                dir = os.path.dirname(file['Path'])
+                directory_file_count[dir] += 1
 
-        files = DirectoryListRequest.format_response(response)
-        for file in files:
-            file_name = os.path.basename(file['Path'])
-            dir_name = os.path.dirname(file['Path'])
-            if file_name == METADATA_FILE_NAME and self._directory_contains_only_one_file(files, dir_name):
-                yield file['Path']
-
-    def _directory_contains_only_one_file(self, paths, directory: str):
-        return len(list(filter(lambda x: os.path.dirname(x['Path']) == directory, paths))) == 1
+            for file in files:
+                file_name = os.path.basename(file['Path'])
+                dir_name = os.path.dirname(file['Path'])
+                if file_name == METADATA_FILE_NAME and directory_file_count[dir_name] == 1:
+                    yield file['Path']

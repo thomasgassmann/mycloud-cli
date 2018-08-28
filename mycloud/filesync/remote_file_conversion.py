@@ -40,12 +40,6 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
     generator = list_candidates_recursively(request_executor, mycloud_dir)
 
-    manager = FileManager(request_executor, [], None)
-    generator = manager.read_directory(BasicRemotePath('/Drive/'),
-                                       recursive=True, deep=True)
-    for file in generator:
-        print(file)
-
     def _skip(file):
         for item in skip:
             if file.startswith(item):
