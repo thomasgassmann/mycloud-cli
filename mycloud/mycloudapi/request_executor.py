@@ -52,6 +52,8 @@ class MyCloudRequestExecutor:
 
     def reset_session(self):
         self.session.close()
+        del self.session
+        self.session = requests.Session()
 
     @staticmethod
     def _get_ip_address(ifname):

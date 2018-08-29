@@ -1,4 +1,5 @@
 import os
+import traceback
 from random import shuffle
 from mycloud.logger import log
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
@@ -23,11 +24,13 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                 upsync_file(request_executor, resource_builder,
                             local_file, progress_tracker, encryption_pwd)
             except TimeoutException:
-                log('Failed to access file {} within the given time'.format(local_file), error=True)
+                log('Failed to access file {} within the given time'.format(
+                    local_file), error=True)
             except ValueError as ex:
                 log(str(ex), error=True)
             except Exception as ex:
                 log('Unhandled exception: {}'.format(str(ex)), error=True)
+                traceback.print_exc()
 
 
 def upsync_file(request_executor: MyCloudRequestExecutor,

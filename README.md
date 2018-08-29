@@ -53,3 +53,7 @@ GET https://swisscom.zendesk.com/embeddable/config
 
 ME
 GET https://identity.prod.mdl.swisscom.ch/me
+
+MOVE
+https://storage.prod.mdl.swisscom.ch/commands/move
+not sure whether this is any different than rename?

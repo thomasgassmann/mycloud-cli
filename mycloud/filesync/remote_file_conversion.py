@@ -48,19 +48,19 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
     generator = list_candidates_recursively(request_executor, mycloud_dir)
 
-    import json
-    data = []
-    i = 0
-    for is_partial, files in generator:
-        data.append({
-            'partial': is_partial,
-            'files': files
-        })
-        i += 1
-        if i % 5000 == 0:
-            print('saving')
-            with open('test.json', 'w') as f:
-                json.dump(data, f)
+    # import json
+    # data = []
+    # i = 0
+    # for is_partial, files in generator:
+    #     data.append({
+    #         'partial': is_partial,
+    #         'files': files
+    #     })
+    #     i += 1
+    #     if i % 5000 == 0:
+    #         print('saving')
+    #         with open('test.json', 'w') as f:
+    #             json.dump(data, f)
 
     sys.exit(-1)
 
@@ -264,7 +264,8 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         sorted_file_list = [file['Path'] for file in files]
         sorted_file_list.sort(key=lambda x: len(os.path.dirname(x)))
         skip_dirs = []
-        # TODO: improve efficiency... especially any([...]) part
+        # TODO: improve eyfficiency... especially any([...]) part
+        # build directory tree data structure
         for file in sorted_file_list:
             if any([file.startswith(skip_dir) for skip_dir in skip_dirs]):
                 continue

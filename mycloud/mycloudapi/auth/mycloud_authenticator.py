@@ -30,7 +30,7 @@ class MyCloudAuthenticator:
 
     def set_bearer_auth(self, bearer_token):
         self.auth_mode = AuthMode.Token
-        if bearer_token == CACHED_TOKEN_IDENTIFIER:
+        if bearer_token == CACHED_TOKEN_IDENTIFIER or bearer_token is None:
             success = self._load_cached_token()
             if success:
                 self.bearer_token = self.current_token

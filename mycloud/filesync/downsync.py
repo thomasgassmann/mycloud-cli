@@ -1,5 +1,6 @@
 import os
 import tempfile
+import traceback
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
 from mycloud.filesystem import TranslatablePath, FileManager, BasicStringVersion, FileMetadata, Version
@@ -28,7 +29,7 @@ def downsync_folder(request_executor: MyCloudRequestExecutor,
             log('{}'.format(str(ex)), error=True)
         except Exception as ex:
             log('Unhandled exception: {}'.format(str(ex)), error=True)
-            import traceback
+            traceback.print_exc()
 
 
 def downsync_file(request_executor: MyCloudRequestExecutor,
@@ -61,7 +62,8 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     # https://stackoverflow.com/questions/29013495/opening-file-in-append-mode-and-seeking-to-start
     if started_partial:
         # Delete file content after partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE -> then append
-        chunk_size = latest_version.get_property('chunk_size') or MY_CLOUD_BIG_FILE_CHUNK_SIZE
+        chunk_size = latest_version.get_property(
+            'chunk_size') or MY_CLOUD_BIG_FILE_CHUNK_SIZE
         delete_bytes_after = partial_index * chunk_size
         file_length = operation_timeout(lambda x: os.stat(
             x['local_file']).st_size, local_file=local_file)
