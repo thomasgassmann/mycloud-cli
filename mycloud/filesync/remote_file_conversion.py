@@ -47,6 +47,11 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                          skip):
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
     generator = list_candidates_recursively(request_executor, mycloud_dir)
+    for is_partial, files in generator:
+        print(is_partial)
+        print(files)
+
+    sys.exit(-1)
 
     def _skip(file):
         for item in skip:
@@ -223,19 +228,49 @@ def convert_file(request_executor: MyCloudRequestExecutor,
                           resource_builder.ends_with_aes_extension(remote_file))
 
 
-def new_list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
+def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
     list_request = DirectoryListRequest(mycloud_dir, ListType.File,
                                         ignore_internal_server_error=True, ignore_not_found=True)
     list_response = request_executor.execute_request(list_request)
     if list_response.status_code == 404:
         return
     elif not DirectoryListRequest.is_timeout(list_response):
+        def get_tree():
+            return defaultdict(get_tree)
+
+        tree = get_tree()
         files = DirectoryListRequest.format_response(list_response)
-        # TODO: filter unconverted files and yield
-        directories = defaultdict(list)
+        directory_files = defaultdict(list)
+        directory_dirs = defaultdict(list)
         for file in files:
             file_dir = os.path.dirname(file['Path'])
-            directories[file_dir].append(file['Path'])
+            directory_files[file_dir].append(file['Path'])
+            base_dir = os.path.dirname(file_dir)
+            directory_dirs[base_dir].append(file_dir)
+
+        sorted_file_list = [file['Path'] for file in files]
+        sorted_file_list.sort(key=lambda x: len(os.path.dirname(x)))
+        skip_dirs = []
+        for file in sorted_file_list:
+            if any([file.startswith(skip_dir) for skip_dir in skip_dirs]):
+                continue
+
+            file_name = os.path.basename(file)
+            dir_name = os.path.dirname(file)
+            if file_name == METADATA_FILE_NAME and \
+                    len(directory_files[dir_name]) == 1 and \
+                    len(directory_dirs[dir_name]) >= 1:
+                skip_dirs.append(dir_name)
+                continue
+
+            files_in_dir = directory_files[dir_name]
+            partial_dir = _is_partial_directory(files_in_dir)
+            # if partial_dir:
+            #     skip_dirs.append(dir_name)
+            #     yield partial_dir, files_in_dir
+            # else:
+            #     yield partial_dir, [file]
+
         return
 
     metadata_request = MetadataRequest(mycloud_dir, ignore_not_found=True)
@@ -247,7 +282,7 @@ def new_list_candidates_recursively(request_executor: MyCloudRequestExecutor, my
     except Exception as ex:
         log('Failed to list directory: {}'.format(str(ex)))
         log('Retrying to list directory {}...'.format(mycloud_dir))
-        yield from new_list_candidates_recursively(request_executor, mycloud_dir)
+        yield from list_candidates_recursively(request_executor, mycloud_dir)
         return
 
     (dirs, files) = MetadataRequest.format_response(metadata_response)
@@ -257,7 +292,7 @@ def new_list_candidates_recursively(request_executor: MyCloudRequestExecutor, my
             metadata_path))
         return
 
-    partial_directory = _is_partial_directory(files)
+    partial_directory = _is_partial_directory([file['Path'] for file in files])
 
     if partial_directory:
         yield partial_directory, [file['Path'] for file in files]
@@ -267,47 +302,16 @@ def new_list_candidates_recursively(request_executor: MyCloudRequestExecutor, my
 
     shuffle(dirs)
     for dir in dirs:
-        yield from new_list_candidates_recursively(request_executor, dir['Path'])
-
-
-# def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
-#     req = MetadataRequest(mycloud_dir, ignore_not_found=True)
-#     try:
-#         response = request_executor.execute_request(req)
-#     except TimeoutException:
-#         return
-#     except Exception as ex:
-#         log('Failed to list directory: {}'.format(str(ex)))
-#         log('Retrying to list directory {}...'.format(mycloud_dir))
-#         yield from list_candidates_recursively(request_executor, mycloud_dir)
-#         return
-
-#     (dirs, files) = MetadataRequest.format_response(response)
-#     if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) > 0:
-#         metadata_path = files[0]['Path']
-#         log('Skipping {} and subdirectories, because it was already converted...'.format(
-#             metadata_path))
-#         return
-
-#     partial_directory = _is_partial_directory(files)
-
-#     if partial_directory:
-#         yield partial_directory, [file['Path'] for file in files]
-#     else:
-#         for file in files:
-#             yield partial_directory, [file['Path']]
-
-#     shuffle(dirs)
-#     for dir in dirs:
-#         yield from list_candidates_recursively(request_executor, dir['Path'])
+        yield from list_candidates_recursively(request_executor, dir['Path'])
 
 
 def _is_partial_directory(files):
-    if not all([PARTIAL_EXTENSION in file['Path'] for file in files]) or len(files) == 0:
+    base_names = [os.path.basename(file) for file in files]
+    if len(files) == 0 or not all([PARTIAL_EXTENSION in file for file in base_names]):
         return False
 
-    for file in files:
-        number = file['Name'][:START_NUMBER_LENGTH]
+    for file in base_names:
+        number = file[:START_NUMBER_LENGTH]
         if not is_int(number):
             return False
 
