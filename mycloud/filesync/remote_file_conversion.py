@@ -47,9 +47,20 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                          skip):
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
     generator = list_candidates_recursively(request_executor, mycloud_dir)
+
+    import json
+    data = []
+    i = 0
     for is_partial, files in generator:
-        print(is_partial)
-        print(files)
+        data.append({
+            'partial': is_partial,
+            'files': files
+        })
+        i += 1
+        if i % 5000 == 0:
+            print('saving')
+            with open('test.json', 'w') as f:
+                json.dump(data, f)
 
     sys.exit(-1)
 
@@ -229,19 +240,21 @@ def convert_file(request_executor: MyCloudRequestExecutor,
 
 
 def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
+    log(f'Listing directory {mycloud_dir}...')
+    log(f'Trying to read entire directory {mycloud_dir} at once')
     list_request = DirectoryListRequest(mycloud_dir, ListType.File,
                                         ignore_internal_server_error=True, ignore_not_found=True)
     list_response = request_executor.execute_request(list_request)
     if list_response.status_code == 404:
+        log(f'Directory {mycloud_dir} not found... Returning')
         return
     elif not DirectoryListRequest.is_timeout(list_response):
-        def get_tree():
-            return defaultdict(get_tree)
-
-        tree = get_tree()
+        log(
+            f'Server returned successful response for entire directory {mycloud_dir}')
         files = DirectoryListRequest.format_response(list_response)
         directory_files = defaultdict(list)
         directory_dirs = defaultdict(list)
+        time
         for file in files:
             file_dir = os.path.dirname(file['Path'])
             directory_files[file_dir].append(file['Path'])
@@ -251,6 +264,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         sorted_file_list = [file['Path'] for file in files]
         sorted_file_list.sort(key=lambda x: len(os.path.dirname(x)))
         skip_dirs = []
+        # TODO: improve efficiency... especially any([...]) part
         for file in sorted_file_list:
             if any([file.startswith(skip_dir) for skip_dir in skip_dirs]):
                 continue
@@ -265,19 +279,23 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
 
             files_in_dir = directory_files[dir_name]
             partial_dir = _is_partial_directory(files_in_dir)
-            # if partial_dir:
-            #     skip_dirs.append(dir_name)
-            #     yield partial_dir, files_in_dir
-            # else:
-            #     yield partial_dir, [file]
+            if partial_dir:
+                skip_dirs.append(dir_name)
+                yield partial_dir, files_in_dir
+            else:
+                yield partial_dir, [file]
 
         return
 
+    log(
+        f'Couldn\'t list entire directory at once... Listing directory {mycloud_dir} in a flat way')
     metadata_request = MetadataRequest(mycloud_dir, ignore_not_found=True)
     metadata_response = None
     try:
         metadata_response = request_executor.execute_request(metadata_request)
     except TimeoutException:
+        log(
+            f'Timeout when trying to list directory {mycloud_dir}. Returning', error=True)
         return
     except Exception as ex:
         log('Failed to list directory: {}'.format(str(ex)))

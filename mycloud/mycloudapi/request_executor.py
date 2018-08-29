@@ -10,11 +10,12 @@ from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
 from mycloud.mycloudapi import MyCloudRequest
 from mycloud.mycloudapi.request import ContentType
 from mycloud.mycloudapi.request import Method
-from mycloud.constants import WAIT_TIME_MULTIPLIER
+from mycloud.constants import WAIT_TIME_MULTIPLIER, RESET_SESSION_EVERY
 
 
 class MyCloudRequestExecutor:
     def __init__(self, authenticator: MyCloudAuthenticator):
+        self._request_count_for_current_session = 0
         self.authenticator = authenticator
         self.session = requests.Session()
         self.wait_time = 10
@@ -40,11 +41,17 @@ class MyCloudRequestExecutor:
                 request_url, headers=headers, data=data_generator)
         else:
             raise ValueError('Invalid request method')
+        if self._request_count_for_current_session % RESET_SESSION_EVERY == 0:
+            self.reset_session()
+        self._request_count_for_current_session += 1
         ignored = request.ignored_error_status_codes()
         retry = self._check_validity(response, ignored, request_url)
         if retry:
             return self.execute_request(request)
         return response
+
+    def reset_session(self):
+        self.session.close()
 
     @staticmethod
     def _get_ip_address(ifname):
