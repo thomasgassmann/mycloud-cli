@@ -34,6 +34,7 @@ from mycloud.constants import (
     METADATA_FILE_NAME,
     MAX_THREADS_FOR_REMOTE_FILE_CONVERSION
 )
+from mycloud.filesync.tree import RelativeFileTree
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.streamapi import ProgressReporter
 from mycloud.streamapi.transforms import AES256CryptoTransform
@@ -48,19 +49,9 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
     generator = list_candidates_recursively(request_executor, mycloud_dir)
 
-    # import json
-    # data = []
-    # i = 0
-    # for is_partial, files in generator:
-    #     data.append({
-    #         'partial': is_partial,
-    #         'files': files
-    #     })
-    #     i += 1
-    #     if i % 5000 == 0:
-    #         print('saving')
-    #         with open('test.json', 'w') as f:
-    #             json.dump(data, f)
+    for is_partial, files, in generator:
+        print(is_partial)
+        print(files)
 
     sys.exit(-1)
 
@@ -252,39 +243,18 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         log(
             f'Server returned successful response for entire directory {mycloud_dir}')
         files = DirectoryListRequest.format_response(list_response)
-        directory_files = defaultdict(list)
-        directory_dirs = defaultdict(list)
-        time
+        tree = RelativeFileTree()
         for file in files:
-            file_dir = os.path.dirname(file['Path'])
-            directory_files[file_dir].append(file['Path'])
-            base_dir = os.path.dirname(file_dir)
-            directory_dirs[base_dir].append(file_dir)
+            tree.add_file(file['Path'])
 
-        sorted_file_list = [file['Path'] for file in files]
-        sorted_file_list.sort(key=lambda x: len(os.path.dirname(x)))
-        skip_dirs = []
-        # TODO: improve eyfficiency... especially any([...]) part
-        # build directory tree data structure
-        for file in sorted_file_list:
-            if any([file.startswith(skip_dir) for skip_dir in skip_dirs]):
+        for (dirs, files) in tree.loop():
+            generator = _yield_from_directory(dirs, files)
+            continue_traversal = next(generator)
+            if not continue_traversal:
+                # TODO: Don't traverse subdirs
                 continue
 
-            file_name = os.path.basename(file)
-            dir_name = os.path.dirname(file)
-            if file_name == METADATA_FILE_NAME and \
-                    len(directory_files[dir_name]) == 1 and \
-                    len(directory_dirs[dir_name]) >= 1:
-                skip_dirs.append(dir_name)
-                continue
-
-            files_in_dir = directory_files[dir_name]
-            partial_dir = _is_partial_directory(files_in_dir)
-            if partial_dir:
-                skip_dirs.append(dir_name)
-                yield partial_dir, files_in_dir
-            else:
-                yield partial_dir, [file]
+            yield from generator
 
         return
 
@@ -305,23 +275,36 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         return
 
     (dirs, files) = MetadataRequest.format_response(metadata_response)
-    if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME and len(dirs) > 0:
-        metadata_path = files[0]['Path']
-        log('Skipping {} and subdirectories, because it was already converted...'.format(
-            metadata_path))
+    dirs = [dir['Path'] for dir in dirs]
+    files = [file['Path'] for file in files]
+
+    generator = _yield_from_directory(dirs, files)
+    continue_traversal = next(generator)
+    if not continue_traversal:
         return
 
-    partial_directory = _is_partial_directory([file['Path'] for file in files])
-
-    if partial_directory:
-        yield partial_directory, [file['Path'] for file in files]
-    else:
-        for file in files:
-            yield partial_directory, [file['Path']]
+    yield from generator
 
     shuffle(dirs)
     for dir in dirs:
-        yield from list_candidates_recursively(request_executor, dir['Path'])
+        yield from list_candidates_recursively(request_executor, dir)
+
+
+def _yield_from_directory(dirs, files):
+    if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME and len(dirs) > 0:
+        metadata_path = files[0]
+        log('Skipping {} and subdirectories, because it was already converted...'.format(
+            metadata_path))
+        yield False
+        return
+
+    partial_directory = _is_partial_directory(files)
+    yield True
+    if partial_directory:
+        yield partial_directory, files
+    else:
+        for file in files:
+            yield partial_directory, [file]
 
 
 def _is_partial_directory(files):
