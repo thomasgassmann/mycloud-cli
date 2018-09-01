@@ -5,7 +5,7 @@ import struct
 from sys import platform
 from time import sleep
 from requests.models import PreparedRequest
-from mycloud.logger import log
+from mycloud.logger import log, add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
 from mycloud.mycloudapi import MyCloudRequest
 from mycloud.mycloudapi.request import ContentType
@@ -43,7 +43,9 @@ class MyCloudRequestExecutor:
             raise ValueError('Invalid request method')
         if self._request_count_for_current_session % RESET_SESSION_EVERY == 0:
             self.reset_session()
+            save_files()
         self._request_count_for_current_session += 1
+        add_request_count(type(request).__name__)
         ignored = request.ignored_error_status_codes()
         retry = self._check_validity(response, ignored, request_url)
         if retry:

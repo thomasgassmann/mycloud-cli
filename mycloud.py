@@ -284,3 +284,5 @@ if __name__ == '__main__':
     except Exception as ex:
         logger.log('FATAL: {}'.format(str(ex)), error=True)
         traceback.print_exc()
+    finally:
+        logger.save_files()
