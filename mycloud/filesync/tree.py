@@ -10,6 +10,7 @@ class RelativeFileTree:
         self._filedircontainers = {}
 
     def add_file(self, path: str):
+        # TODO: don't add everything above, just add up until the directory that is being listed
         above = os.path.dirname(path)
         current = path
         while above != current:
@@ -27,6 +28,7 @@ class RelativeFileTree:
             prev = None
             cur_key = container_key
             skip = False
+            # TODO: Isn't it only one immediately above? could be more efficient
             while prev != cur_key:
                 prev = cur_key
                 cur_key = os.path.dirname(cur_key)
