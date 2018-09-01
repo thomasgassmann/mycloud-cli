@@ -227,7 +227,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
 
 def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
     log(f'Listing directory {mycloud_dir}...')
-    log(f'Trying to read entire directory {mycloud_dir} at once')
+    log(f'Trying to read entire directory {mycloud_dir} at once...')
     list_request = DirectoryListRequest(mycloud_dir, ListType.File,
                                         ignore_internal_server_error=True, ignore_not_found=True)
     list_response = request_executor.execute_request(list_request)
