@@ -1,4 +1,7 @@
 import os
+from mycloud.constants import METADATA_FILE_NAME, PARTIAL_EXTENSION, START_NUMBER_LENGTH
+from mycloud.helper import is_int
+from mycloud.logger import log
 
 
 class RelativeFileTree:
@@ -20,8 +23,26 @@ class RelativeFileTree:
 
     def loop(self):
         for container_key in self._filedircontainers:
-            container = self._filedircontainers[container_key]
-            yield (container.dirs, container.files)
+            base_container = self._filedircontainers[container_key]
+            prev = None
+            cur_key = container_key
+            skip = False
+            while prev != cur_key:
+                prev = cur_key
+                cur_key = os.path.dirname(cur_key)
+                if prev in self._filedircontainers:
+                    container = self._filedircontainers[prev]
+                    generator = RelativeFileTree.get_directory_generator(
+                        container.files, container.dirs)
+                    skip = not next(generator)
+                    if skip:
+                        break
+
+            base_generator = RelativeFileTree.get_directory_generator(
+                base_container.files, base_container.dirs)
+            definitely_continue = next(base_generator)
+            if not skip and definitely_continue:
+                yield from base_generator
 
     def _get_container(self, path: str):
         file_dir_container = None
@@ -31,6 +52,34 @@ class RelativeFileTree:
         else:
             file_dir_container = self._filedircontainers[path]
         return file_dir_container
+
+    @staticmethod
+    def get_directory_generator(files, dirs):
+        if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME and len(dirs) > 0:
+            metadata_path = files[0]
+            yield False
+            return
+
+        partial_directory = RelativeFileTree.is_partial_directory(files)
+        yield True
+        if partial_directory:
+            yield partial_directory, files
+        else:
+            for file in files:
+                yield partial_directory, [file]
+
+    @staticmethod
+    def is_partial_directory(files):
+        base_names = [os.path.basename(file) for file in files]
+        if len(files) == 0 or not all([PARTIAL_EXTENSION in file for file in base_names]):
+            return False
+
+        for file in base_names:
+            number = file[:START_NUMBER_LENGTH]
+            if not is_int(number):
+                return False
+
+        return True
 
 
 class FileDirContainer:

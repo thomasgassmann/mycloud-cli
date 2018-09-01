@@ -47,13 +47,6 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                          local_dir: str,
                          skip):
     resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
-    generator = list_candidates_recursively(request_executor, mycloud_dir)
-
-    for is_partial, files, in generator:
-        print(is_partial)
-        print(files)
-
-    sys.exit(-1)
 
     def _skip(file):
         for item in skip:
@@ -75,6 +68,8 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
         else:
             log('Thread file size for thread {} not found in dictionary'.format(
                 thread.ident), error=True)
+
+    generator = list_candidates_recursively(request_executor, mycloud_dir)
 
     for is_partial, files in generator:
         try:
@@ -202,7 +197,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
     temporary_file = remote_file + TEMP_FILE_EXTENSION
-    log('Renaming filxe {} to {}...'.format(remote_file, partial_destination))
+    log('Renaming file {} to {}...'.format(remote_file, partial_destination))
     while True:
         rename_request = RenameRequest(
             remote_file, temporary_file, is_file=True, ignore_conflict=True)
@@ -247,14 +242,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         for file in files:
             tree.add_file(file['Path'])
 
-        for (dirs, files) in tree.loop():
-            generator = _yield_from_directory(dirs, files)
-            continue_traversal = next(generator)
-            if not continue_traversal:
-                # TODO: Don't traverse subdirs
-                continue
-
-            yield from generator
+        yield from tree.loop()
 
         return
 
@@ -278,7 +266,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     dirs = [dir['Path'] for dir in dirs]
     files = [file['Path'] for file in files]
 
-    generator = _yield_from_directory(dirs, files)
+    generator = RelativeFileTree.get_directory_generator(files, dirs)
     continue_traversal = next(generator)
     if not continue_traversal:
         return
@@ -288,36 +276,6 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     shuffle(dirs)
     for dir in dirs:
         yield from list_candidates_recursively(request_executor, dir)
-
-
-def _yield_from_directory(dirs, files):
-    if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME and len(dirs) > 0:
-        metadata_path = files[0]
-        log('Skipping {} and subdirectories, because it was already converted...'.format(
-            metadata_path))
-        yield False
-        return
-
-    partial_directory = _is_partial_directory(files)
-    yield True
-    if partial_directory:
-        yield partial_directory, files
-    else:
-        for file in files:
-            yield partial_directory, [file]
-
-
-def _is_partial_directory(files):
-    base_names = [os.path.basename(file) for file in files]
-    if len(files) == 0 or not all([PARTIAL_EXTENSION in file for file in base_names]):
-        return False
-
-    for file in base_names:
-        number = file[:START_NUMBER_LENGTH]
-        if not is_int(number):
-            return False
-
-    return True
 
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):
