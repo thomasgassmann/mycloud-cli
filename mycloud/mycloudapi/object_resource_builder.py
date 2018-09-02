@@ -39,8 +39,13 @@ class ObjectResourceBuilder:
     def build_local_file(self, mycloud_path: str, remove_extension: bool=True):
         str = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(str)
+        if normalized_relative_path == '.':
+            normalized_relative_path = os.path.basename(
+                mycloud_path if not mycloud_path.endswith('/') else mycloud_path[:-1])
         if remove_extension:
-            normalized_relative_path = self.remove_aes_extension(normalized_relative_path)
+            normalized_relative_path = self.remove_aes_extension(
+                normalized_relative_path)
+
         return os.path.join(self.base_dir, normalized_relative_path)
 
     def ends_with_aes_extension(self, mycloud_path: str):

@@ -52,6 +52,9 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())
     local_file = resource_builder.build_local_file(remote_base_path)
+    # TODO: Check if directory of file exists... if not, then partial download also wasn't started
+    # create directory if not exists
+
     skip, started_partial, partial_index = file_manager.started_partial_download(remote_file,
                                                                                  basic_version,
                                                                                  local_file)

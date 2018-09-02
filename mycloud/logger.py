@@ -30,6 +30,9 @@ def add_request_count(request_identifier):
 
 def save_files():
     # TODO: also save log file
+    dir = os.path.dirname(REQUEST_STATISTICS_LOCATION)
+    if not os.path.isdir(dir):
+        os.makedirs(dir)
     with open(REQUEST_STATISTICS_LOCATION, 'w') as f:
         json.dump(statistics, f)
 

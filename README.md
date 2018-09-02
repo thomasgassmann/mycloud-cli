@@ -9,6 +9,7 @@ To get the access token (when not passed manually), the proxy needs to run. To s
 `mitmdump -p 8080 -s "proxy.py"`
 
 ## Todos
+- [ ] Custom WebDAV proxy with support for Synology Cloud Sync
 - [ ] Use https://storage.prod.mdl.swisscom.ch/sync/list?p=L0RyaXZlL3RlbXAv&$type=file&nocache=1535318943886 for
       directory listing. p parameter can be listed recursively. $type can either be file or directory.
 - [ ] In case of KeyboardInterrupt: join all running threads
