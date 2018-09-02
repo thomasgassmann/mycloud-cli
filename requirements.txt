@@ -1,6 +1,6 @@
 requests==2.18.4
 filelock==3.0.4
-grequests==0.3.0
+#grequests==0.3.0
 browsermob-proxy==0.8.0
 selenium==3.11.0
 pycrypto==2.6.1
@@ -11,3 +11,4 @@ appdirs==1.4.3
 hurry.filesize==0.9
 psutil==5.4.7
 mitmproxy==4.0.4
+aiohttp=3.4.2

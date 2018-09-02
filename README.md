@@ -4,9 +4,15 @@ Swisscom myCloud Backup is a backup solution, which is supposed to backup all fi
 Files larger than approx. 3GB are not allowed by Swisscom. Therefore this backup tool automatically chunks files larger than 3GB into smaller files. The threshold values can be adjusted in `constants.py`.
 
 ## Requirements
+First install all dependencies:
+`python -m pip install -r requirements.txt`
+
 mitmproxy is required to run this application. Install mitmproxy with the corresponding certificates in the Root CA. 
 To get the access token (when not passed manually), the proxy needs to run. To start the proxy run in directory `mycloud/mycloudapi`:
 `mitmdump -p 8080 -s "proxy.py"`
+
+Additonally Chromium and the corresponding web driver is required:
+`sudo apt-get install chromium chromium-driver`
 
 ## Todos
 - [ ] Custom WebDAV proxy with support for Synology Cloud Sync

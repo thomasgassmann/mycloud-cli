@@ -21,6 +21,7 @@ class MyCloudRequestExecutor:
         self.wait_time = 10
 
     def execute_request(self, request: MyCloudRequest):
+        # TODO: also use aiohttp instead of requests
         content_type = request.get_content_type()
         token = self.authenticator.get_token()
         headers = self._get_headers(content_type, token)
