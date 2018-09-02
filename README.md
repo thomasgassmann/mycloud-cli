@@ -16,16 +16,12 @@ Additonally Chromium and the corresponding web driver is required:
 
 ## Todos
 - [ ] Custom WebDAV proxy with support for Synology Cloud Sync
-- [ ] Use https://storage.prod.mdl.swisscom.ch/sync/list?p=L0RyaXZlL3RlbXAv&$type=file&nocache=1535318943886 for
-      directory listing. p parameter can be listed recursively. $type can either be file or directory.
-- [ ] In case of KeyboardInterrupt: join all running threads
-- [ ] Directory structure caching: Use ChangeRequest to get changes since last List request execution
+- [ ] In case of KeyboardInterrupt: join all running threads. handle keyboardInterrupt properly in other threads
 - [ ] Rename multiple requests in one file
 - [ ] Use multiple network interfaces to send requests (for example WiFi and 4G)
 - [ ] Faster check if file was already uploaded: Hashing for local files? Update date for bigger ones?
 - [ ] Do things in parallel (especially hashing)
 - [ ] Replace argparse with fire
-- [ ] Auto-Setup command
 - [ ] Loop faster through files locally
 - [ ] Improve upload and statistics speed
 - [ ] Statistics: List all files with certain extension
