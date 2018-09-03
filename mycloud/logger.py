@@ -11,6 +11,7 @@ init()
 
 
 LOG_FILE = ''
+_logs = []
 
 
 if os.path.isfile(REQUEST_STATISTICS_LOCATION):
@@ -29,15 +30,26 @@ def add_request_count(request_identifier):
 
 
 def save_files():
-    # TODO: also save log file
     dir = os.path.dirname(REQUEST_STATISTICS_LOCATION)
     if not os.path.isdir(dir):
         os.makedirs(dir)
     with open(REQUEST_STATISTICS_LOCATION, 'w') as f:
         json.dump(statistics, f)
+    if LOG_FILE == '':
+        return
+    global _logs
+    try:
+        with open(LOG_FILE, 'a', encoding='utf8') as file:
+            for string in _logs:
+                file.write(string)
+                file.write('\n')
+            _logs[:] = []
+    except Exception as ex:
+        print('ERR: Failed to write to log file: {}'.format(str(ex)))
 
 
 def log(string: str, error=False, end='\n'):
+    global _logs
     if error:
         string = 'ERR: {}'.format(string)
     formatted_time = datetime.datetime.now().strftime('%H:%M:%S')
@@ -45,11 +57,4 @@ def log(string: str, error=False, end='\n'):
     string = '({}) {}: {}'.format(thread_id, formatted_time, string)
     color = Fore.RED if error else Fore.WHITE
     print('{}{}{}'.format(color, string, Style.RESET_ALL), end=end)
-    if LOG_FILE == '':
-        return
-    try:
-        with open(LOG_FILE, 'a', encoding='utf8') as file:
-            file.write(string)
-            file.write('\n')
-    except Exception as ex:
-        print('ERR: Failed to write to log file: {}'.format(str(ex)))
+    _logs.append(string)

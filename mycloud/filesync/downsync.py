@@ -52,17 +52,18 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())
     local_file = resource_builder.build_local_file(remote_base_path)
-    # TODO: Check if directory of file exists... if not, then partial download also wasn't started
-    # create directory if not exists
 
-    skip, started_partial, partial_index = file_manager.started_partial_download(remote_file,
-                                                                                 basic_version,
-                                                                                 local_file)
+    file_dir = os.path.dirname(local_file)
+    if not os.path.isdir(file_dir):
+        os.makedirs(file_dir)
+        skip, started_partial, partial_index = False, False, 0
+    else:
+        skip, started_partial, partial_index = file_manager.started_partial_download(remote_file,
+                                                                                     basic_version,
+                                                                                     local_file)
     if skip:
         return
 
-    # Can't use append
-    # https://stackoverflow.com/questions/29013495/opening-file-in-append-mode-and-seeking-to-start
     if started_partial:
         # Delete file content after partial_index * MY_CLOUD_BIG_FILE_CHUNK_SIZE -> then append
         chunk_size = latest_version.get_property(
