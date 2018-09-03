@@ -2,7 +2,6 @@ import os
 import sys
 from collections import defaultdict
 from typing import List
-from random import shuffle
 from threading import Thread
 from mycloud.helper import operation_timeout
 from mycloud.mycloudapi import (
@@ -274,7 +273,6 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
 
     yield from generator
 
-    shuffle(dirs)
     for dir in dirs:
         yield from list_candidates_recursively(request_executor, dir)
 

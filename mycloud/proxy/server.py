@@ -26,8 +26,13 @@ async def post(request):
     #     return ws
 
 
-app = web.Application()
-app.add_routes([web.get('/{tail:.*}', get),
-                web.post('/{tail:.*}', post)])
+def run_server():
+    app = web.Application()
+    app.add_routes([web.get('/{tail:.*}', get),
+                    web.post('/{tail:.*}', post)])
 
-web.run_app(app)
+    web.run_app(app)
+
+
+if __name__ == '__main__':
+    run_server()
