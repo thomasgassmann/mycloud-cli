@@ -16,7 +16,10 @@ _logs = []
 
 if os.path.isfile(REQUEST_STATISTICS_LOCATION):
     with open(REQUEST_STATISTICS_LOCATION, 'r') as f:
-        statistics = json.load(f)
+        try:
+            statistics = json.load(f)
+        except:
+            statistics = {}
 else:
     statistics = {}
 
@@ -33,8 +36,10 @@ def save_files():
     dir = os.path.dirname(REQUEST_STATISTICS_LOCATION)
     if not os.path.isdir(dir):
         os.makedirs(dir)
-    with open(REQUEST_STATISTICS_LOCATION, 'w') as f:
-        json.dump(statistics, f)
+    # TODO: use operation_timeout
+    f = open(REQUEST_STATISTICS_LOCATION, 'w')
+    json.dump(statistics, f)
+    f.close()
     if LOG_FILE == '':
         return
     global _logs

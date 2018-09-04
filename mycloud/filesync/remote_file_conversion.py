@@ -240,7 +240,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         log(f'Returned {len(files)} files...')
         tree = RelativeFileTree()
         for file in files:
-            tree.add_file(file['Path'])
+            tree.add_file(file['Path'], mycloud_dir)
 
         yield from tree.loop()
 

@@ -9,11 +9,10 @@ class RelativeFileTree:
     def __init__(self):
         self._filedircontainers = {}
 
-    def add_file(self, path: str):
-        # TODO: don't add everything above, just add up until the directory that is being listed
+    def add_file(self, path: str, base: str):
         above = os.path.dirname(path)
         current = path
-        while above != current:
+        while above != current and current != base:
             container = self._get_container(above)
             if current == path:
                 container.add_file(current)
@@ -23,28 +22,18 @@ class RelativeFileTree:
             above = os.path.dirname(current)
 
     def loop(self):
-        for container_key in self._filedircontainers:
-            base_container = self._filedircontainers[container_key]
-            prev = None
-            cur_key = container_key
-            skip = False
-            # TODO: Isn't it only one immediately above? could be more efficient
-            while prev != cur_key:
-                prev = cur_key
-                cur_key = os.path.dirname(cur_key)
-                if prev in self._filedircontainers:
-                    container = self._filedircontainers[prev]
-                    generator = RelativeFileTree.get_directory_generator(
-                        container.files, container.dirs)
-                    skip = not next(generator)
-                    if skip:
-                        break
-
+        def _container_continue(key: str):
+            if key not in self._filedircontainers:
+                return [False, None]
+            container = self._filedircontainers[key]
             base_generator = RelativeFileTree.get_directory_generator(
-                base_container.files, base_container.dirs)
-            definitely_continue = next(base_generator)
-            if not skip and definitely_continue:
-                yield from base_generator
+                container.files, container.dirs)
+            return [next(base_generator), base_generator]
+
+        for container_key in self._filedircontainers:
+            generator = _container_continue(container_key)
+            if generator[0] and _container_continue(os.path.dirname(container_key))[0]:
+                yield from generator[1]
 
     def _get_container(self, path: str):
         file_dir_container = None
