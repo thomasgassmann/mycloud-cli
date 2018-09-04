@@ -209,8 +209,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
         temporary_file, partial_destination, is_file=True, ignore_conflict=True)
     response = request_executor.execute_request(rename_request)
     if response.status_code == 409:
-        log('', error=True)
-        # TODO: delete file?
+        log(f'File already exists at {partial_destination}!', error=True)
         return
 
     log('Renamed file successfully')
