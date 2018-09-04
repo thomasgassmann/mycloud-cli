@@ -74,6 +74,7 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
         try:
             thread = Thread(target=convert, args=(
                 is_partial, files, request_executor, local_dir, mycloud_dir, _skip))
+            thread.daemon = True
             local_file = get_local_file(
                 is_partial, files, mycloud_dir, local_dir)
             file_size = operation_timeout(
