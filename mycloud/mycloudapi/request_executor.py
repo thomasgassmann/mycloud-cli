@@ -93,6 +93,7 @@ class MyCloudRequestExecutor:
             log('Waiting {} seconds until retry...'.format(self.wait_time))
             sleep(self.wait_time)
             retry = True
+            # TODO: make logarithmic instead of exponential?
             self.wait_time *= WAIT_TIME_MULTIPLIER
 
         log('Checking status code {} (Status {})...'.format(
