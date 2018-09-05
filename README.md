@@ -15,6 +15,7 @@ Additonally Chromium and the corresponding web driver is required:
 `sudo apt-get install chromium chromium-driver`
 
 ## Todos
+- [ ] Consider replacements.json on download
 - [ ] Use scandir instead of os.walk
 - [ ] Only store hashed password in memory
 - [ ] Automatically launch proxy and close it, when needed
