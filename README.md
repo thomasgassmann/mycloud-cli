@@ -15,6 +15,7 @@ Additonally Chromium and the corresponding web driver is required:
 `sudo apt-get install chromium chromium-driver`
 
 ## Todos
+- [ ] Use scandir instead of os.walk
 - [ ] Only store hashed password in memory
 - [ ] Automatically launch proxy and close it, when needed
 - [ ] Custom WebDAV proxy with support for Synology Cloud Sync
