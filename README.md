@@ -15,6 +15,8 @@ Additonally Chromium and the corresponding web driver is required:
 `sudo apt-get install chromium chromium-driver`
 
 ## Todos
+- [ ] Only store hashed password in memory
+- [ ] Automatically launch proxy and close it, when needed
 - [ ] Custom WebDAV proxy with support for Synology Cloud Sync
 - [ ] In case of KeyboardInterrupt: join all running threads. handle keyboardInterrupt properly in other threads
 - [ ] Rename multiple requests in one file

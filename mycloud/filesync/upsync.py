@@ -15,9 +15,14 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                   resource_builder: ObjectResourceBuilder,
                   local_directory: str,
                   progress_tracker: ProgressTracker,
-                  encryption_pwd: str = None):
+                  encryption_pwd: str = None,
+                  skip_by_date=True):
+    # skip_by_date: Use ctime of mycloud_metadata.json
     for root, dirs, files in os.walk(local_directory, topdown=True):
         shuffle(dirs)
+        if len(files) > 0 and skip_by_date:
+            remote_path = resource_builder.build_remote_file(root)
+
         for file in files:
             local_file = os.path.join(root, file)
             try:
