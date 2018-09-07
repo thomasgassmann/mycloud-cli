@@ -58,6 +58,7 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
     def del_thread(thread):
         log('Deleting thread {}'.format(thread.ident))
         if thread in threads:
+            # TODO: kill thread
             threads.remove(thread)
         else:
             log('Thread {} not found in thread list'.format(

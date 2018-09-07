@@ -77,7 +77,7 @@ class MyCloudRequestExecutor:
         return headers
 
     def _check_validity(self, response, ignored, request_url: str):
-        separately_handled = [401, 500, 404, 400, 409]
+        separately_handled = [401, 500, 404, 400, 409, 502]
 
         retry = False
         if response.status_code == 401:
@@ -87,8 +87,8 @@ class MyCloudRequestExecutor:
                 self.authenticator.invalidate_token()
                 retry = True
 
-        if response.status_code == 500 and 500 not in ignored:
-            log('HTTP 500 returned from server', error=True)
+        if (response.status_code == 500 and 500 not in ignored) or (response.status_code == 502 and 502 not in ignored):
+            log(f'HTTP {response.status_code} returned from server', error=True)
             log('ERR: {}'.format(str(response.content)), error=True)
             log('Waiting {} seconds until retry...'.format(self.wait_time))
             sleep(self.wait_time)
