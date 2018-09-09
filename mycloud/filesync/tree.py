@@ -1,4 +1,5 @@
 import os
+import gc
 from mycloud.constants import METADATA_FILE_NAME, PARTIAL_EXTENSION, START_NUMBER_LENGTH
 from mycloud.helper import is_int
 from mycloud.logger import log
@@ -8,6 +9,7 @@ class RelativeFileTree:
 
     def __init__(self):
         self._filedircontainers = {}
+        self._started_loop = False
 
     def add_file(self, path: str, base: str):
         above = os.path.dirname(path)
@@ -22,6 +24,11 @@ class RelativeFileTree:
             above = os.path.dirname(current)
 
     def loop(self):
+        if self._started_loop:
+            raise ValueError('Generator may only be called once')
+
+        self._started_loop = True
+
         def _container_continue(key: str):
             if key not in self._filedircontainers:
                 return [False, None]
@@ -34,6 +41,13 @@ class RelativeFileTree:
             generator = _container_continue(container_key)
             if generator[0] and _container_continue(os.path.dirname(container_key))[0]:
                 yield from generator[1]
+            del generator[1]
+            del generator[0]
+            cont = self._filedircontainers[container_key]
+            if len(cont.dirs) == 0:
+                del cont.dirs
+                del cont.files
+                self._filedircontainers[container_key] = None
 
     def _get_container(self, path: str):
         file_dir_container = None

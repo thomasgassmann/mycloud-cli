@@ -1,5 +1,6 @@
 import os
 import sys
+import gc
 from collections import defaultdict
 from typing import List
 from threading import Thread
@@ -243,7 +244,13 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         for file in files:
             tree.add_file(file['Path'], mycloud_dir)
 
+        del files
+        gc.collect()
+
         yield from tree.loop()
+
+        del tree
+        gc.collect()
 
         return
 

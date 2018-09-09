@@ -1,4 +1,5 @@
 import json
+from json.decoder import WHITESPACE
 from enum import Enum
 from time import time
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
@@ -56,15 +57,50 @@ class DirectoryListRequest(MyCloudRequest):
             if not self._ignore_404:
                 raise ConnectionError('404')
             return []
-        files_or_dirs = json.loads(response.text)
-        return files_or_dirs
+        return DirectoryListRequest._json_generator(response.text)
 
     @staticmethod
     def is_timeout(response):
         TIMEOUT = 'Operation exceeded time limit.'
         ERROR_KEY = 'error'
+        if TIMEOUT not in response.text:
+            return False
+
         error_dic = json.loads(response.text)
         if response.status_code != 500 or ERROR_KEY not in error_dic:
             return False
 
         return TIMEOUT in error_dic[ERROR_KEY]
+
+    @staticmethod
+    def _json_generator(string: str):
+        START_ARR = '['
+        END_ARR = ']'
+        START_OBJ = '{'
+        END_OBJ = '}'
+        STRING_IDENTIFIER = '\"'
+        string = WHITESPACE.sub('', string)
+        if string[0] != START_ARR:
+            raise ValueError(
+                'JSON needs to be a valid array in order for directory list request to be parsed')
+
+        decoder = json.JSONDecoder()
+        start_idx = 1
+        while True:
+            if start_idx >= len(string):
+                break
+            if string[start_idx] != START_OBJ:
+                raise ValueError('Object expected')
+
+            is_in_string = False
+            traversing_idx = start_idx
+            while True:
+                traversing_idx += 1
+                if string[traversing_idx] == STRING_IDENTIFIER:
+                    is_in_string = not is_in_string
+                if string[traversing_idx] == END_OBJ and not is_in_string:
+                    traversing_idx += 1
+                    break
+            current_str_obj = string[start_idx:traversing_idx]
+            yield decoder.decode(current_str_obj)
+            start_idx = traversing_idx + 1

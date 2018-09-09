@@ -34,7 +34,7 @@ Additonally Chromium and the corresponding web driver is required:
 - [ ] Watch command: Watch file system and sync
 - [ ] Update proxy mode
 - [ ] Improve TCP performance
-- [ ] Machine Learning to prioritize files to upload
+- [ ] Machine Learning to prioritize files to upload (learn to ignore node_modules, weird exes and things under program files)
 - [ ] Request caching
 
 ## General Notes on API (TDB)
