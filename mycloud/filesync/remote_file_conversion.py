@@ -239,10 +239,11 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         log(
             f'Server returned successful response for entire directory {mycloud_dir}')
         files = DirectoryListRequest.format_response(list_response)
-        log(f'Returned {len(files)} files...')
         tree = RelativeFileTree()
         for file in files:
             tree.add_file(file['Path'], mycloud_dir)
+
+        log(f'Added {len(tree.file_count)} files to the relative file tree...')
 
         del files
         gc.collect()

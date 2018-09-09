@@ -235,6 +235,7 @@ class FileManager:
                 yield from self._read_directory_using_directory_list_request(dir_path)
         else:
             files = DirectoryListRequest.format_response(response)
+            # TODO: use less memory and make proper use of `files` generator
             directory_file_count = defaultdict(int)
             for file in files:
                 dir = os.path.dirname(file['Path'])
