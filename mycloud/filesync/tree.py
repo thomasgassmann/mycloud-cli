@@ -10,7 +10,7 @@ class RelativeFileTree:
     def __init__(self):
         self._filedircontainers = {}
         self._started_loop = False
-        self.file_count
+        self.file_count = 0
 
     def add_file(self, path: str, base: str):
         above = os.path.dirname(path)

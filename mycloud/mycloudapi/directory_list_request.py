@@ -74,10 +74,8 @@ class DirectoryListRequest(MyCloudRequest):
 
     @staticmethod
     def _json_generator(string: str):
-        START_ARR = '['
-        END_ARR = ']'
-        START_OBJ = '{'
-        END_OBJ = '}'
+        START_ARR, END_ARR = '[', ']'
+        START_OBJ, END_OBJ = '{', '}'
         STRING_IDENTIFIER = '\"'
         string = WHITESPACE.sub('', string)
         if string[0] != START_ARR:
