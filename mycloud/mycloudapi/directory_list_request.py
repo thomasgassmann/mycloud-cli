@@ -1,5 +1,4 @@
 import json
-from json.decoder import WHITESPACE
 from enum import Enum
 from time import time
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
@@ -77,7 +76,6 @@ class DirectoryListRequest(MyCloudRequest):
         START_ARR, END_ARR = '[', ']'
         START_OBJ, END_OBJ = '{', '}'
         STRING_IDENTIFIER = '\"'
-        string = WHITESPACE.sub('', string)
         if string[0] != START_ARR:
             raise ValueError(
                 'JSON needs to be a valid array in order for directory list request to be parsed')
