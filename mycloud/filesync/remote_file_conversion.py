@@ -231,11 +231,17 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     log(f'Trying to read entire directory {mycloud_dir} at once...')
     list_request = DirectoryListRequest(mycloud_dir, ListType.File,
                                         ignore_internal_server_error=True, ignore_not_found=True)
-    list_response = request_executor.execute_request(list_request)
+    failed = False
+    try:
+        list_response = request_executor.execute_request(list_request)
+    except requests.exceptions.ConnectionError:
+        log(
+            f'Failed to execute directory list on dir {mycloud_dir}... Continueing with usual directory list')
+        failed = True
     if list_response.status_code == 404:
         log(f'Directory {mycloud_dir} not found... Returning')
         return
-    elif not DirectoryListRequest.is_timeout(list_response):
+    elif not failed and not DirectoryListRequest.is_timeout(list_response):
         log(
             f'Server returned successful response for entire directory {mycloud_dir}')
         files = DirectoryListRequest.format_response(list_response)
