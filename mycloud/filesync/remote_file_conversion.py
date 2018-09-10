@@ -239,22 +239,19 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     except requests.exceptions.ConnectionError:
         log(
             f'Failed to execute directory list on dir {mycloud_dir}... Continueing with usual directory list')
-        failed = True
     if list_response and list_response.status_code == 404:
         log(f'Directory {mycloud_dir} not found... Returning')
         return
-    elif not failed and list_response and not DirectoryListRequest.is_timeout(list_response):
+    elif list_response and not DirectoryListRequest.is_timeout(list_response):
         log(
             f'Server returned successful response for entire directory {mycloud_dir}')
         files = DirectoryListRequest.format_response(list_response)
-        tree = RelativeFileTree()
-        for file in files:
-            tree.add_file(file['Path'], mycloud_dir)
 
-        log(f'Added {tree.file_count} files to the relative file tree...')
-        del files
+        # TODO: replace tree with *efficient* generator
+        tree = RelativeFileTree(files)
         yield from tree.loop()
 
+        del files
         del tree
         gc.collect()
 

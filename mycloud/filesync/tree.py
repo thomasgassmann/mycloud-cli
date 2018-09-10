@@ -1,5 +1,7 @@
 import os
 import gc
+import psutil
+from pympler import asizeof
 from mycloud.constants import METADATA_FILE_NAME, PARTIAL_EXTENSION, START_NUMBER_LENGTH
 from mycloud.helper import is_int
 from mycloud.logger import log
@@ -7,58 +9,13 @@ from mycloud.logger import log
 
 class RelativeFileTree:
 
-    def __init__(self):
-        self._filedircontainers = {}
-        self._started_loop = False
-        self.file_count = 0
-
-    def add_file(self, path: str, base: str):
-        above = os.path.dirname(path)
-        current = path
-        while above != current and current != base:
-            container = self._get_container(above)
-            if current == path:
-                container.add_file(current)
-            elif above != current:
-                container.add_dir(current)
-            current = above
-            above = os.path.dirname(current)
-        self.file_count += 1
+    def __init__(self, generator):
+        self._file_generator = generator
 
     def loop(self):
-        if self._started_loop:
-            raise ValueError('Generator may only be called once')
-
-        self._started_loop = True
-
-        def _container_continue(key: str):
-            if key not in self._filedircontainers:
-                return [False, None]
-            container = self._filedircontainers[key]
-            base_generator = RelativeFileTree.get_directory_generator(
-                container.files, container.dirs)
-            return [next(base_generator), base_generator]
-
-        for container_key in self._filedircontainers:
-            generator = _container_continue(container_key)
-            if generator[0] and _container_continue(os.path.dirname(container_key))[0]:
-                yield from generator[1]
-            del generator[1]
-            del generator[0]
-            cont = self._filedircontainers[container_key]
-            if len(cont.dirs) == 0:
-                del cont.dirs
-                del cont.files
-                self._filedircontainers[container_key] = None
-
-    def _get_container(self, path: str):
-        file_dir_container = None
-        if not path in self._filedircontainers:
-            file_dir_container = FileDirContainer()
-            self._filedircontainers[path] = file_dir_container
-        else:
-            file_dir_container = self._filedircontainers[path]
-        return file_dir_container
+        RelativeFileTree._print_ram_usage()
+        for file in self._file_generator:
+            path = file['Path']
 
     @staticmethod
     def get_directory_generator(files, dirs):
@@ -88,17 +45,29 @@ class RelativeFileTree:
 
         return True
 
+    @staticmethod
+    def _print_ram_usage():
+        process = psutil.Process(os.getpid())
+        log(f'Memory usage: {process.memory_info().rss}')
 
-class FileDirContainer:
 
-    def __init__(self):
-        self.files = []
-        self.dirs = []
+class ConditionalWriteStorage:
 
-    def add_file(self, file: str):
-        if file not in self.files:
-            self.files.append(file)
+    def __init__(self, max_size):
+        self._list_of_objs = []
+        self._total_size = 0
+        self._max_size = max_size
 
-    def add_dir(self, dir: str):
-        if dir not in self.dirs:
-            self.dirs.append(dir)
+    def add(self, primitive):
+        self._list_of_objs.append(primitive)
+        size_of_obj = asizeof.asizeof(primitive)
+        self._total_size += size_of_obj
+        if self._total_size >= self._max_size:
+            self._write_to_storage()
+
+    def get(self):
+        pass
+
+    def _write_to_storage(self):
+        # TODO: write to temp file
+        pass
