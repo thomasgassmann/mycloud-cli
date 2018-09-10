@@ -60,6 +60,8 @@ class DirectoryListRequest(MyCloudRequest):
 
     @staticmethod
     def is_timeout(response):
+        if response is None:
+            return False
         TIMEOUT = 'Operation exceeded time limit.'
         ERROR_KEY = 'error'
         if TIMEOUT not in response.text:
