@@ -1,6 +1,7 @@
 import os
 import sys
 import gc
+import requests
 from collections import defaultdict
 from typing import List
 from threading import Thread
