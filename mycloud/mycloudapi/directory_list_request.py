@@ -75,30 +75,6 @@ class DirectoryListRequest(MyCloudRequest):
 
     @staticmethod
     def _json_generator(string: str):
-        START_ARR, END_ARR = '[', ']'
-        START_OBJ, END_OBJ = '{', '}'
-        STRING_IDENTIFIER = '\"'
-        if string[0] != START_ARR:
-            raise ValueError(
-                'JSON needs to be a valid array in order for directory list request to be parsed')
-
-        decoder = json.JSONDecoder()
-        start_idx = 1
-        while True:
-            if start_idx >= len(string):
-                break
-            if string[start_idx] != START_OBJ:
-                raise ValueError('Object expected')
-
-            is_in_string = False
-            traversing_idx = start_idx
-            while True:
-                traversing_idx += 1
-                if string[traversing_idx] == STRING_IDENTIFIER:
-                    is_in_string = not is_in_string
-                if string[traversing_idx] == END_OBJ and not is_in_string:
-                    traversing_idx += 1
-                    break
-            current_str_obj = string[start_idx:traversing_idx]
-            yield decoder.decode(current_str_obj)
-            start_idx = traversing_idx + 1
+        loaded = json.loads(string)
+        for item in loaded:
+            yield item
