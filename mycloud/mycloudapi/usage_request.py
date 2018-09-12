@@ -12,7 +12,7 @@ class UsageRequest(MyCloudRequest):
         return Method.GET
 
     def get_request_url(self):
-        return REQUEST_URL.format(time.time())
+        return REQUEST_URL.format(int(time.time()))
 
     @staticmethod
     def format_response(response):

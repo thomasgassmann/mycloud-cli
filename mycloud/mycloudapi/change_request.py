@@ -18,7 +18,7 @@ class ChangeRequest(MyCloudRequest):
         return Method.GET
 
     def get_request_url(self):
-        return REQUEST_URL.format(get_object_id(self.object_resource), self.top, time.time())
+        return REQUEST_URL.format(get_object_id(self.object_resource), self.top, int(time.time()))
 
     @staticmethod
     def format_response(response):

@@ -47,7 +47,7 @@ class DirectoryListRequest(MyCloudRequest):
             list_type = 'file,directory'
         else:
             raise ValueError('List type could not be found')
-        unix_time = time()
+        unix_time = int(time())
         return REQUEST_URL.format(resource, list_type, unix_time)
 
     @staticmethod
