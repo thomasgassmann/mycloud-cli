@@ -2,13 +2,16 @@ import os
 import traceback
 from random import shuffle
 from mycloud.logger import log
-from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
+from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor, DirectoryListRequest, ListType
 from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculatedVersion
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.streamapi import DefaultUpStream, ProgressReporter
-from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.helper import operation_timeout, TimeoutException
+from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, METADATA_FILE_NAME
+from mycloud.helper import operation_timeout, TimeoutException, to_unix_timestamp
 from mycloud.filesync.progress import ProgressTracker
+
+
+_mtime_cache = {}
 
 
 def upsync_folder(request_executor: MyCloudRequestExecutor,
@@ -17,12 +20,10 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                   progress_tracker: ProgressTracker,
                   encryption_pwd: str = None,
                   skip_by_date=True):
+    global _mtime_cache
     # skip_by_date: Use ctime of mycloud_metadata.json
     for root, dirs, files in os.walk(local_directory, topdown=True):
         shuffle(dirs)
-        if len(files) > 0 and skip_by_date:
-            remote_path = resource_builder.build_remote_file(root)
-
         for file in files:
             local_file = os.path.join(root, file)
             try:
@@ -43,6 +44,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
                 local_file: str,
                 progress_tracker: ProgressTracker,
                 encryption_pwd: str = None):
+    global _mtime_cache
     if progress_tracker.skip_file(local_file):
         log('Skipping file {}'.format(local_file))
         return
@@ -67,3 +69,31 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
     cloud_stream = DefaultUpStream(local_stream, index)
     file_manager.write_file(
         cloud_stream, translatable_path, calculatable_version)
+
+
+def _fill_mtime(request_executor: MyCloudRequestExecutor, directory: str):
+    global _ctime_cache
+    directory_list_request = DirectoryListRequest(directory,
+                                                  ListType.File,
+                                                  ignore_not_found=True,
+                                                  ignore_internal_server_error=True)
+    response = request_executor.execute_request(directory_list_request)
+    if response.status_code == 404:
+        return
+
+    is_timeout = DirectoryListRequest.is_timeout(response)
+    if is_timeout:
+        return
+
+    files = DirectoryListRequest.format_response(response)
+    for file in files:
+        file_path = file['Path']
+        if os.path.basename(file_path) == METADATA_FILE_NAME:
+            ticks = file['ModificationTimeTicks']
+            unix_time = to_unix_timestamp(ticks)
+            dir_path = os.path.dirname(file_path)
+            _mtime_cache[file_path] = unix_time
+
+
+def _clear_mtime_cache():
+    pass
