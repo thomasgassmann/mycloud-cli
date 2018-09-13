@@ -1,6 +1,5 @@
 import os
 import traceback
-from random import shuffle
 from mycloud.logger import log
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor, DirectoryListRequest, ListType
 from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculatedVersion
@@ -23,12 +22,14 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
     global _mtime_cache
     # skip_by_date: Use ctime of mycloud_metadata.json
     for root, dirs, files in os.walk(local_directory, topdown=True):
-        shuffle(dirs)
+        remote_root = resource_builder._build_remote_directory(root)
+        if not _cache_contains(remote_root):
+            _fill_mtime(request_executor, remote_root)
         for file in files:
             local_file = os.path.join(root, file)
             try:
                 upsync_file(request_executor, resource_builder,
-                            local_file, progress_tracker, encryption_pwd)
+                            local_file, progress_tracker, encryption_pwd, skip_by_date)
             except TimeoutException:
                 log('Failed to access file {} within the given time'.format(
                     local_file), error=True)
@@ -43,10 +44,18 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
                 resource_builder: ObjectResourceBuilder,
                 local_file: str,
                 progress_tracker: ProgressTracker,
-                encryption_pwd: str = None):
+                encryption_pwd: str = None,
+                skip_by_date=True):
     global _mtime_cache
     if progress_tracker.skip_file(local_file):
         log('Skipping file {}'.format(local_file))
+        return
+
+    remote_path = resource_builder.build_remote_file(local_file)
+    local_mtime = operation_timeout(
+        lambda x: os.path.getmtime(x['path']), path=local_file)
+    if skip_by_date and _mtime_cache[remote_path] >= local_mtime:
+        log('Skipping file becuase of mtime {}'.format(remote_path))
         return
 
     transforms = [] if encryption_pwd is None else [
@@ -54,7 +63,6 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
     del encryption_pwd
     file_manager = FileManager(
         request_executor, transforms, ProgressReporter())
-    remote_path = resource_builder.build_remote_file(local_file)
     calculatable_version = HashCalculatedVersion(local_file)
     translatable_path = LocalTranslatablePath(
         resource_builder, local_file, calculatable_version)
@@ -72,7 +80,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
 
 
 def _fill_mtime(request_executor: MyCloudRequestExecutor, directory: str):
-    global _ctime_cache
+    global _mtime_cache
     directory_list_request = DirectoryListRequest(directory,
                                                   ListType.File,
                                                   ignore_not_found=True,
@@ -92,8 +100,16 @@ def _fill_mtime(request_executor: MyCloudRequestExecutor, directory: str):
             ticks = file['ModificationTimeTicks']
             unix_time = to_unix_timestamp(ticks)
             dir_path = os.path.dirname(file_path)
-            _mtime_cache[file_path] = unix_time
+            _mtime_cache[dir_path] = unix_time
 
 
-def _clear_mtime_cache():
+def _cache_contains(dir: str):
+    global _mtime_cache
+    for key in _mtime_cache:
+        if dir in key:
+            return True
+    return False
+
+
+def _clear_mtime_cache(current_path: str):
     pass

@@ -51,14 +51,14 @@ class Application:
         self._add_skip_argument(parser)
         self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
-        self._add_skip_by_date(parser)
+        self._add_skip_by_hash(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
         tracker = self._get_progress_tracker(args.skip)
         builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
         self._set_log_file(args.log_file)
         upsync_folder(executor, builder, args.local_dir,
-                      tracker, args.encryption_pwd, args.skip_by_date)
+                      tracker, args.encryption_pwd, not args.skip_by_hash)
 
     def download(self):
         parser = argparse.ArgumentParser(
@@ -213,10 +213,10 @@ class Application:
         argument_parser.add_argument(
             '--{}'.format(command), metavar='s', help='Paths to skip', nargs='+')
 
-    def _add_skip_by_date(self, argument_parser):
-        command = 'skip_by_date'
-        parser.add_argument(f'--{command}', default=False, action='store_true',
-                            help='Skip the files to upload by their date and not their hash')
+    def _add_skip_by_hash(self, argument_parser):
+        command = 'skip_by_hash'
+        argument_parser.add_argument(f'--{command}', default=False, action='store_true',
+                                     help='Skip the files to upload by their date and not their hash')
 
     def _add_log_file_argument(self, argument_parser):
         command = 'log_file'
