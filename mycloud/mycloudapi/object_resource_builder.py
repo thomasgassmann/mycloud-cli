@@ -36,7 +36,7 @@ class ObjectResourceBuilder:
             remote_path += '/'
         return remote_path
 
-    def build_local_file(self, mycloud_path: str, remove_extension: bool=True):
+    def build_local_file(self, mycloud_path: str, remove_extension: bool = True):
         str = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(str)
         if normalized_relative_path == '.':

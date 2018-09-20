@@ -17,5 +17,5 @@
     ],
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
-    "python.pythonPath": "/home/thomas/.pyenv/versions/3.7.0/bin/python"
+    "python.pythonPath": "/home/thomas/.pyenv/versions/mycloud-cli/bin/python"
 }
