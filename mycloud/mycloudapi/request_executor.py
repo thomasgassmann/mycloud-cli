@@ -18,7 +18,7 @@ class MyCloudRequestExecutor:
         self._request_count_for_current_session = 0
         self.authenticator = authenticator
         self.session = requests.Session()
-        self.wait_time = 10
+        self._reset_wait_time()
 
     def execute_request(self, request: MyCloudRequest):
         # TODO: also use aiohttp instead of requests
@@ -69,6 +69,9 @@ class MyCloudRequestExecutor:
                            socket.AddressFamily.AF_INET, selected))[0]
         return addr.address
 
+    def _reset_wait_time(self):
+        self.wait_time = 10
+
     def _get_headers(self, content_type: ContentType, bearer_token: str):
         headers = requests.utils.default_headers()
         headers['Content-Type'] = content_type
@@ -95,6 +98,8 @@ class MyCloudRequestExecutor:
             retry = True
             # TODO: make logarithmic instead of exponential?
             self.wait_time = int(self.wait_time * WAIT_TIME_MULTIPLIER)
+        else:
+            self._reset_wait_time()
 
         log('Checking status code {} (Status {})...'.format(
             request_url, str(response.status_code)))
