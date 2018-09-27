@@ -2,7 +2,6 @@ import os, datetime
 from bs4 import BeautifulSoup
 from mitmproxy import ctx
 from mitmproxy import http
-from logger import log
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

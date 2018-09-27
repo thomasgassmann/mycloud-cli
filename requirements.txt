@@ -14,3 +14,4 @@ aiohttp==3.4.2
 pandas==0.23.4
 tensorflow==1.10.0
 colorama==0.3.9
+bs4==4.6.3
