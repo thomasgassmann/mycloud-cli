@@ -268,7 +268,7 @@ class Application:
         Application._must_be_string(value, command)
         if min_length > 0:
             Application._must_be_not_empty_string(value, command)
-            if len(value) <= min_length:
+            if len(value) < min_length:
                 raise argparse.ArgumentTypeError(
                     '{} must be at least {} characters long'.format(command, min_length), True)
                 sys.exit(2)

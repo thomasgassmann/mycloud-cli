@@ -29,7 +29,7 @@ class ObjectResourceBuilder:
         return left + '/' + right
 
     @staticmethod
-    def correct_suffix_sep(remote_path: str, is_file: str):
+    def correct_suffix_sep(remote_path: str, is_file: bool):
         if is_file and remote_path.endswith('/'):
             remote_path = remote_path[:-1]
         if not is_file and not remote_path.endswith('/'):
