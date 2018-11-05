@@ -10,7 +10,7 @@ from mycloud.helper import operation_timeout, TimeoutException, to_unix_timestam
 from mycloud.filesync.progress import ProgressTracker
 
 
-_mtime_cache = {}
+# _mtime_cache = {}
 
 
 def upsync_folder(request_executor: MyCloudRequestExecutor,
@@ -19,12 +19,12 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                   progress_tracker: ProgressTracker,
                   encryption_pwd: str = None,
                   skip_by_date=True):
-    global _mtime_cache
+    # global _mtime_cache
     # skip_by_date: Use ctime of mycloud_metadata.json
     for root, dirs, files in os.walk(local_directory, topdown=True):
         remote_root = resource_builder._build_remote_directory(root)
-        if not _cache_contains(remote_root):
-            _fill_mtime(request_executor, remote_root)
+        # if not _cache_contains(remote_root):
+        #     _fill_mtime(request_executor, remote_root)
         for file in files:
             local_file = os.path.join(root, file)
             try:
@@ -46,17 +46,17 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
                 progress_tracker: ProgressTracker,
                 encryption_pwd: str = None,
                 skip_by_date=True):
-    global _mtime_cache
+    # global _mtime_cache
     if progress_tracker.skip_file(local_file):
         log('Skipping file {}'.format(local_file))
         return
 
-    remote_path = resource_builder.build_remote_file(local_file)
-    local_mtime = operation_timeout(
-        lambda x: os.path.getmtime(x['path']), path=local_file)
-    if skip_by_date and _mtime_cache[remote_path] >= local_mtime:
-        log('Skipping file becuase of mtime {}'.format(remote_path))
-        return
+    # remote_path = resource_builder.build_remote_file(local_file)
+    # local_mtime = operation_timeout(
+    #     lambda x: os.path.getmtime(x['path']), path=local_file)
+    # if skip_by_date and _mtime_cache[remote_path] >= local_mtime:
+    #     log('Skipping file becuase of mtime {}'.format(remote_path))
+    #     return
 
     transforms = [] if encryption_pwd is None else [
         AES256CryptoTransform(encryption_pwd)]
@@ -103,13 +103,13 @@ def _fill_mtime(request_executor: MyCloudRequestExecutor, directory: str):
             _mtime_cache[dir_path] = unix_time
 
 
-def _cache_contains(dir: str):
-    global _mtime_cache
-    for key in _mtime_cache:
-        if dir in key:
-            return True
-    return False
+# def _cache_contains(dir: str):
+#     global _mtime_cache
+#     for key in _mtime_cache:
+#         if dir in key:
+#             return True
+#     return False
 
 
-def _clear_mtime_cache(current_path: str):
-    pass
+# def _clear_mtime_cache(current_path: str):
+#     pass
