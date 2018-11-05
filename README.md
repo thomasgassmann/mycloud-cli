@@ -1,20 +1,38 @@
-# Swisscom myCloud Backup
+# Swisscom myCloud CLI
 
-Swisscom myCloud Backup is a backup solution, which is supposed to backup all files on your computer to Swisscom myCloud. To achieve this, it uses the public Swisscom myCloud API. Additionally the script can encrypt the files it backs up. 
-Files larger than approx. 3GB are not allowed by Swisscom. Therefore this backup tool automatically chunks files larger than 3GB into smaller files. The threshold values can be adjusted in `constants.py`.
+Swisscom myCloud CLI is a command line utility to manage all your data stored on Swisscom myCloud. To achieve this, it uses the public Swisscom myCloud API.
+
+# Installation
 
 ## Requirements
 First install all dependencies:
+
 `python -m pip install -r requirements.txt`
 
-mitmproxy is required to run this application. Install mitmproxy with the corresponding certificates in the Root CA. 
+### Windows
+mitmproxy is required to run this application on Windows. Install mitmproxy with the corresponding certificates in the Root CA.
 To get the access token (when not passed manually), the proxy needs to run. To start the proxy run in directory `mycloud/mycloudapi`:
+
 `mitmdump -p 8080 -s "proxy.py"`
 
-Additonally Chromium and the corresponding web driver is required:
-`sudo apt-get install chromium chromium-driver`
+Additonally `google-chrome` and `chromedriver` are required. Make sure both of them are in your `$PATH`.
 
-## Todos
+# Run
+To use the Swisscom myCloud CLI, run `python mycloud.py [command]` in the root directory.
+
+To get a list of all available commands, run:
+
+`python mycloud.py -h`
+
+# FAQ
+### How does myCloud CLI manage files stored on myCloud?
+myCloud CLI adds an additional layer on top of the drive feature in myCloud. This allows it to keep track of file versions and save metadata for these files when uploading them.
+Each file being processed by myCloud CLI is stored within a folder matching its upload path. Within this folder, myCloud CLI will save a `mycloud_metadata.json` file and a folder for each version. The metadata file contains references to the files and metadata of the files.
+
+
+
+
+# Todos (migrate to Github Issues)
 - [ ] Consider replacements.json on download
 - [ ] Use scandir instead of os.walk
 - [ ] Only store hashed password in memory
