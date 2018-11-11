@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-myCloudBackup = {git = "https://github.com/ThomasGassmann/swisscom-my-cloud-backup"}
+myCloudBackup = {git = "https://github.com/ThomasGassmann/mycloud-cli"}
 
 [dev-packages]
-TODO
+"e1839a8" = {path = ".", editable = true}
+black = "==18.6b4"
 
 [requires]
 python_version = "3.7"
