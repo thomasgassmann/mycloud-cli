@@ -19,6 +19,6 @@ setup(
     py_modules=['mycloud'],
     install_requires=install_reqs,
     entry_points={
-        'console_scripts': {'console_scripts': ['mycloud=mycloud:main']}
+        'console_scripts': {'console_scripts': ['mycloud=mycloud.py:main']}
     }
 )
