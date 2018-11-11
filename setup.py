@@ -11,7 +11,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name='mycloud-cli',
-    version='1.0.0',
+    version='1.2.0',
     license='MIT',
     author='Thomas Gassmann',
     author_email='thomas.gassmann@hotmail.com',
