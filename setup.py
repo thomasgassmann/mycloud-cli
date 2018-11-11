@@ -15,7 +15,7 @@ setup(
     license='MIT',
     author='Thomas Gassmann',
     author_email='thomas.gassmann@hotmail.com',
-    url='https://github.com/ThomasGassmann/swisscom-my-cloud-backup',
+    url='https://github.com/ThomasGassmann/mycloud-cli',
     py_modules=['mycloud'],
     install_requires=install_reqs,
     entry_points={
