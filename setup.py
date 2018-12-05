@@ -1,11 +1,14 @@
 from setuptools import setup
+import json
 
 
-with open('requirements.txt', 'r') as f:
-    install_reqs = [
-        s for s in [
-            line.strip(' \n') for line in f
-        ] if not s.startswith('#') and s != ''
+install_requires = []
+
+with open('Pipfile.lock') as fd:
+    lock_data = json.load(fd)
+    install_requires = [
+        package_name + package_data['version']
+        for package_name, package_data in lock_data['default'].items()
     ]
 
 
@@ -17,8 +20,8 @@ setup(
     author_email='thomas.gassmann@hotmail.com',
     url='https://github.com/ThomasGassmann/mycloud-cli',
     py_modules=['mycloud'],
-    install_requires=install_reqs,
-    # entry_points={
-    #     'console_scripts': {'console_scripts': ['mycloud=mycloud.py:main']}
-    # }
+    install_requires=install_requires,
+    entry_points={
+        'console_scripts': ['mycloud=mycloud:main']
+    }
 )
