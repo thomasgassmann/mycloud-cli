@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import json
 
 
@@ -19,10 +19,9 @@ setup(
     author='Thomas Gassmann',
     author_email='thomas.gassmann@hotmail.com',
     url='https://github.com/ThomasGassmann/mycloud-cli',
-    py_modules=['mycloud'],
     install_requires=install_requires,
-    packages=['mycloud'],
+    packages=find_packages(),
     entry_points={
-        'console_scripts': ['mycloud=mycloud.__main__:main']
+        'console_scripts': ['mycloud=mycloud.__main__main']
     }
 )
