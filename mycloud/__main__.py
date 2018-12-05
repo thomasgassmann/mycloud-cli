@@ -281,8 +281,7 @@ class Application:
                 '{} must be in a valid directory'.format(command), True)
             sys.exit(2)
 
-
-if __name__ == '__main__':
+def main():
     try:
         Application().run()
     except KeyboardInterrupt:
@@ -292,3 +291,6 @@ if __name__ == '__main__':
         traceback.print_exc()
     finally:
         logger.save_files()
+
+if __name__ == '__main__':
+    main()

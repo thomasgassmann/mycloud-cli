@@ -14,7 +14,7 @@ with open('Pipfile.lock') as fd:
 
 setup(
     name='mycloud-cli',
-    version='1.2.0',
+    version='1.2.3',
     license='MIT',
     author='Thomas Gassmann',
     author_email='thomas.gassmann@hotmail.com',
