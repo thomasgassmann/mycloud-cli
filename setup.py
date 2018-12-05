@@ -23,6 +23,6 @@ setup(
     install_requires=install_requires,
     packages=['mycloud'],
     entry_points={
-        'console_scripts': ['mycloud=mycloud:main']
+        'console_scripts': ['mycloud=mycloud.__main__:main']
     }
 )
