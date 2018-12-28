@@ -28,3 +28,10 @@ WAIT_TIME_MULTIPLIER = 1.1
 MAX_THREADS_FOR_REMOTE_FILE_CONVERSION = 10
 MAX_TIMEOUT = 15
 RESET_SESSION_EVERY = 2500
+
+REPLACEMENT_TABLE = [
+    {
+        "character": "~",
+        "replacement": "-"
+    }
+]

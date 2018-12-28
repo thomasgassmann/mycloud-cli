@@ -2,7 +2,7 @@ import base64
 import os
 import re
 import json
-from mycloud.constants import BASE_DIR, AES_EXTENSION
+from mycloud.constants import BASE_DIR, AES_EXTENSION, REPLACEMENT_TABLE
 
 
 class ObjectResourceBuilder:
@@ -78,7 +78,7 @@ class ObjectResourceBuilder:
 
     @staticmethod
     def _replace_invalid_characters(string: str):
-        for characters in ObjectResourceBuilder.replacement_table:
+        for characters in REPLACEMENT_TABLE:
             if characters['character'] in string:
                 string = string.replace(
                     characters['character'], characters['replacement'])
@@ -91,7 +91,3 @@ class ObjectResourceBuilder:
             return True
         except ValueError:
             return False
-
-
-with open('mycloud/replacements.json', 'r') as f:
-    ObjectResourceBuilder.replacement_table = json.load(f)
