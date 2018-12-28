@@ -4,6 +4,10 @@ Swisscom myCloud CLI is a command line utility to manage all your data stored on
 
 # Installation
 
+## Install via pip
+To install or upgrade the myCloud CLI via pip, just run:
+`python3 -m pip install --user --upgrade git+https://github.com/ThomasGassmann/mycloud-cli`
+
 ## Requirements
 First install all dependencies:
 
@@ -18,11 +22,11 @@ To get the access token (when not passed manually), the proxy needs to run. To s
 Additonally `google-chrome` and `chromedriver` are required. Make sure both of them are in your `$PATH`.
 
 # Run
-To use the Swisscom myCloud CLI, run `python mycloud.py [command]` in the root directory.
+To use the Swisscom myCloud CLI, run `mycloud [command]` in the root directory.
 
 To get a list of all available commands, run:
 
-`python mycloud.py -h`
+`mycloud -h`
 
 # FAQ
 ### How does myCloud CLI manage files stored on myCloud?
