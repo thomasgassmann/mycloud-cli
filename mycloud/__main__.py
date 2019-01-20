@@ -5,6 +5,7 @@ import sys
 import json
 from enum import Enum
 import mycloud.logger as logger
+from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.filesync import upsync_folder, downsync_folder, convert_remote_files
 from mycloud.filesystem import BasicRemotePath
 from mycloud.statistics import StatisticsCommandLineParser
@@ -40,6 +41,9 @@ class Application:
         # TODO: implement shell
         input('> ')
         pass
+
+    def cert(self):
+        open_for_cert()
 
     def upload(self):
         parser = argparse.ArgumentParser(

@@ -25,9 +25,14 @@ PROXY_PORT = 9090
 START_LOGIN_URL = 'https://start.mycloud.ch'
 
 
-def get_bearer_token(user_name: str, password: str):
-    _run_proxy()
+def open_for_cert():
+    driver = _get_web_driver(headless=False)
+    driver.get('http://mitm.it')
+    while True:
+        pass
 
+
+def get_bearer_token(user_name: str, password: str):
     driver = _get_web_driver()
     driver.get(START_LOGIN_URL)
     driver.set_window_size(1920, 1080)
@@ -96,13 +101,15 @@ def _run_proxy():
     process.start()
 
 
-def _get_web_driver():
+def _get_web_driver(headless=True):
+    _run_proxy()
     user_agent = '''
         Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36
     '''
 
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('headless')
+    if headless:
+        chrome_options.add_argument('headless')
     chrome_options.add_argument('--proxy-server=http://{0}:{1}'.format(PROXY_HOST, str(PROXY_PORT)))
     chrome_options.add_argument('user-agent={0}'.format(user_agent))
     driver = webdriver.Chrome(CHROME_DRIVER, chrome_options=chrome_options)
