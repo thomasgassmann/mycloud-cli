@@ -4,36 +4,39 @@ Swisscom myCloud CLI is a command line utility to manage all your data stored on
 
 # Installation
 
-## Install via pip
-To install or upgrade the myCloud CLI via pip, just run:
-`python3 -m pip install --user --upgrade git+https://github.com/ThomasGassmann/mycloud-cli`
+First, make sure `chromium` and `chromedriver` installed and in  your `$PATH`.
 
-## Requirements
-First install all dependencies:
+To install or upgrade myCloud CLI via pip, run:
+```
+python3 -m pip install --user --upgrade git+https://github.com/ThomasGassmann/mycloud-cli
+```
 
-`export PIPENV_VENV_IN_PROJECT="enabled"`
-`pipenv install`
+After installing myCloud CLI make sure to add the certificates for mitmproxy to your CA in your OS / Chromium. Run:
+```
+mycloud cert
+```
 
-### Windows
-mitmproxy is required to run this application on Windows. Install mitmproxy with the corresponding certificates in the Root CA.
-To get the access token (when not passed manually), the proxy needs to run. To start the proxy run in directory `mycloud/mycloudapi`:
-
-`mitmdump -p 8080 -s "proxy.py"`
-
-Additonally `chromium` and `chromedriver` are required. Make sure both of them are in your `$PATH`.
-
-# Run
-To use the Swisscom myCloud CLI, run `mycloud [command]` in the root directory.
-
+to download the required certificate. 
+To use myCloud CLI, run `mycloud [command]`.
 To get a list of all available commands, run:
+```
+mycloud -h
+```
 
-`mycloud -h`
+# Setup local enviroment
+First, clone the repository:
+```
+git clone https://github.com/thomasgassmann/mycloud-cli`
+```
 
-# FAQ
-### How does myCloud CLI manage files stored on myCloud?
-myCloud CLI adds an additional layer on top of the drive feature in myCloud. This allows it to keep track of file versions and save metadata for these files when uploading them.
-Each file being processed by myCloud CLI is stored within a folder matching its upload path. Within this folder, myCloud CLI will save a `mycloud_metadata.json` file and a folder for each version. The metadata file contains references to the files and metadata of the files.
-
+Then install all dependencies via pipenv:
+```
+cd mycloud-cli
+export PIPENV_VENV_IN_PROJECT="enabled"
+pipenv install
+pipenv shell
+```
+Then run `python -m mycloud cert` to install the certificates as describe in the [Installation](#Installation) section.
 
 
 
