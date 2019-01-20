@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+rope = "*"
 
 [packages]
 requests = "==2.20.0"
@@ -22,6 +23,7 @@ beautifulsoup4 = "==4.6.3"
 Flask = "==1.0.2"
 "hurry.filesize" = "==0.9"
 pycryptodome = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.6"

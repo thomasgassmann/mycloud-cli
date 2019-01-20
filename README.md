@@ -20,7 +20,7 @@ To get the access token (when not passed manually), the proxy needs to run. To s
 
 `mitmdump -p 8080 -s "proxy.py"`
 
-Additonally `google-chrome` and `chromedriver` are required. Make sure both of them are in your `$PATH`.
+Additonally `chromium` and `chromedriver` are required. Make sure both of them are in your `$PATH`.
 
 # Run
 To use the Swisscom myCloud CLI, run `mycloud [command]` in the root directory.
