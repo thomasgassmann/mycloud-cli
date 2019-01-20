@@ -37,11 +37,6 @@ class Application:
             exit(1)
         getattr(self, args.command)()
 
-    def shell(self):
-        # TODO: implement shell
-        input('> ')
-        pass
-
     def cert(self):
         open_for_cert()
 
