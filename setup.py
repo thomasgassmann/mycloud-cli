@@ -21,6 +21,7 @@ setup(
     url='https://github.com/ThomasGassmann/mycloud-cli',
     install_requires=install_requires,
     packages=find_packages(),
+    include_package_data=True,
     entry_points={
         'console_scripts': ['mycloud=mycloud.__main__:main']
     }
