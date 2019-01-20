@@ -11,7 +11,8 @@ To install or upgrade the myCloud CLI via pip, just run:
 ## Requirements
 First install all dependencies:
 
-`python -m pip install -r requirements.txt`
+`export PIPENV_VENV_IN_PROJECT="enabled"`
+`pipenv install`
 
 ### Windows
 mitmproxy is required to run this application on Windows. Install mitmproxy with the corresponding certificates in the Root CA.
