@@ -23,7 +23,7 @@ To get a list of all available commands, run:
 mycloud -h
 ```
 
-# Setup local enviroment
+# Setup local environment
 First, clone the repository:
 ```
 git clone https://github.com/thomasgassmann/mycloud-cli`
@@ -36,7 +36,7 @@ export PIPENV_VENV_IN_PROJECT="enabled"
 pipenv install
 pipenv shell
 ```
-Then run `python -m mycloud cert` to install the certificates as describe in the [Installation](#Installation) section.
+Then run `python -m mycloud cert` to install the certificates as described in the [Installation](#Installation) section.
 
 
 
