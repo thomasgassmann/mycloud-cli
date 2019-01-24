@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from mitmproxy import proxy, options, http
 from mitmproxy.tools.dump import DumpMaster
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
@@ -26,30 +27,30 @@ START_LOGIN_URL = 'https://start.mycloud.ch'
 
 
 def open_for_cert():
-    driver = _get_web_driver(headless=False)
-    driver.get('http://mitm.it')
-    while True:
-        pass
+    with _ProxySelenium(headless=False) as driver:
+        driver.get('http://mitm.it')
+        while any(driver.window_handles):
+            pass
 
 
 def get_bearer_token(user_name: str, password: str):
-    driver = _get_web_driver()
-    driver.get(START_LOGIN_URL)
-    driver.set_window_size(1920, 1080)
-
-    _click(driver, 'span.button.button--primary.outline')
-    _enter(driver, 'input[type=email]', user_name)
-    _click(driver, '#anmelden')
-    _enter(driver, 'input[type=password]', password)
-
     token = None
-    start = time.time()
-    while token is None:
-        token = _get_token_from_url(driver.current_url)
-        if time.time() - start > WAIT_TIME:
-            log('More than {} seconds elapsed... Cancelling'.format(str(WAIT_TIME)))
-            break
-    driver.quit()
+    with _ProxySelenium(headless=True) as driver:
+        driver.get(START_LOGIN_URL)
+        driver.set_window_size(1920, 1080)
+
+        _click(driver, 'span.button.button--primary.outline')
+        _enter(driver, 'input[type=email]', user_name)
+        _click(driver, '#anmelden')
+        _enter(driver, 'input[type=password]', password)
+
+        start = time.time()
+        while token is None:
+            token = _get_token_from_url(driver.current_url)
+            if time.time() - start > WAIT_TIME:
+                log('More than {} seconds elapsed... Cancelling'.format(str(WAIT_TIME)))
+                break
+
     if token is None:
         raise ValueError('Token could not be found')
     log('Found token {}'.format(token))
@@ -85,36 +86,53 @@ def _get_token_from_url(url):
     return None
 
 
-def _run_proxy():
-    def _wrapper():
-        opts = options.Options(listen_host=PROXY_HOST, listen_port=PROXY_PORT)
-        opts.add_option('body_size_limit', int, 0, '')
-        opts.add_option('keep_host_header', bool, True, '')
-        pconf = proxy.config.ProxyConfig(opts)
+class _ProxySelenium:
 
-        dump_master = DumpMaster(None)
-        dump_master.server = proxy.server.ProxyServer(pconf)
-        dump_master.addons.add(_InjectScripts())
-        dump_master.run()
-        
-    process = Process(target=_wrapper)
-    process.start()
+    def __init__(self, headless: bool):
+        self._get_web_driver(headless)
+        self._run_proxy()
 
 
-def _get_web_driver(headless=True):
-    _run_proxy()
-    user_agent = '''
-        Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36
-    '''
+    def __enter__(self):
+        return self._driver
 
-    chrome_options = webdriver.ChromeOptions()
-    if headless:
-        chrome_options.add_argument('headless')
-    chrome_options.add_argument('--proxy-server=http://{0}:{1}'.format(PROXY_HOST, str(PROXY_PORT)))
-    chrome_options.add_argument('user-agent={0}'.format(user_agent))
-    driver = webdriver.Chrome(CHROME_DRIVER, chrome_options=chrome_options)
 
-    return driver
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._driver.quit()
+        self._proxy_process.terminate()
+
+
+    def _run_proxy(self):
+        def _wrapper():
+            opts = options.Options(listen_host=PROXY_HOST, listen_port=PROXY_PORT)
+            opts.add_option('body_size_limit', int, 0, '')
+            opts.add_option('keep_host_header', bool, True, '')
+            pconf = proxy.config.ProxyConfig(opts)
+
+            dump_master = DumpMaster(None)
+            dump_master.server = proxy.server.ProxyServer(pconf)
+            dump_master.addons.add(_InjectScripts())
+            dump_master.run()
+
+        process = Process(target=_wrapper)
+        process.start()
+        self._proxy_process = process
+
+
+    def _get_web_driver(self, headless):
+        user_agent = '''
+            Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36
+        '''
+
+        chrome_options = webdriver.ChromeOptions()
+        if headless:
+            chrome_options.add_argument('headless')
+        proxy_str = '--proxy-server=http://{0}:{1}'.format(PROXY_HOST, str(PROXY_PORT))
+        chrome_options.add_argument(proxy_str)
+        chrome_options.add_argument('user-agent={0}'.format(user_agent))
+        driver = webdriver.Chrome(CHROME_DRIVER, chrome_options=chrome_options)
+
+        self._driver = driver
 
 
 class _InjectScripts:
@@ -124,6 +142,7 @@ class _InjectScripts:
         js_file = os.path.join(current_directory, JS_FILE)
         js_to_execute = open(js_file).read()
         self._js = js_to_execute
+
 
     def response(self, flow: http.HTTPFlow):
         ct_header = 'Content-Type'
