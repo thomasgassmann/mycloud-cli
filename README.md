@@ -4,7 +4,7 @@ Swisscom myCloud CLI is a command line utility to manage all your data stored on
 
 # Installation
 
-First, make sure `chromium` and `chromedriver` installed and in  your `$PATH`.
+First, make sure `chromium` and `chromedriver` are installed and in  your `$PATH`.
 
 To install or upgrade myCloud CLI via pip, run:
 ```
