@@ -6,6 +6,7 @@ data_dir = appdirs.user_data_dir('.mycloud', 'thomasgassmann')
 token_dir = os.path.join(data_dir, 'tokens')
 
 
+SERVICE_NAME = 'myCloud'
 MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1024 * 1024 * 256
 ENCRYPTION_CHUNK_LENGTH = 1024
 BASE_DIR = '/Drive/'
@@ -17,6 +18,7 @@ USE_TOKEN_CACHE = True
 TOKEN_CACHE_FOLDER = token_dir
 
 REQUEST_STATISTICS_LOCATION = os.path.join(data_dir, 'request_statistics.json')
+AUTHENTICATION_INFO_LOCATION = os.path.join(data_dir, 'auth.json');
 REQUEST_COUNT_IDENTIFIER = 'counts'
 
 VERSION_HASH_LENGTH = 10

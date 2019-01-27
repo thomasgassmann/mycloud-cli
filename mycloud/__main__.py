@@ -3,8 +3,10 @@ import traceback
 import os
 import sys
 import json
+import getpass
 from enum import Enum
 import mycloud.logger as logger
+from mycloud.credentials import save_validate
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.filesync import upsync_folder, downsync_folder, convert_remote_files
 from mycloud.filesystem import BasicRemotePath
@@ -28,6 +30,8 @@ class Application:
                 download
                 shell
                 convert (Deprecated)
+                auth
+                cert
         ''')
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command) or args.command == self.run.__name__:
@@ -36,6 +40,12 @@ class Application:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
+
+    def auth(self):
+
+        user = input('Email: ')
+        password = getpass.getpass()
+        save_validate(user, password)
 
     def cert(self):
         open_for_cert()
