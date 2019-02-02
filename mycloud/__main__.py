@@ -39,7 +39,6 @@ class Application:
         getattr(self, args.command)()
 
     def auth(self):
-
         user = input('Email: ')
         password = getpass.getpass()
         save_validate(user, password)

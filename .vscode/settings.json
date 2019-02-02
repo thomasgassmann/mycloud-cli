@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "/home/thomas/.local/share/virtualenvs/mycloud-cli-gqHuIBsx/bin/python",
+    "python.pythonPath": ".venv/bin/python",
     "python.linting.pylintPath": "pylint"
 }
