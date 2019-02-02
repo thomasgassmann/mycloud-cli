@@ -33,7 +33,6 @@ class ProxySelenium:
         def _wrapper():
             opts = options.Options(listen_host=PROXY_HOST, listen_port=PROXY_PORT)
             opts.add_option('body_size_limit', int, 0, '')
-            opts.add_option('keep_host_header', bool, True, '')
             pconf = proxy.config.ProxyConfig(opts)
 
             dump_master = DumpMaster(None)
