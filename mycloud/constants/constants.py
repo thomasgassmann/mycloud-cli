@@ -1,5 +1,5 @@
-import appdirs
 import os
+import appdirs
 
 
 data_dir = appdirs.user_data_dir('.mycloud', 'thomasgassmann')
@@ -18,7 +18,7 @@ USE_TOKEN_CACHE = True
 TOKEN_CACHE_FOLDER = token_dir
 
 REQUEST_STATISTICS_LOCATION = os.path.join(data_dir, 'request_statistics.json')
-AUTHENTICATION_INFO_LOCATION = os.path.join(data_dir, 'auth.json');
+AUTHENTICATION_INFO_LOCATION = os.path.join(data_dir, 'auth.json')
 REQUEST_COUNT_IDENTIFIER = 'counts'
 
 VERSION_HASH_LENGTH = 10

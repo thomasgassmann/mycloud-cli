@@ -2,9 +2,7 @@ import argparse
 import traceback
 import os
 import sys
-import json
 import getpass
-from enum import Enum
 import mycloud.logger as logger
 from mycloud.credentials import save_validate
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
@@ -90,7 +88,8 @@ class Application:
 
     def convert(self):
         parser = argparse.ArgumentParser(
-            description='Swisscom myCloud Remote File Converter', formatter_class=argparse.RawTextHelpFormatter)
+            description='Swisscom myCloud Remote File Converter',
+            formatter_class=argparse.RawTextHelpFormatter)
         self._add_remote_directory_argument(parser)
         self._add_local_directory_argument(parser)
         self._add_user_name_password(parser)
@@ -145,10 +144,13 @@ class Application:
             if not value.startswith('/Drive/'):
                 raise argparse.ArgumentTypeError(
                     '{} must start with /Drive/'.format(command), True)
-                sys.exit(2)
             return value
         argument_parser.add_argument(
-            '--{}'.format(command), metavar='m', type=is_valid, help='Base path in Swisscom myCloud', required=True)
+            '--{}'.format(command),
+            metavar='m',
+            type=is_valid,
+            help='Base path in Swisscom myCloud',
+            required=True)
 
     def _add_local_directory_argument(self, argument_parser, directory_should_exist=True):
         command = 'local_dir'
@@ -158,10 +160,13 @@ class Application:
             if directory_should_exist and not os.path.isdir(value) and not value.endswith(os.sep):
                 raise argparse.ArgumentTypeError(
                     '{} must be an existing directory'.format(command), True)
-                sys.exit(2)
             return value
         argument_parser.add_argument(
-            '--{}'.format(command), metavar='l', type=is_valid, help='Local directory', required=True)
+            '--{}'.format(command),
+            metavar='l',
+            type=is_valid,
+            help='Local directory',
+            required=True)
 
     def _add_token_argument(self, argument_parser):
         command = 'token'
@@ -170,7 +175,11 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             return value
         argument_parser.add_argument(
-            '--{}'.format(command), metavar='t', type=is_valid, help='Swisscom myCloud bearer token', required=False)
+            '--{}'.format(command),
+            metavar='t',
+            type=is_valid,
+            help='Swisscom myCloud bearer token',
+            required=False)
 
     def _add_user_name_password(self, argument_parser):
         command = 'username'
@@ -180,10 +189,13 @@ class Application:
             if '@' not in value:
                 raise argparse.ArgumentTypeError(
                     '{} must be an email address'.format(command), True)
-                sys.exit(2)
             return value
         argument_parser.add_argument(
-            '--{}'.format(command), metavar='u', type=is_valid_username, help='Email of the user for myCloud', required=False)
+            '--{}'.format(command),
+            metavar='u',
+            type=is_valid_username,
+            help='Email of the user for myCloud',
+            required=False)
 
         command = 'password'
 
@@ -191,7 +203,11 @@ class Application:
             Application._must_be_not_empty_string(value, command)
             return value
         argument_parser.add_argument(
-            '--{}'.format(command), metavar='p', type=is_valid_password, help='Password for the myCloud user', required=False)
+            '--{}'.format(command),
+            metavar='p',
+            type=is_valid_password,
+            help='Password for the myCloud user',
+            required=False)
 
     def _add_progress_file_argument(self, argument_parser):
         command = 'progress_file'
@@ -199,7 +215,7 @@ class Application:
         def is_valid(value):
             if value is None:
                 return value
-            if type(value) is not str:
+            if not isinstance(value, str):
                 return value
             Application._path_is_in_valid_directory(value, command)
             return value
@@ -224,8 +240,11 @@ class Application:
 
     def _add_skip_by_hash(self, argument_parser):
         command = 'skip_by_hash'
-        argument_parser.add_argument(f'--{command}', default=False, action='store_true',
-                                     help='Skip the files to upload by their date and not their hash')
+        argument_parser.add_argument(
+            f'--{command}',
+            default=False,
+            action='store_true',
+            help='Skip the files to upload by their date and not their hash')
 
     def _add_log_file_argument(self, argument_parser):
         command = 'log_file'
@@ -233,7 +252,7 @@ class Application:
         def is_valid(value):
             if value is None:
                 return value
-            if type(value) is not str:
+            if not isinstance(value, str):
                 return value
             Application._must_be_not_empty_string(value, command)
             Application._path_is_in_valid_directory(value, command)
@@ -263,14 +282,12 @@ class Application:
         if value == '':
             raise argparse.ArgumentTypeError(
                 '{} must not be empty'.format(command), True)
-            sys.exit(2)
 
     @staticmethod
     def _must_be_string(value, command):
-        if type(value) is not str:
+        if not isinstance(value, str):
             raise argparse.ArgumentTypeError(
                 '{} must be a string'.format(command), True)
-            sys.exit(2)
 
     @staticmethod
     def _min_length(value, command, min_length):
@@ -280,15 +297,13 @@ class Application:
             if len(value) < min_length:
                 raise argparse.ArgumentTypeError(
                     '{} must be at least {} characters long'.format(command, min_length), True)
-                sys.exit(2)
 
     @staticmethod
     def _path_is_in_valid_directory(value, command):
-        dir = os.path.dirname(value)
-        if not os.path.isdir(dir):
+        dir_name = os.path.dirname(value)
+        if not os.path.isdir(dir_name):
             raise argparse.ArgumentTypeError(
                 '{} must be in a valid directory'.format(command), True)
-            sys.exit(2)
 
 def main():
     try:
