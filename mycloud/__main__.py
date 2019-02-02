@@ -1,5 +1,4 @@
 import argparse
-import traceback
 import os
 import sys
 import getpass
@@ -54,7 +53,7 @@ class Application:
         self._add_remote_directory_argument(parser)
         self._add_local_directory_argument(parser)
         self._add_token_argument(parser)
-        self._add_encryption_password_argument(parser)
+        self._add_encryption_argument(parser)
         self._add_skip_argument(parser)
         self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
@@ -73,7 +72,7 @@ class Application:
         self._add_remote_directory_argument(parser)
         self._add_local_directory_argument(parser, False)
         self._add_token_argument(parser)
-        self._add_encryption_password_argument(parser)
+        self._add_encryption_argument(parser)
         self._add_skip_argument(parser)
         self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
@@ -222,7 +221,7 @@ class Application:
         argument_parser.add_argument(
             '--{}'.format(command), metavar='p', type=is_valid, help='Path to the progress file')
 
-    def _add_encryption_password_argument(self, argument_parser):
+    def _add_encryption_argument(self, argument_parser):
         command = 'encryption_pwd'
 
         def is_valid(value):
@@ -242,8 +241,7 @@ class Application:
         command = 'skip_by_hash'
         argument_parser.add_argument(
             f'--{command}',
-            default=False,
-            action='store_true',
+            default=False, action='store_true',
             help='Skip the files to upload by their date and not their hash')
 
     def _add_log_file_argument(self, argument_parser):
@@ -300,8 +298,8 @@ class Application:
 
     @staticmethod
     def _path_is_in_valid_directory(value, command):
-        dir_name = os.path.dirname(value)
-        if not os.path.isdir(dir_name):
+        directory = os.path.dirname(value)
+        if not os.path.isdir(directory):
             raise argparse.ArgumentTypeError(
                 '{} must be in a valid directory'.format(command), True)
 
@@ -310,9 +308,6 @@ def main():
         Application().run()
     except KeyboardInterrupt:
         logger.log('Keyboard Interrupt')
-    except Exception as ex:
-        logger.log('FATAL: {}'.format(str(ex)), error=True)
-        traceback.print_exc()
     finally:
         logger.save_files()
 
