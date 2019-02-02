@@ -33,7 +33,7 @@ Then install all dependencies via pipenv:
 ```
 cd mycloud-cli
 export PIPENV_VENV_IN_PROJECT="enabled"
-pipenv install
+pipenv install --python 3.6
 pipenv shell
 ```
 Then run `python -m mycloud cert` to install the certificates as described in the [Installation](#Installation) section.

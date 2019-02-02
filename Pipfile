@@ -24,6 +24,8 @@ Flask = "==1.0.2"
 "hurry.filesize" = "==0.9"
 pycryptodome = "*"
 lxml = "*"
+keyring = "*"
+halo = "*"
 
 [requires]
 python_version = "3.6"

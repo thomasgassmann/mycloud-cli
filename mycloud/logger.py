@@ -2,7 +2,6 @@ import os
 import datetime
 import json
 import threading
-from collections import defaultdict
 from colorama import Fore, Style, init
 from mycloud.constants import REQUEST_STATISTICS_LOCATION, REQUEST_COUNT_IDENTIFIER
 
