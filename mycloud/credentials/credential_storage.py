@@ -1,5 +1,6 @@
 import json
 import keyring
+from halo import Halo
 from mycloud.constants import AUTHENTICATION_INFO_LOCATION, SERVICE_NAME
 from mycloud.mycloudapi.auth import get_bearer_token
 from mycloud.logger import log
@@ -15,6 +16,7 @@ def save_validate(user_name: str, password: str):
             'user': user_name
         }, file)
     keyring.set_password(SERVICE_NAME, user_name, password)
+    log('Successfully logged into myCloud!')
 
 
 def get_credentials():
@@ -24,6 +26,7 @@ def get_credentials():
     return (auth_info['user'], password)
 
 
+@Halo(text='Validating credentials...', spinner='dots')
 def _validate_credentials(user_name: str, password: str) -> bool:
     try:
         get_bearer_token(user_name, password)

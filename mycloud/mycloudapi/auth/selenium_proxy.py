@@ -35,7 +35,7 @@ class ProxySelenium:
             opts.add_option('body_size_limit', int, 0, '')
             pconf = proxy.config.ProxyConfig(opts)
 
-            dump_master = DumpMaster(None)
+            dump_master = DumpMaster(None, with_termlog=False, with_dumper=False)
             dump_master.server = proxy.server.ProxyServer(pconf)
             dump_master.addons.add(_InjectScripts())
             dump_master.run()
@@ -72,11 +72,13 @@ class _InjectScripts:
 
     def response(self, flow: http.HTTPFlow):
         ct_header = 'Content-Type'
-        if (ct_header in flow.response.headers and \
-                flow.response.headers[ct_header] != 'text/html') or \
-                not flow.response.status_code == 200:
-            return
+        if ct_header in flow.response.headers and \
+                flow.response.headers[ct_header] == 'text/html' and \
+                flow.response.status_code == 200:
+            self.inject_scripts(flow)
 
+
+    def inject_scripts(self, flow: http.HTTPFlow):
         html = BeautifulSoup(flow.response.text, 'lxml')
         container = html.head or html.body
         if container:

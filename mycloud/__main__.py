@@ -3,7 +3,7 @@ import os
 import sys
 import getpass
 import mycloud.logger as logger
-from mycloud.credentials import save_validate
+from mycloud.credentials import save_validate, get_credentials
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.filesync import upsync_folder, downsync_folder, convert_remote_files
 from mycloud.filesystem import BasicRemotePath
@@ -131,6 +131,9 @@ class Application:
             auth.set_bearer_auth(args.token)
         elif args.username and args.password:
             auth.set_password_auth(args.username, args.password)
+        else:
+            (username, password) = get_credentials()
+            auth.set_password_auth(username, password)
         request_executor = MyCloudRequestExecutor(auth)
         return request_executor
 

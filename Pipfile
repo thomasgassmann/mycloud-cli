@@ -25,7 +25,7 @@ Flask = "==1.0.2"
 pycryptodome = "*"
 lxml = "*"
 keyring = "*"
-getpass = "*"
+halo = "*"
 
 [requires]
 python_version = "3.6"

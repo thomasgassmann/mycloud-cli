@@ -5,7 +5,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from mycloud.mycloudapi.auth.selenium_proxy import ProxySelenium
-from mycloud.logger import log
 
 
 WAIT_TIME = 15
@@ -34,12 +33,10 @@ def get_bearer_token(user_name: str, password: str):
         while token is None:
             token = _get_token_from_url(driver.current_url)
             if time.time() - start > WAIT_TIME:
-                log('More than {} seconds elapsed... Cancelling'.format(str(WAIT_TIME)))
                 break
 
     if token is None:
         raise ValueError('Token could not be found')
-    log('Found token {}'.format(token))
     return token
 
 
@@ -66,7 +63,6 @@ def _get_token_from_url(url):
     query_strings = urlparse.parse_qs(
         urlparse.urlparse(url).query, keep_blank_values=True)
     if token_name in query_strings:
-        log('Found token in URL: {}'.format(url))
         token = query_strings[token_name][0]
         return token.replace(' ', '+')
     return None
