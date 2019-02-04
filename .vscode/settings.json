@@ -2,6 +2,7 @@
     "python.pythonPath": ".venv/bin/python",
     "python.linting.pylintPath": "pylint",
     "files.exclude": {
-        "**/__pycache__": true
+        "**/__pycache__": true,
+        "mycloud_cli.egg-info": true
     }
 }
