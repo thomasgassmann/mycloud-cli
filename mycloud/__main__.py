@@ -3,7 +3,7 @@ import os
 import sys
 import getpass
 import mycloud.logger as logger
-from mycloud.credentials import save_validate, get_credentials
+from mycloud.credentials.storage import save_validate, get_credentials
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.filesync import upsync_folder, downsync_folder, convert_remote_files
 from mycloud.filesystem import BasicRemotePath
