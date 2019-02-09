@@ -1,6 +1,5 @@
 import requests
 import socket
-import psutil
 import struct
 from sys import platform
 from time import sleep

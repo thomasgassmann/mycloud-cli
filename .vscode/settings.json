@@ -1,9 +1,6 @@
 {
     "python.pythonPath": ".venv/bin/python",
     "python.linting.pylintPath": "pylint",
-    "python.linting.pylintArgs": [
-        "**/*.py"
-    ],
     "python.jediEnabled": false,
     "files.exclude": {
         "**/__pycache__": true,
