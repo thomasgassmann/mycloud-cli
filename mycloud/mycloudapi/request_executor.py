@@ -1,14 +1,9 @@
-import requests
-import socket
-import struct
-from sys import platform
 from time import sleep
+import requests
 from requests.models import PreparedRequest
 from mycloud.logger import log, add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
-from mycloud.mycloudapi import MyCloudRequest
-from mycloud.mycloudapi.request import ContentType
-from mycloud.mycloudapi.request import Method
+from mycloud.mycloudapi.requests.request import MyCloudRequest, ContentType, Method
 from mycloud.constants import WAIT_TIME_MULTIPLIER, RESET_SESSION_EVERY
 
 

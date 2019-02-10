@@ -1,5 +1,5 @@
 import json
-from mycloud.mycloudapi.request import MyCloudRequest, Method
+from mycloud.mycloudapi.requests.request import MyCloudRequest, Method
 from mycloud.mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloud.helper import get_string_generator
 
