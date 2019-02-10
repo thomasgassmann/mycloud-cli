@@ -1,11 +1,9 @@
-import base64
 import os
-import re
-import json
 from mycloud.constants import BASE_DIR, AES_EXTENSION, REPLACEMENT_TABLE
 
 
 class ObjectResourceBuilder:
+
     def __init__(self, base_dir: str, mycloud_backup_dir: str):
         self.base_dir = base_dir
         self.mycloud_dir = mycloud_backup_dir
@@ -15,6 +13,7 @@ class ObjectResourceBuilder:
             self.mycloud_dir += '/'
         if not self.base_dir.endswith(os.sep):
             self.base_dir = self.base_dir + os.sep
+
 
     @staticmethod
     def combine_cloud_path(left: str, right: str):
@@ -28,6 +27,7 @@ class ObjectResourceBuilder:
 
         return left + '/' + right
 
+
     @staticmethod
     def correct_suffix_sep(remote_path: str, is_file: bool):
         if is_file and remote_path.endswith('/'):
@@ -36,9 +36,10 @@ class ObjectResourceBuilder:
             remote_path += '/'
         return remote_path
 
+
     def build_local_file(self, mycloud_path: str, remove_extension: bool = True):
-        str = mycloud_path[len(self.mycloud_dir):]
-        normalized_relative_path = os.path.normpath(str)
+        string = mycloud_path[len(self.mycloud_dir):]
+        normalized_relative_path = os.path.normpath(string)
         if normalized_relative_path == '.':
             normalized_relative_path = os.path.basename(
                 mycloud_path if not mycloud_path.endswith('/') else mycloud_path[:-1])
@@ -48,13 +49,16 @@ class ObjectResourceBuilder:
 
         return os.path.join(self.base_dir, normalized_relative_path)
 
+
     def ends_with_aes_extension(self, mycloud_path: str):
         return mycloud_path.endswith(AES_EXTENSION)
+
 
     def remove_aes_extension(self, mycloud_path: str):
         if mycloud_path.endswith(AES_EXTENSION):
             mycloud_path = mycloud_path[:-len(AES_EXTENSION)]
         return mycloud_path
+
 
     def build_remote_file(self, full_file_path: str):
         file_name = os.path.basename(full_file_path)
@@ -64,6 +68,7 @@ class ObjectResourceBuilder:
         file_name = ObjectResourceBuilder._replace_invalid_characters(
             file_name)
         return (built + file_name).replace('//', '/')
+
 
     def _build_remote_directory(self, directory_path: str):
         base_dir = self.base_dir[:-1]
@@ -76,6 +81,7 @@ class ObjectResourceBuilder:
             directory_path = directory_path + '/'
         return (self.mycloud_dir + directory_path).replace('//', '/')
 
+
     @staticmethod
     def _replace_invalid_characters(string: str):
         for characters in REPLACEMENT_TABLE:
@@ -83,6 +89,7 @@ class ObjectResourceBuilder:
                 string = string.replace(
                     characters['character'], characters['replacement'])
         return string
+
 
     @staticmethod
     def _is_int(s):

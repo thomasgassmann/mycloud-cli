@@ -1,5 +1,6 @@
 import time
-from mycloud.mycloudapi import MyCloudRequestExecutor, GetObjectRequest
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests import GetObjectRequest
 from mycloud.streamapi import DownStream, StreamDirection
 from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
 from mycloud.streamapi.stream_accessor import CloudStreamAccessor

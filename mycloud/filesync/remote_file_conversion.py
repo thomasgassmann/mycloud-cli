@@ -8,7 +8,9 @@ from threading import Thread
 from mycloud.helper import operation_timeout
 from mycloud.mycloudapi import (
     MyCloudRequestExecutor,
-    ObjectResourceBuilder,
+    ObjectResourceBuilder
+)
+from mycloud.mycloudapi.requests import (
     RenameRequest,
     MetadataRequest,
     DirectoryListRequest,

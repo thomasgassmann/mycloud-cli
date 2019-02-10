@@ -1,7 +1,8 @@
 import os
 import traceback
 from mycloud.logger import log
-from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor, DirectoryListRequest, ListType
+from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
+from mycloud.mycloudapi.requests import DirectoryListRequest, ListType
 from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculatedVersion
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.streamapi import DefaultUpStream, ProgressReporter
