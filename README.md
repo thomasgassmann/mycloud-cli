@@ -8,7 +8,7 @@ First, make sure `chromium` and `chromedriver` are installed and in  your `$PATH
 
 To install or upgrade myCloud CLI via pip, run:
 ```
-python3 -m pip install --user --upgrade git+https://github.com/ThomasGassmann/mycloud-cli
+python3 -m pip install --user --upgrade mycloud-cli
 ```
 
 After installing myCloud CLI make sure to add the certificates for mitmproxy to your CA in your OS / Chromium. Run:
