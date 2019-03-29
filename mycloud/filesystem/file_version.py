@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import hashlib
 import os
-from mycloud.helper import operation_timeout, sha256_file
+from mycloud.common import operation_timeout, sha256_file
 from mycloud.logger import log
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH, VERSION_HASH_LENGTH
 

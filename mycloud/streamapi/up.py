@@ -4,7 +4,7 @@ from mycloud.streamapi import UpStream, StreamDirection
 from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
 from mycloud.streamapi.stream_accessor import CloudStreamAccessor
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH, MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.helper import operation_timeout
+from mycloud.common import operation_timeout
 
 
 class UpStreamExecutor:

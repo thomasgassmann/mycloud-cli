@@ -1,7 +1,7 @@
 import os
 import gc
 from mycloud.constants import METADATA_FILE_NAME, PARTIAL_EXTENSION, START_NUMBER_LENGTH
-from mycloud.helper import is_int
+from mycloud.common import is_int
 from mycloud.logger import log
 
 

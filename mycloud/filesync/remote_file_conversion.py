@@ -5,7 +5,7 @@ import requests
 from collections import defaultdict
 from typing import List
 from threading import Thread
-from mycloud.helper import operation_timeout
+from mycloud.common import operation_timeout
 from mycloud.mycloudapi import (
     MyCloudRequestExecutor,
     ObjectResourceBuilder,
@@ -39,7 +39,7 @@ from mycloud.filesync.tree import RelativeFileTree
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.streamapi import ProgressReporter
 from mycloud.streamapi.transforms import AES256CryptoTransform
-from mycloud.helper import get_all_files_recursively, is_int, TimeoutException
+from mycloud.common import get_all_files_recursively, is_int, TimeoutException
 from mycloud.logger import log
 
 

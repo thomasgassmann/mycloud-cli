@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from pathlib import Path
-from mycloud.helper import is_int
+from mycloud.common import is_int, operation_timeout
 from mycloud.mycloudapi import (
     MyCloudRequestExecutor,
     MetadataRequest,
@@ -23,7 +23,6 @@ from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAcc
 from mycloud.filesystem.metadata_manager import MetadataManager
 from mycloud.filesystem.file_metadata import FileMetadata, Version
 from mycloud.constants import METADATA_FILE_NAME, MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.helper import operation_timeout
 
 
 class FileManager:

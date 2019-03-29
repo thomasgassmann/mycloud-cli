@@ -1,7 +1,7 @@
 import sys
 import os
 from hurry.filesize import size
-from mycloud.helper import get_all_files_recursively
+from mycloud.common import get_all_files_recursively
 from mycloud.mycloudapi import MyCloudRequestExecutor, MetadataRequest
 from mycloud.logger import log
 

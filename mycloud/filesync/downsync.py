@@ -7,7 +7,7 @@ from mycloud.filesystem import TranslatablePath, FileManager, BasicStringVersion
 from mycloud.streamapi import ProgressReporter, DefaultDownStream
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.logger import log
-from mycloud.helper import TimeoutException, operation_timeout
+from mycloud.common import TimeoutException, operation_timeout
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, ENCRYPTION_CHUNK_LENGTH
 
 

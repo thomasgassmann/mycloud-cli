@@ -6,7 +6,7 @@ from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculate
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.streamapi import DefaultUpStream, ProgressReporter
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, METADATA_FILE_NAME
-from mycloud.helper import operation_timeout, TimeoutException, to_unix_timestamp
+from mycloud.common import operation_timeout, TimeoutException, to_unix_timestamp
 from mycloud.filesync.progress import ProgressTracker
 
 
