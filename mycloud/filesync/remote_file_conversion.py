@@ -24,12 +24,9 @@ from mycloud.filesystem import (
     TranslatablePath
 )
 from mycloud.constants import (
-    MY_CLOUD_BIG_FILE_CHUNK_SIZE,
-    PARTIAL_EXTENSION,
     START_NUMBER_LENGTH,
     DEFAULT_VERSION,
     AES_EXTENSION,
-    METADATA_FILE_NAME,
     MAX_THREADS_FOR_REMOTE_FILE_CONVERSION
 )
 from mycloud.filesync.tree import RelativeFileTree
@@ -43,8 +40,6 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                          mycloud_dir: str,
                          local_dir: str,
                          skip):
-    resource_builder = ObjectResourceBuilder(local_dir, mycloud_dir)
-
     def _skip(file):
         for item in skip:
             if file.startswith(item):
@@ -56,7 +51,6 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
     def del_thread(thread):
         log('Deleting thread {}'.format(thread.ident))
         if thread in threads:
-            # TODO: kill thread
             threads.remove(thread)
         else:
             log('Thread {} not found in thread list'.format(
@@ -68,7 +62,7 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                 thread.ident), error=True)
 
     generator = list_candidates_recursively(request_executor, mycloud_dir)
-
+    get_file_size = lambda x: os.stat(x['path']).st_size if os.path.isfile(x['path']) else 0
     for is_partial, files in generator:
         try:
             thread = Thread(target=convert, args=(
@@ -77,14 +71,12 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
             local_file = get_local_file(
                 is_partial, files, mycloud_dir, local_dir)
             file_size = operation_timeout(
-                lambda x: os.stat(x['path']).st_size if os.path.isfile(x['path']) else 0, path=local_file)
+                get_file_size, path=local_file)
             thread.start()
             thread_file_sizes[thread.ident] = file_size
             threads.append(thread)
         except TimeoutException:
             log('Timeout while accessing resources', error=True)
-        except Exception as ex:
-            log(str(ex), error=True)
 
         to_be_removed = [thread for thread in threads if not thread.is_alive()]
         for thread_to_be_removed in to_be_removed:
@@ -118,13 +110,13 @@ def get_local_file(is_partial: bool, files: List[str], remote_dir: str, local_di
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     if not is_partial:
         return resource_builder.build_local_file(files[0])
-    else:
-        base_directories = [os.path.dirname(file) for file in files]
-        distinct_base_directories = set(base_directories)
-        if len(distinct_base_directories) != 1:
-            raise ValueError('A file cannot have multiple base directories')
-        base_directory = base_directories[0]
-        return resource_builder.build_local_file(base_directory, remove_extension=False)
+
+    base_directories = [os.path.dirname(file) for file in files]
+    distinct_base_directories = set(base_directories)
+    if len(distinct_base_directories) != 1:
+        raise ValueError('A file cannot have multiple base directories')
+    base_directory = base_directories[0]
+    return resource_builder.build_local_file(base_directory, remove_extension=False)
 
 
 def convert_partials(request_executor: MyCloudRequestExecutor,
@@ -181,28 +173,28 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     local_file = get_local_file(False, [remote_file], remote_dir, local_dir)
     log('Mapped {} to local file {}'.format(remote_file, local_file))
 
-    remote_file_without_aes_extension = remote_file
+    without_aes_extension = remote_file
     if resource_builder.ends_with_aes_extension(remote_file):
-        remote_file_without_aes_extension = remote_file[:-len(AES_EXTENSION)]
+        without_aes_extension = remote_file[:-len(AES_EXTENSION)]
 
     translatable_path, version = _get_path_and_version_for_local_file(local_file,
-                                                                      remote_file_without_aes_extension,
+                                                                      without_aes_extension,
                                                                       resource_builder,
                                                                       skip_fn(local_file))
 
-    TEMP_FILE_EXTENSION = '.temporary'
+    temp_file_extension = '.temporary'
     versioned_stream_accessor = VersionedCloudStreamAccessor(
         translatable_path, version, None)
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
-    temporary_file = remote_file + TEMP_FILE_EXTENSION
+    temporary_file = remote_file + temp_file_extension
     log('Renaming file {} to {}...'.format(remote_file, partial_destination))
     while True:
         rename_request = RenameRequest(
             remote_file, temporary_file, is_file=True, ignore_conflict=True)
         response = request_executor.execute_request(rename_request)
         if response.status_code == 409:
-            temporary_file += TEMP_FILE_EXTENSION
+            temporary_file += temp_file_extension
         else:
             break
     rename_request = RenameRequest(
@@ -217,7 +209,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     _create_file_metadata(request_executor,
                           version,
                           translatable_path,
-                          remote_file_without_aes_extension,
+                          without_aes_extension,
                           [partial_destination],
                           resource_builder,
                           resource_builder.ends_with_aes_extension(remote_file))
@@ -233,8 +225,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     try:
         list_response = request_executor.execute_request(list_request)
     except requests.exceptions.ConnectionError:
-        log(
-            f'Failed to execute directory list on dir {mycloud_dir}... Continueing with usual directory list')
+        log(f'Failed to execute directory list on dir {mycloud_dir}... Continueing with usual directory list')
         failed = True
     if list_response and list_response.status_code == 404:
         log(f'Directory {mycloud_dir} not found... Returning')
@@ -242,7 +233,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     elif not failed and list_response and not DirectoryListRequest.is_timeout(list_response):
         log(
             f'Server returned successful response for entire directory {mycloud_dir}')
-        files = DirectoryListRequest.format_response(list_response)
+        files = list_request.format_response(list_response)
         tree = RelativeFileTree()
         for file in files:
             tree.add_file(file['Path'], mycloud_dir)
@@ -283,8 +274,8 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
 
     yield from generator
 
-    for dir in dirs:
-        yield from list_candidates_recursively(request_executor, dir)
+    for directory in dirs:
+        yield from list_candidates_recursively(request_executor, directory)
 
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):

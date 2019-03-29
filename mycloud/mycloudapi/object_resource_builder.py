@@ -1,7 +1,4 @@
-import base64
 import os
-import re
-import json
 from mycloud.constants import BASE_DIR, AES_EXTENSION, REPLACEMENT_TABLE
 
 
@@ -48,10 +45,12 @@ class ObjectResourceBuilder:
 
         return os.path.join(self.base_dir, normalized_relative_path)
 
-    def ends_with_aes_extension(self, mycloud_path: str):
+    @staticmethod
+    def ends_with_aes_extension(mycloud_path: str):
         return mycloud_path.endswith(AES_EXTENSION)
 
-    def remove_aes_extension(self, mycloud_path: str):
+    @staticmethod
+    def remove_aes_extension(mycloud_path: str):
         if mycloud_path.endswith(AES_EXTENSION):
             mycloud_path = mycloud_path[:-len(AES_EXTENSION)]
         return mycloud_path

@@ -22,7 +22,7 @@ class AES256CryptoTransform(StreamTransform):
         self._finished_last = False
         self._aes = None
 
-    def up_transform(self, byte_sequence: bytes, last: bool=False):
+    def up_transform(self, byte_sequence: bytes, last: bool = False):
         if self._finished_last:
             return bytes([])
 

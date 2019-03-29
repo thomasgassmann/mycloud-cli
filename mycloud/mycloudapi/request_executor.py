@@ -1,8 +1,5 @@
-import requests
-import socket
-import struct
-from sys import platform
 from time import sleep
+import requests
 from requests.models import PreparedRequest
 from mycloud.logger import log, add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
@@ -83,9 +80,9 @@ class MyCloudRequestExecutor:
         if response.status_code == 401:
             if self.authenticator.auth_mode == AuthMode.Token:
                 raise ValueError('Bearer token is invalid')
-            else:
-                self.authenticator.invalidate_token()
-                retry = True
+
+            self.authenticator.invalidate_token()
+            retry = True
 
         if response.status_code == 500 and 500 not in ignored:
             log(f'HTTP {response.status_code} returned from server', error=True)

@@ -125,7 +125,8 @@ class Application:
     def _parse_sub_command_arguments(argument_parser):
         return argument_parser.parse_args(sys.argv[2:])
 
-    def _get_request_executor(self, args):
+    @staticmethod
+    def _get_request_executor(args):
         if args.token is not None and (args.username is not None or args.password is not None):
             raise argparse.ArgumentTypeError(
                 'Cannot have a token and username/password authentiation at the same time', True)
@@ -140,7 +141,8 @@ class Application:
         request_executor = MyCloudRequestExecutor(auth)
         return request_executor
 
-    def _add_remote_directory_argument(self, argument_parser):
+    @staticmethod
+    def _add_remote_directory_argument(argument_parser):
         command = 'mycloud_dir'
 
         def is_valid(value):
@@ -156,7 +158,8 @@ class Application:
             help='Base path in Swisscom myCloud',
             required=True)
 
-    def _add_local_directory_argument(self, argument_parser, directory_should_exist=True):
+    @staticmethod
+    def _add_local_directory_argument(argument_parser, directory_should_exist=True):
         command = 'local_dir'
 
         def is_valid(value):
@@ -172,7 +175,8 @@ class Application:
             help='Local directory',
             required=True)
 
-    def _add_token_argument(self, argument_parser):
+    @staticmethod
+    def _add_token_argument(argument_parser):
         command = 'token'
 
         def is_valid(value):
@@ -185,7 +189,8 @@ class Application:
             help='Swisscom myCloud bearer token',
             required=False)
 
-    def _add_user_name_password(self, argument_parser):
+    @staticmethod
+    def _add_user_name_password(argument_parser):
         command = 'username'
 
         def is_valid_username(value):
@@ -213,7 +218,8 @@ class Application:
             help='Password for the myCloud user',
             required=False)
 
-    def _add_progress_file_argument(self, argument_parser):
+    @staticmethod
+    def _add_progress_file_argument(argument_parser):
         command = 'progress_file'
 
         def is_valid(value):
@@ -226,7 +232,8 @@ class Application:
         argument_parser.add_argument(
             '--{}'.format(command), metavar='p', type=is_valid, help='Path to the progress file')
 
-    def _add_encryption_argument(self, argument_parser):
+    @staticmethod
+    def _add_encryption_argument(argument_parser):
         command = 'encryption_pwd'
 
         def is_valid(value):
@@ -237,19 +244,22 @@ class Application:
         argument_parser.add_argument(
             '--{}'.format(command), metavar='w', type=is_valid, help='Password used for encryption')
 
-    def _add_skip_argument(self, argument_parser):
+    @staticmethod
+    def _add_skip_argument(argument_parser):
         command = 'skip'
         argument_parser.add_argument(
             '--{}'.format(command), metavar='s', help='Paths to skip', nargs='+')
 
-    def _add_skip_by_hash(self, argument_parser):
+    @staticmethod
+    def _add_skip_by_hash(argument_parser):
         command = 'skip_by_hash'
         argument_parser.add_argument(
             f'--{command}',
             default=False, action='store_true',
             help='Skip the files to upload by their date and not their hash')
 
-    def _add_log_file_argument(self, argument_parser):
+    @staticmethod
+    def _add_log_file_argument(argument_parser):
         command = 'log_file'
 
         def is_valid(value):

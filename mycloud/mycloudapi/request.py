@@ -1,4 +1,3 @@
-from mycloud.logger import log
 from abc import abstractmethod, ABC
 from enum import Enum
 

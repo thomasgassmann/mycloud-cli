@@ -1,6 +1,3 @@
-import requests
-import base64
-import os
 from mycloud.mycloudapi.request import MyCloudRequest, Method, ContentType
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
 

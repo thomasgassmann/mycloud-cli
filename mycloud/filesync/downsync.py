@@ -45,11 +45,9 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     if progress_tracker.skip_file(remote_file.calculate_remote()):
         return
 
-    transforms = [] if decryption_pwd is None else [AES256CryptoTransform(
-        decryption_pwd)]
+    transforms = [] if decryption_pwd is None else [AES256CryptoTransform(decryption_pwd)]
     del decryption_pwd
-    file_manager = FileManager(
-        request_executor, transforms, ProgressReporter())
+    file_manager = FileManager(request_executor, transforms, ProgressReporter())
 
     remote_base_path = remote_file.calculate_remote()
     log('Downsyncing file {}...'.format(remote_base_path))
@@ -77,18 +75,18 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
         file_length = operation_timeout(lambda x: os.stat(
             x['local_file']).st_size, local_file=local_file)
         if file_length != delete_bytes_after:
-            fd, temp_path = tempfile.mkstemp()
+            file_handle, temp_path = tempfile.mkstemp()
             if chunk_size % ENCRYPTION_CHUNK_LENGTH != 0:
                 raise ValueError(
                     'Chunk size in myCloud must be a multiple of encryption chunk length')
 
             read_stream = operation_timeout(lambda x: open(
                 x['local_file'], 'rb'), local_file=local_file)
-            with os.fdopen(fd, 'wb') as f:
+            with os.fdopen(file_handle, 'wb') as file_stream:
                 read_length = 0
                 while read_length != delete_bytes_after:
                     read_values = read_stream.read(ENCRYPTION_CHUNK_LENGTH)
-                    f.write(read_values)
+                    file_stream.write(read_values)
                     read_length += ENCRYPTION_CHUNK_LENGTH
             read_stream.close()
             os.remove(local_file)

@@ -91,7 +91,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
 #     if is_timeout:
 #         return
 
-#     files = DirectoryListRequest.format_response(response)
+#     files = directory_list_request.format_response(response)
 #     for file in files:
 #         file_path = file['Path']
 #         if os.path.basename(file_path) == METADATA_FILE_NAME:

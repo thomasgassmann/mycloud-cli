@@ -9,9 +9,15 @@ from mycloud.common import operation_timeout
 
 class UpStreamExecutor:
 
-    def __init__(self, request_executor: MyCloudRequestExecutor, progress_reporter: ProgressReporter=None):
+    def __init__(self, request_executor: MyCloudRequestExecutor, progress_reporter: ProgressReporter = None):
         self.request_executor = request_executor
         self.progress_reporter = progress_reporter
+        self._tmp_total_read = 0
+        self._tmp_bps = 0
+        self._tmp_iteration = 0
+        self._tmp_start_time = None
+        self._tmp_current_object_resource = 0
+
 
     def upload_stream(self, stream_accessor: CloudStreamAccessor):
         self._tmp_total_read = 0

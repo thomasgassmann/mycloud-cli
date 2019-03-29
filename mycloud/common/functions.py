@@ -3,8 +3,8 @@ import tempfile
 
 
 def get_string_generator(string: str):
-    fd, filename = tempfile.mkstemp()
-    with os.fdopen(fd, 'w') as f:
-        f.write(string)
-    with open(filename, 'rb') as f:
-        yield f.read()
+    handle, filename = tempfile.mkstemp()
+    with os.fdopen(handle, 'w') as file_stream:
+        file_stream.write(string)
+    with open(filename, 'rb') as file_stream:
+        yield file_stream.read()
