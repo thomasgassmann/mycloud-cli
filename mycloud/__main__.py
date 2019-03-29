@@ -38,12 +38,14 @@ class Application:
             exit(1)
         getattr(self, args.command)()
 
-    def auth(self):
+    @staticmethod
+    def auth():
         user = input('Email: ')
         password = getpass.getpass()
         save_validate(user, password)
 
-    def cert(self):
+    @staticmethod
+    def cert():
         open_for_cert()
 
     def upload(self):
@@ -119,7 +121,8 @@ class Application:
 
         run_server(request_executor, args.mycloud_dir, args.port)
 
-    def _parse_sub_command_arguments(self, argument_parser):
+    @staticmethod
+    def _parse_sub_command_arguments(argument_parser):
         return argument_parser.parse_args(sys.argv[2:])
 
     def _get_request_executor(self, args):

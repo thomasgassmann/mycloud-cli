@@ -12,7 +12,8 @@ class StatisticsCommandLineParser:
 
     def parse_and_execute(self, args):
         parser = argparse.ArgumentParser(
-            description='Swisscom myCloud Statistics', formatter_class=argparse.RawTextHelpFormatter)
+            description='Swisscom myCloud Statistics',
+            formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument('command', help='''
             All statistics command:
                 summary

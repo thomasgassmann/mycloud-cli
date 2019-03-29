@@ -9,9 +9,11 @@ class StreamDirection(Enum):
 
 class CloudStream(ABC):
 
-    def __init__(self, stream_direction: StreamDirection, continued_append_starting_at_part_index: int):
+    def __init__(self,
+                 stream_direction: StreamDirection,
+                 continued_append_starting_index: int):
         self.stream_direction = stream_direction
-        self.continued_append_starting_at_part_index = continued_append_starting_at_part_index
+        self.continued_append_starting_index = continued_append_starting_index
         self._finished = False
 
     def finished(self):
@@ -27,8 +29,8 @@ class CloudStream(ABC):
 
 class UpStream(CloudStream):
 
-    def __init__(self, continued_append_starting_at_part_index: int = 0):
-        super().__init__(StreamDirection.Up, continued_append_starting_at_part_index)
+    def __init__(self, continued_append_starting_index: int = 0):
+        super().__init__(StreamDirection.Up, continued_append_starting_index)
 
     @abstractmethod
     def read(self, length: int):
@@ -37,8 +39,8 @@ class UpStream(CloudStream):
 
 class DownStream(CloudStream):
 
-    def __init__(self, continued_append_starting_at_part_index: int = 0):
-        super().__init__(StreamDirection.Down, continued_append_starting_at_part_index)
+    def __init__(self, continued_append_starting_index: int = 0):
+        super().__init__(StreamDirection.Down, continued_append_starting_index)
 
     @abstractmethod
     def write(self, data):
@@ -47,8 +49,8 @@ class DownStream(CloudStream):
 
 class DefaultDownStream(DownStream):
 
-    def __init__(self, stream, continued_append_starting_at_part_index: int = 0):
-        super().__init__(continued_append_starting_at_part_index)
+    def __init__(self, stream, continued_append_starting_index: int = 0):
+        super().__init__(continued_append_starting_index)
         self._stream = stream
 
     def write(self, data):
@@ -60,8 +62,8 @@ class DefaultDownStream(DownStream):
 
 class DefaultUpStream(UpStream):
 
-    def __init__(self, stream, continued_append_starting_at_part_index: int = 0):
-        super().__init__(continued_append_starting_at_part_index)
+    def __init__(self, stream, continued_append_starting_index: int = 0):
+        super().__init__(continued_append_starting_index)
         self._stream = stream
 
     def read(self, length: int):

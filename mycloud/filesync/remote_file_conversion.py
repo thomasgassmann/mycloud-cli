@@ -1,10 +1,8 @@
 import os
-import sys
 import gc
-import requests
-from collections import defaultdict
 from typing import List
 from threading import Thread
+import requests
 from mycloud.common import operation_timeout
 from mycloud.mycloudapi import (
     MyCloudRequestExecutor,
@@ -15,7 +13,6 @@ from mycloud.mycloudapi import (
     ListType
 )
 from mycloud.filesystem import (
-    FileManager,
     MetadataManager,
     HashCalculatedVersion,
     BasicStringVersion,
@@ -37,9 +34,8 @@ from mycloud.constants import (
 )
 from mycloud.filesync.tree import RelativeFileTree
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
-from mycloud.streamapi import ProgressReporter
 from mycloud.streamapi.transforms import AES256CryptoTransform
-from mycloud.common import get_all_files_recursively, is_int, TimeoutException
+from mycloud.common import is_int, TimeoutException
 from mycloud.logger import log
 
 

@@ -3,7 +3,12 @@ import tempfile
 import traceback
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
-from mycloud.filesystem import TranslatablePath, FileManager, BasicStringVersion, FileMetadata, Version
+from mycloud.filesystem import (
+    TranslatablePath,
+    FileManager,
+    BasicStringVersion,
+    FileMetadata,
+    Version)
 from mycloud.streamapi import ProgressReporter, DefaultDownStream
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.logger import log

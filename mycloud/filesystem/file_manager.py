@@ -16,7 +16,6 @@ from mycloud.streamapi import (
     ProgressReporter,
     CloudStream
 )
-from mycloud.streamapi.transforms import StreamTransform
 from mycloud.filesystem.translatable_path import TranslatablePath, BasicRemotePath
 from mycloud.filesystem.file_version import CalculatableVersion, HashCalculatedVersion
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
@@ -58,7 +57,7 @@ class FileManager:
         response = self._request_executor.execute_request(metadata_request)
         if response.status_code == 404:
             return False, 0
-        (dirs, files) = MetadataRequest.format_response(response)
+        (_, files) = MetadataRequest.format_response(response)
         return True, len(files)
 
     def started_partial_download(self,
@@ -148,7 +147,7 @@ class FileManager:
         remote_base_path = translatable_path.calculate_remote()
         version = Version(version_identifier, remote_base_path)
 
-        if upstream.continued_append_starting_at_part_index > 0:
+        if upstream.continued_append_starting_index > 0:
             versioned_base_path = versioned_stream_accessor.get_base_path()
             list_directory_request = MetadataRequest(
                 versioned_base_path, ignore_not_found=True)
@@ -158,7 +157,7 @@ class FileManager:
             if len(dirs) != 0:
                 raise ValueError(
                     'A versioned directory with partial files cannot contain subdirectories')
-            if len(files) != upstream.continued_append_starting_at_part_index:
+            if len(files) != upstream.continued_append_starting_index:
                 raise ValueError('Must append at correct position')
             for file in files:
                 file_name = os.path.basename(file['Path'])

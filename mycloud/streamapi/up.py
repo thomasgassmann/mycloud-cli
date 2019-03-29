@@ -23,7 +23,7 @@ class UpStreamExecutor:
         if file_stream.stream_direction != StreamDirection.Up:
             raise ValueError('Invalid stream direction')
 
-        current_part_index = file_stream.continued_append_starting_at_part_index or 0
+        current_part_index = file_stream.continued_append_starting_index or 0
         if current_part_index < 0:
             raise ValueError('Part index cannot be negative')
         while not file_stream.is_finished():

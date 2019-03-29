@@ -2,9 +2,6 @@ from Crypto import Random
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 from Crypto.Util.py3compat import bchr, bord
-import os
-import base64
-from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
 from mycloud.streamapi.transforms.stream_transform import StreamTransform
 
 

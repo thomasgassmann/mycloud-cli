@@ -5,21 +5,17 @@ from mycloud.logger import log
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
 
 
-cached_hashes = {
-}
+CACHED_HASHES = {}
 
 
 def sha256_file(local_file: str):
-    # TODO: check possibility to read file just once in upload loop and calculate hash on the fly:
-    # Problem: hash needs to be known before upload -> Upload files and rename afterwards?, just upload
-    # files to tmp dir initially
-    def read_file(x):
-        return x['file'].read(x['length'])
+    def read_file(params):
+        return params['file'].read(params['length'])
     sha = hashlib.sha256()
     time = operation_timeout(lambda x: os.path.getmtime(
         x['file']), file=local_file)
-    if local_file in cached_hashes and cached_hashes[local_file]['time'] >= time:
-        return cached_hashes[local_file]['hash']
+    if local_file in CACHED_HASHES and CACHED_HASHES[local_file]['time'] >= time:
+        return CACHED_HASHES[local_file]['hash']
     stream = operation_timeout(lambda x: open(
         x['file'], 'rb'), file=local_file)
     file_buffer = operation_timeout(
@@ -28,7 +24,7 @@ def sha256_file(local_file: str):
     file_size = operation_timeout(
         lambda x: os.stat(x['file']).st_size, file=local_file)
     percentage = None
-    while len(file_buffer) > 0:
+    while any(file_buffer):
         sha.update(file_buffer)
         file_buffer = operation_timeout(
             read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
@@ -41,7 +37,7 @@ def sha256_file(local_file: str):
         local_file, percentage), end='\n')
     stream.close()
     digested = sha.hexdigest()
-    cached_hashes[local_file] = {
+    CACHED_HASHES[local_file] = {
         'hash': digested,
         'time': time
     }

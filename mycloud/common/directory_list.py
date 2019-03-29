@@ -1,5 +1,4 @@
 from mycloud.mycloudapi import MetadataRequest, MyCloudRequestExecutor
-from mycloud.logger import log
 
 
 def get_all_files_recursively(request_executor: MyCloudRequestExecutor, directory: str):
@@ -9,5 +8,5 @@ def get_all_files_recursively(request_executor: MyCloudRequestExecutor, director
     for file in fetched_files:
         yield file
 
-    for directory in directories:
-        yield from get_all_files_recursively(request_executor, directory['Path'])
+    for sub_directory in directories:
+        yield from get_all_files_recursively(request_executor, sub_directory['Path'])
