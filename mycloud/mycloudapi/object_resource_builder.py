@@ -84,9 +84,9 @@ class ObjectResourceBuilder:
         return string
 
     @staticmethod
-    def _is_int(s):
+    def _is_int(potential_int):
         try:
-            int(s)
+            int(potential_int)
             return True
         except ValueError:
             return False

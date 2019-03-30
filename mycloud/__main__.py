@@ -273,7 +273,8 @@ class Application:
         argument_parser.add_argument(
             '--{}'.format(command), metavar='g', help='Path to log file', type=is_valid)
 
-    def _get_progress_tracker(self, skip_paths):
+    @staticmethod
+    def _get_progress_tracker(skip_paths):
         tracker = ProgressTracker()
         if skip_paths is not None:
             skipped = ', '.join(skip_paths)
@@ -281,11 +282,13 @@ class Application:
             tracker.set_skipped_paths(skip_paths)
         return tracker
 
-    def _get_resource_builder(self, local_dir, mycloud_dir):
+    @staticmethod
+    def _get_resource_builder(local_dir, mycloud_dir):
         builder = ObjectResourceBuilder(local_dir, mycloud_dir)
         return builder
 
-    def _set_log_file(self, log_file):
+    @staticmethod
+    def _set_log_file(log_file):
         if log_file is not None:
             logger.LOG_FILE = log_file
 

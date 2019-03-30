@@ -227,9 +227,9 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     except requests.exceptions.ConnectionError:
         log(f'Failed to execute directory list on dir {mycloud_dir}... Continueing with usual directory list')
         failed = True
+
     if list_response and list_response.status_code == 404:
         log(f'Directory {mycloud_dir} not found... Returning')
-        return
     elif not failed and list_response and not DirectoryListRequest.is_timeout(list_response):
         log(
             f'Server returned successful response for entire directory {mycloud_dir}')
@@ -244,38 +244,36 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
 
         del tree
         gc.collect()
-
-        return
-
-    log(
-        f'Couldn\'t list entire directory at once... Listing directory {mycloud_dir} in a flat way')
-    metadata_request = MetadataRequest(mycloud_dir, ignore_not_found=True)
-    metadata_response = None
-    try:
-        metadata_response = request_executor.execute_request(metadata_request)
-    except TimeoutException:
+    else:
         log(
-            f'Timeout when trying to list directory {mycloud_dir}. Returning', error=True)
-        return
-    except Exception as ex:
-        log('Failed to list directory: {}'.format(str(ex)))
-        log('Retrying to list directory {}...'.format(mycloud_dir))
-        yield from list_candidates_recursively(request_executor, mycloud_dir)
-        return
+            f'Couldn\'t list entire directory at once... Listing directory {mycloud_dir} in a flat way')
+        metadata_request = MetadataRequest(mycloud_dir, ignore_not_found=True)
+        metadata_response = None
+        try:
+            metadata_response = request_executor.execute_request(metadata_request)
+        except TimeoutException:
+            log(
+                f'Timeout when trying to list directory {mycloud_dir}. Returning', error=True)
+            return
+        except Exception as ex:
+            log('Failed to list directory: {}'.format(str(ex)))
+            log('Retrying to list directory {}...'.format(mycloud_dir))
+            yield from list_candidates_recursively(request_executor, mycloud_dir)
+            return
 
-    (dirs, files) = MetadataRequest.format_response(metadata_response)
-    dirs = [dir['Path'] for dir in dirs]
-    files = [file['Path'] for file in files]
+        (dirs, files) = MetadataRequest.format_response(metadata_response)
+        dirs = [dir['Path'] for dir in dirs]
+        files = [file['Path'] for file in files]
 
-    generator = RelativeFileTree.get_directory_generator(files, dirs)
-    continue_traversal = next(generator)
-    if not continue_traversal:
-        return
+        generator = RelativeFileTree.get_directory_generator(files, dirs)
+        continue_traversal = next(generator)
+        if not continue_traversal:
+            return
 
-    yield from generator
+        yield from generator
 
-    for directory in dirs:
-        yield from list_candidates_recursively(request_executor, directory)
+        for directory in dirs:
+            yield from list_candidates_recursively(request_executor, directory)
 
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):

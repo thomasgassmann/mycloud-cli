@@ -1,14 +1,8 @@
 import asyncio
-from aiohttp import web, RequestInfo
+from aiohttp import web
 from aiohttp.web import BaseRequest
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
-from mycloud.streamapi import (
-    DefaultUpStream,
-    DefaultDownStream,
-    CloudStreamAccessor,
-    UpStreamExecutor,
-    DownStreamExecutor
-)
+from mycloud.streamapi import DefaultUpStream
 from mycloud.filesystem import FileManager, BasicRemotePath, BasicStringVersion
 
 

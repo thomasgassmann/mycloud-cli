@@ -25,14 +25,18 @@ class MyCloudRequest(ABC):
     def get_method(self):
         return None
 
-    def is_query_parameter_access_token(self):
+    @staticmethod
+    def is_query_parameter_access_token():
         return False
 
-    def ignored_error_status_codes(self):
+    @staticmethod
+    def ignored_error_status_codes():
         return []
 
-    def get_data_generator(self):
+    @staticmethod
+    def get_data_generator():
         return None
 
-    def get_content_type(self):
+    @staticmethod
+    def get_content_type():
         return ContentType.APPLICATION_JSON
