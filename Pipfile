@@ -27,6 +27,7 @@ pycryptodome = "*"
 lxml = "*"
 keyring = "*"
 halo = "*"
+better-exceptions = "*"
 
 [requires]
 python_version = "3.6"
