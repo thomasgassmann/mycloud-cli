@@ -28,6 +28,7 @@ lxml = "*"
 keyring = "*"
 halo = "*"
 better-exceptions = "*"
+click = "*"
 
 [requires]
 python_version = "3.6"

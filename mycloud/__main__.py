@@ -14,6 +14,19 @@ from mycloud.proxy import run_server
 from mycloud.filesync.progress import ProgressTracker
 
 
+import click
+from mycloud.commands import auth_command
+
+@click.group()
+def mycloud_cli():
+    pass
+
+mycloud_cli.add_command(auth_command)
+
+if __name__ == '__main__':
+    mycloud_cli()
+
+
 class Application:
     def run(self):
         parser = argparse.ArgumentParser(
@@ -27,7 +40,6 @@ class Application:
                 download
                 shell
                 convert (Deprecated)
-                auth
                 cert
         ''')
         args = parser.parse_args(sys.argv[1:2])
@@ -37,12 +49,6 @@ class Application:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
-
-    @staticmethod
-    def auth():
-        user = input('Email: ')
-        password = getpass.getpass()
-        save_validate(user, password)
 
     @staticmethod
     def cert():

@@ -20,7 +20,7 @@ to download the required certificate.
 To use myCloud CLI, run `mycloud [command]`.
 Then authenticate yourself with your username and password using:
 ```
-mycloud auth
+mycloud auth login
 ```
 
 To get a list of all available commands, run:
