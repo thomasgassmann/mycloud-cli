@@ -40,7 +40,6 @@ class Application:
                 download
                 shell
                 convert (Deprecated)
-                cert
         ''')
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command) or args.command == self.run.__name__:
@@ -49,10 +48,6 @@ class Application:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
-
-    @staticmethod
-    def cert():
-        open_for_cert()
 
     def upload(self):
         parser = argparse.ArgumentParser(

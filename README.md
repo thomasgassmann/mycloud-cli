@@ -41,4 +41,4 @@ export PIPENV_VENV_IN_PROJECT="enabled"
 pipenv install --python 3.6
 pipenv shell
 ```
-Then run `python -m mycloud cert` to install the certificates as described in the [Installation](#Installation) section.
+Then run `python -m mycloud auth cert` to install the certificates as described in the [Installation](#Installation) section.
