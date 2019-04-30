@@ -15,13 +15,17 @@ from mycloud.filesync.progress import ProgressTracker
 
 
 import click
-from mycloud.commands import auth_command
+from mycloud.commands import auth_command, statistics_command
 
 @click.group()
-def mycloud_cli():
+@click.pass_context
+@click.option('--token', nargs=1)
+def mycloud_cli(ctx, token):
     pass
 
 mycloud_cli.add_command(auth_command)
+mycloud_cli.add_command(statistics_command)
+
 
 if __name__ == '__main__':
     mycloud_cli()

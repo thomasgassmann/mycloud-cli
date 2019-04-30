@@ -29,6 +29,7 @@ keyring = "*"
 halo = "*"
 better-exceptions = "*"
 click = "*"
+pinject = "*"
 
 [requires]
 python_version = "3.6"
