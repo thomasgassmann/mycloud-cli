@@ -14,20 +14,49 @@ from mycloud.filesync.progress import ProgressTracker
 
 
 import click
+import pinject
+from click.exceptions import ClickException
 from mycloud.commands import auth_command, statistics_command
+
+
+class InstanceBindingSpec(pinject.BindingSpec):
+    
+    def __init__(self, name, instance):
+        self._name = name
+        self._instance = instance
+
+    def configure(self, bind):
+        bind(self._name, self._instance)
+
+
+def construct_authenticator(bearer: str):
+    authenticator = MyCloudAuthenticator()
+    if bearer:
+        authenticator.set_bearer_auth(bearer)
+    else:
+        username, password = get_credentials()
+        if not username or not password:
+            raise ClickException('Run "mycloud auth login" to authenticate yourself first, or specify a token')
+        authenticator.set_password_auth(username, password)
+
 
 @click.group()
 @click.pass_context
-@click.option('--token', nargs=1)
+@click.option('--token', nargs=1, required=False)
 def mycloud_cli(ctx, token):
-    pass
+    if token is not None:
+        ctx.obj['token'] = token
+
+    ctx.obj['injector'] = pinject.new_object_graph(binding_specs=[
+        InstanceBindingSpec('mycloud_authenticator', construct_authenticator(token))
+    ])
 
 mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 
 
 if __name__ == '__main__':
-    mycloud_cli()
+    mycloud_cli(obj={})
 
 
 class Application:

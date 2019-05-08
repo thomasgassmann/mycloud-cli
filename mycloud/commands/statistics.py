@@ -1,4 +1,5 @@
 import click
+from mycloud.statistics.summarizer import summarize
 
 
 @click.group(name='statistics')
@@ -9,4 +10,4 @@ def statistics_command():
 @statistics_command.command()
 @click.pass_context
 def summary(ctx):
-    print(ctx)
+    print(ctx.obj['token'])
