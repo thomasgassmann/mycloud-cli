@@ -10,7 +10,6 @@ from mycloud.filesystem import BasicRemotePath
 from mycloud.statistics import StatisticsCommandLineParser
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.mycloudapi.auth import MyCloudAuthenticator
-from mycloud.proxy import run_server
 from mycloud.filesync.progress import ProgressTracker
 
 
