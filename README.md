@@ -1,5 +1,7 @@
 # Swisscom myCloud CLI
 
+[![Build Status](https://dev.azure.com/thomasgassmann/mycloud-cli/_apis/build/status/thomasgassmann.mycloud-cli?branchName=master)](https://dev.azure.com/thomasgassmann/mycloud-cli/_build/latest?definitionId=4&branchName=master)
+
 Swisscom myCloud CLI is a command line utility to manage all your data stored on Swisscom myCloud. To achieve this, it uses the public Swisscom myCloud API.
 
 # Installation
