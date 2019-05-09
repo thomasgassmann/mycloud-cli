@@ -11,10 +11,10 @@ from mycloud.constants import WAIT_TIME_MULTIPLIER, RESET_SESSION_EVERY
 
 class MyCloudRequestExecutor:
 
-    def __init__(self, authenticator: MyCloudAuthenticator):
+    def __init__(self, mycloud_authenticator: MyCloudAuthenticator):
         self._request_count = 0
         self.wait_time = 10
-        self.authenticator = authenticator
+        self.authenticator = mycloud_authenticator
         self.session = requests.Session()
         self._reset_wait_time()
 

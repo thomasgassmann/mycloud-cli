@@ -26,7 +26,7 @@ class InstanceBindingSpec(pinject.BindingSpec):
         self._instance = instance
 
     def configure(self, bind):
-        bind(self._name, self._instance)
+        bind(self._name, to_instance=self._instance)
 
 
 def construct_authenticator(bearer: str):
@@ -38,6 +38,7 @@ def construct_authenticator(bearer: str):
         if not username or not password:
             raise ClickException('Run "mycloud auth login" to authenticate yourself first, or specify a token')
         authenticator.set_password_auth(username, password)
+    return authenticator
 
 
 @click.group()
@@ -47,8 +48,10 @@ def mycloud_cli(ctx, token):
     if token is not None:
         ctx.obj['token'] = token
 
+    authenticator = construct_authenticator(token)
     ctx.obj['injector'] = pinject.new_object_graph(binding_specs=[
-        InstanceBindingSpec('mycloud_authenticator', construct_authenticator(token))
+        InstanceBindingSpec('mycloud_authenticator', authenticator),
+        InstanceBindingSpec('mycloud_request_executor', MyCloudRequestExecutor(authenticator))
     ])
 
 mycloud_cli.add_command(auth_command)
