@@ -4,6 +4,9 @@ import json
 
 install_requires = []
 
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
+
 with open('Pipfile.lock') as fd:
     lock_data = json.load(fd)
     install_requires = [
@@ -17,6 +20,9 @@ setup(
     version='1.2.3',
     license='MIT',
     author='Thomas Gassmann',
+    long_description=long_description,
+    description='myCloud Command Line Interface',
+    long_description_content_type='text/markdown',
     author_email='thomas.gassmann@hotmail.com',
     url='https://github.com/ThomasGassmann/mycloud-cli',
     install_requires=install_requires,
@@ -24,5 +30,11 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': ['mycloud=mycloud.__main__:main']
-    }
+    },
+    keywords='swisscom cloud cli mycloud',
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ]
 )
