@@ -92,7 +92,6 @@ class Application:
         self._add_token_argument(parser)
         self._add_encryption_argument(parser)
         self._add_skip_argument(parser)
-        self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
         self._add_skip_by_hash(parser)
         args = self._parse_sub_command_arguments(parser)
@@ -111,7 +110,6 @@ class Application:
         self._add_token_argument(parser)
         self._add_encryption_argument(parser)
         self._add_skip_argument(parser)
-        self._add_log_file_argument(parser)
         self._add_user_name_password(parser)
         args = self._parse_sub_command_arguments(parser)
         executor = self._get_request_executor(args)
@@ -145,7 +143,6 @@ class Application:
             description='Swisscom myCloud Proxy', formatter_class=argparse.RawTextHelpFormatter)
         self._add_user_name_password(parser)
         self._add_token_argument(parser)
-        self._add_log_file_argument(parser)
         self._add_remote_directory_argument(parser)
 
         parser.add_argument('--port', metavar='p', type=int,
@@ -295,21 +292,6 @@ class Application:
             help='Skip the files to upload by their date and not their hash')
 
     @staticmethod
-    def _add_log_file_argument(argument_parser):
-        command = 'log_file'
-
-        def is_valid(value):
-            if value is None:
-                return value
-            if not isinstance(value, str):
-                return value
-            Application._must_be_not_empty_string(value, command)
-            Application._path_is_in_valid_directory(value, command)
-            return value
-        argument_parser.add_argument(
-            '--{}'.format(command), metavar='g', help='Path to log file', type=is_valid)
-
-    @staticmethod
     def _get_progress_tracker(skip_paths):
         tracker = ProgressTracker()
         if skip_paths is not None:
@@ -322,11 +304,6 @@ class Application:
     def _get_resource_builder(local_dir, mycloud_dir):
         builder = ObjectResourceBuilder(local_dir, mycloud_dir)
         return builder
-
-    @staticmethod
-    def _set_log_file(log_file):
-        if log_file is not None:
-            logger.LOG_FILE = log_file
 
     @staticmethod
     def _must_be_not_empty_string(value, command):
