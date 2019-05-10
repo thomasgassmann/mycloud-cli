@@ -50,8 +50,8 @@ def mycloud_cli(ctx, token):
 
     authenticator = construct_authenticator(token)
     ctx.obj['injector'] = pinject.new_object_graph(binding_specs=[
-        InstanceBindingSpec('mycloud_authenticator', authenticator),
-        InstanceBindingSpec('mycloud_request_executor', MyCloudRequestExecutor(authenticator))
+        InstanceBindingSpec('mycloud_request_executor', MyCloudRequestExecutor(authenticator)),
+        InstanceBindingSpec('mycloud_authenticator', authenticator)
     ])
 
 mycloud_cli.add_command(auth_command)
