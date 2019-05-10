@@ -2,6 +2,7 @@ import click
 from mycloud.statistics.summarizer import summarize
 from mycloud.statistics.change_tracker import track_changes
 from mycloud.statistics.usage import print_usage
+from mycloud.statistics.size import calculate_size
 from mycloud.mycloudapi import MyCloudRequestExecutor
 
 
@@ -32,3 +33,11 @@ def changes(ctx, dir: str, top: int):
 def usage(ctx):
     request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
     print_usage(request_executor)
+
+
+@statistics_command.command()
+@click.pass_context
+@click.argument('dir', str, required=True)
+def size(ctx, dir: str):
+    request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
+    calculate_size(request_executor, dir)

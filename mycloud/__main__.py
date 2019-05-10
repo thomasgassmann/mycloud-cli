@@ -7,7 +7,6 @@ from mycloud.credentials.storage import save_validate, get_credentials
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.filesync import upsync_folder, downsync_folder, convert_remote_files
 from mycloud.filesystem import BasicRemotePath
-from mycloud.statistics import StatisticsCommandLineParser
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.mycloudapi.auth import MyCloudAuthenticator
 from mycloud.filesync.progress import ProgressTracker
@@ -70,7 +69,6 @@ class Application:
             Subcommand to run
 
             The following subcommands are supported:
-                statistics
                 upload
                 download
                 shell
@@ -133,10 +131,6 @@ class Application:
         executor = self._get_request_executor(args)
         convert_remote_files(executor, args.mycloud_dir,
                              args.local_dir, args.skip or [])
-
-    def statistics(self):
-        command_line_parser = StatisticsCommandLineParser(self)
-        command_line_parser.parse_and_execute(sys.argv[2:])
 
     def proxy(self):
         parser = argparse.ArgumentParser(
