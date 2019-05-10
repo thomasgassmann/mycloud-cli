@@ -1,6 +1,7 @@
 import click
 from mycloud.statistics.summarizer import summarize
 from mycloud.statistics.change_tracker import track_changes
+from mycloud.statistics.usage import print_usage
 from mycloud.mycloudapi import MyCloudRequestExecutor
 
 
@@ -24,3 +25,10 @@ def summary(ctx, dir: str):
 def changes(ctx, dir: str, top: int):
     request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
     track_changes(request_executor, dir, top)
+
+
+@statistics_command.command()
+@click.pass_context
+def usage(ctx):
+    request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
+    print_usage(request_executor)
