@@ -15,7 +15,13 @@ from mycloud.filesync.progress import ProgressTracker
 import click
 import pinject
 from click.exceptions import ClickException
-from mycloud.commands import auth_command, statistics_command, upload_command, download_command
+from mycloud.commands import (
+    auth_command,
+    statistics_command,
+    upload_command,
+    download_command,
+    convert_command
+)
 
 
 class InstanceBindingSpec(pinject.BindingSpec):
@@ -57,6 +63,7 @@ mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 mycloud_cli.add_command(upload_command)
 mycloud_cli.add_command(download_command)
+mycloud_cli.add_command(convert_command)
 
 if __name__ == '__main__':
     mycloud_cli(obj={})
@@ -70,8 +77,6 @@ class Application:
             Subcommand to run
 
             The following subcommands are supported:
-                upload
-                download
                 shell
                 convert (Deprecated)
         ''')
@@ -82,24 +87,6 @@ class Application:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
-
-    def download(self):
-        parser = argparse.ArgumentParser(
-            description='Swisscom myCloud Download', formatter_class=argparse.RawTextHelpFormatter)
-        self._add_remote_directory_argument(parser)
-        self._add_local_directory_argument(parser, False)
-        self._add_token_argument(parser)
-        self._add_encryption_argument(parser)
-        self._add_skip_argument(parser)
-        self._add_user_name_password(parser)
-        args = self._parse_sub_command_arguments(parser)
-        executor = self._get_request_executor(args)
-        tracker = self._get_progress_tracker(args.skip)
-        builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
-        self._set_log_file(args.log_file)
-        translatable_path = BasicRemotePath(args.mycloud_dir)
-        downsync_folder(executor, builder, translatable_path,
-                        tracker, args.encryption_pwd)
 
     def convert(self):
         parser = argparse.ArgumentParser(
@@ -114,22 +101,6 @@ class Application:
         executor = self._get_request_executor(args)
         convert_remote_files(executor, args.mycloud_dir,
                              args.local_dir, args.skip or [])
-
-    def proxy(self):
-        parser = argparse.ArgumentParser(
-            description='Swisscom myCloud Proxy', formatter_class=argparse.RawTextHelpFormatter)
-        self._add_user_name_password(parser)
-        self._add_token_argument(parser)
-        self._add_remote_directory_argument(parser)
-
-        parser.add_argument('--port', metavar='p', type=int,
-                            help='The port of the proxy', required=False, default=9001)
-
-        args = self._parse_sub_command_arguments(parser)
-        self._set_log_file(args.log_file)
-        request_executor = self._get_request_executor(args)
-
-        run_server(request_executor, args.mycloud_dir, args.port)
 
     @staticmethod
     def _parse_sub_command_arguments(argument_parser):
