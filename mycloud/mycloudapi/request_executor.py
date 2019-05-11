@@ -1,8 +1,5 @@
-import requests
-import socket
-import struct
-from sys import platform
 from time import sleep
+import requests
 from requests.models import PreparedRequest
 from mycloud.logger import log, add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
@@ -14,10 +11,10 @@ from mycloud.constants import WAIT_TIME_MULTIPLIER, RESET_SESSION_EVERY
 
 class MyCloudRequestExecutor:
 
-    def __init__(self, authenticator: MyCloudAuthenticator):
+    def __init__(self, mycloud_authenticator: MyCloudAuthenticator):
         self._request_count = 0
         self.wait_time = 10
-        self.authenticator = authenticator
+        self.authenticator = mycloud_authenticator
         self.session = requests.Session()
         self._reset_wait_time()
 
@@ -72,9 +69,7 @@ class MyCloudRequestExecutor:
         headers = requests.utils.default_headers()
         headers['Content-Type'] = content_type
         headers['Authorization'] = 'Bearer ' + bearer_token
-        headers['User-Agent'] = '''
-            Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36
-        '''.strip()
+        headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         return headers
 
 
@@ -85,9 +80,9 @@ class MyCloudRequestExecutor:
         if response.status_code == 401:
             if self.authenticator.auth_mode == AuthMode.Token:
                 raise ValueError('Bearer token is invalid')
-            else:
-                self.authenticator.invalidate_token()
-                retry = True
+
+            self.authenticator.invalidate_token()
+            retry = True
 
         if response.status_code == 500 and 500 not in ignored:
             log(f'HTTP {response.status_code} returned from server', error=True)

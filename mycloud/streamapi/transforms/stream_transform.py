@@ -1,12 +1,10 @@
 from abc import ABC, abstractmethod
 
 
-"""
-    Input of up_transform must always equal output of down_transform.
-"""
-
-
 class StreamTransform(ABC):
+    """
+    Input of up_transform must always equal output of down_transform.
+    """
 
     def __init__(self, name):
         self._name = name
@@ -19,9 +17,9 @@ class StreamTransform(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def up_transform(self, byte_sequence: bytes, last: bool=False):
+    def up_transform(self, byte_sequence: bytes, last: bool = False):
         raise NotImplementedError()
 
     @abstractmethod
-    def down_transform(self, byte_sequence: bytes, last: bool=False):
+    def down_transform(self, byte_sequence: bytes, last: bool = False):
         raise NotImplementedError()

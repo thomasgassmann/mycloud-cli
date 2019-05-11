@@ -1,8 +1,12 @@
-from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder, GetObjectRequest, PutObjectRequest
-from mycloud.filesystem.file_metadata import FileMetadata, Version
+from mycloud.mycloudapi import (
+    MyCloudRequestExecutor,
+    ObjectResourceBuilder,
+    GetObjectRequest,
+    PutObjectRequest)
+from mycloud.filesystem.file_metadata import FileMetadata
 from mycloud.filesystem.translatable_path import TranslatablePath
 from mycloud.constants import METADATA_FILE_NAME
-from mycloud.helper import get_string_generator
+from mycloud.common import get_string_generator
 
 
 class MetadataManager:

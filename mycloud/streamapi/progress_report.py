@@ -11,6 +11,7 @@ class ProgressReport:
 
 class ProgressReporter:
 
-    def report_progress(self, report: ProgressReport):
+    @staticmethod
+    def report_progress(report: ProgressReport):
         if report.iteration % 1000 == 0:
             log('{}: {} bps | {} iteration | {} bytes'.format(report.object_resource, report.bps, report.iteration, report.uploaded_bytes))

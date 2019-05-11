@@ -1,6 +1,4 @@
-import requests
-import base64
-import os
+from abc import abstractmethod
 from mycloud.mycloudapi.request import MyCloudRequest, Method, ContentType
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
 
@@ -16,6 +14,10 @@ class ObjectRequest(MyCloudRequest):
 
     def get_request_url(self):
         return REQUEST_URL + get_object_id(self.object_resource)
+
+    @abstractmethod
+    def get_method(self):
+        return None
 
 
 class PutObjectRequest(ObjectRequest):

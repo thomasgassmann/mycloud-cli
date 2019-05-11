@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 from pathlib import Path
-from mycloud.helper import is_int
+from mycloud.common import is_int, operation_timeout
 from mycloud.mycloudapi import (
     MyCloudRequestExecutor,
     MetadataRequest,
@@ -16,14 +16,12 @@ from mycloud.streamapi import (
     ProgressReporter,
     CloudStream
 )
-from mycloud.streamapi.transforms import StreamTransform
 from mycloud.filesystem.translatable_path import TranslatablePath, BasicRemotePath
 from mycloud.filesystem.file_version import CalculatableVersion, HashCalculatedVersion
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.filesystem.metadata_manager import MetadataManager
 from mycloud.filesystem.file_metadata import FileMetadata, Version
 from mycloud.constants import METADATA_FILE_NAME, MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.helper import operation_timeout
 
 
 class FileManager:
@@ -59,7 +57,7 @@ class FileManager:
         response = self._request_executor.execute_request(metadata_request)
         if response.status_code == 404:
             return False, 0
-        (dirs, files) = MetadataRequest.format_response(response)
+        (_, files) = MetadataRequest.format_response(response)
         return True, len(files)
 
     def started_partial_download(self,
@@ -79,7 +77,7 @@ class FileManager:
         metadata_request = MetadataRequest(directory)
         response = self._request_executor.execute_request(metadata_request)
         (dirs, files) = MetadataRequest.format_response(response)
-        if len(dirs) != 0:
+        if any(dirs):
             raise ValueError(
                 'Cannot have directories in directory of partial files')
         file_lengths = [file['Length'] for file in files]
@@ -97,19 +95,15 @@ class FileManager:
                     'Expected chunk size differs more than 10% from actual chunk size... Aborting')
 
         # Can't compare exact size because remote and local sizes are different
-        hash = version.get_property('hash')
-        if hash is None:
+        hash_prop = version.get_property('hash')
+        if hash_prop is None:
             return False, True, file_length // chunk_size
 
         local_hash = calculatable_version.get_hash() if isinstance(calculatable_version,
                                                                    HashCalculatedVersion) else HashCalculatedVersion(local_path).calculate_version()
-        if local_hash == hash:
+        if local_hash == hash_prop:
             return True, False, 0
         return False, True, file_length // chunk_size
-
-    def move_file(self):
-        # TODO
-        pass
 
     def read_file(self,
                   downstream: DownStream,
@@ -149,17 +143,17 @@ class FileManager:
         remote_base_path = translatable_path.calculate_remote()
         version = Version(version_identifier, remote_base_path)
 
-        if upstream.continued_append_starting_at_part_index > 0:
+        if upstream.continued_append_starting_index > 0:
             versioned_base_path = versioned_stream_accessor.get_base_path()
             list_directory_request = MetadataRequest(
                 versioned_base_path, ignore_not_found=True)
             listed_directory = self._request_executor.execute_request(
                 list_directory_request)
             (dirs, files) = MetadataRequest.format_response(listed_directory)
-            if len(dirs) != 0:
+            if any(dirs):
                 raise ValueError(
                     'A versioned directory with partial files cannot contain subdirectories')
-            if len(files) != upstream.continued_append_starting_at_part_index:
+            if len(files) != upstream.continued_append_starting_index:
                 raise ValueError('Must append at correct position')
             for file in files:
                 file_name = os.path.basename(file['Path'])
@@ -203,8 +197,8 @@ class FileManager:
             yield translatable_path
 
         def loop_dirs(rec, sec):
-            for dir in dirs:
-                remote_path = BasicRemotePath(dir['Path'])
+            for directory in dirs:
+                remote_path = BasicRemotePath(directory['Path'])
                 yield from self._read_directory_using_metadata_request(remote_path, recursive=rec, _second=sec)
 
         if recursive:
@@ -230,16 +224,16 @@ class FileManager:
                 yield files[0]['Path']
                 return
 
-            for dir in dirs:
-                dir_path = BasicRemotePath(dir['Path'])
+            for directory in dirs:
+                dir_path = BasicRemotePath(directory['Path'])
                 yield from self._read_directory_using_directory_list_request(dir_path)
         else:
-            files = DirectoryListRequest.format_response(response)
+            files = directory_list_command.format_response(response)
             # TODO: use less memory and make proper use of `files` generator
             directory_file_count = defaultdict(int)
             for file in files:
-                dir = os.path.dirname(file['Path'])
-                directory_file_count[dir] += 1
+                directory = os.path.dirname(file['Path'])
+                directory_file_count[directory] += 1
 
             for file in files:
                 file_name = os.path.basename(file['Path'])

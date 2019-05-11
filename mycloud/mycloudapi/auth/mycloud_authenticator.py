@@ -75,8 +75,9 @@ class MyCloudAuthenticator:
         if not os.path.isdir(TOKEN_CACHE_FOLDER):
             os.makedirs(TOKEN_CACHE_FOLDER)
         token_file = self._get_token_file_path()
-        with open(token_file, 'w') as f:
-            f.write(self.current_token)
+        with open(token_file, 'w') as file_stream:
+            file_stream.write(self.current_token)
 
-    def _get_token_file_path(self):
+    @staticmethod
+    def _get_token_file_path():
         return os.path.join(TOKEN_CACHE_FOLDER, 'token')

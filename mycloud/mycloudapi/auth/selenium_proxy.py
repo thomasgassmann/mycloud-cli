@@ -8,7 +8,7 @@ from selenium import webdriver
 
 JS_FILE = 'undetectable-headless-browser.js'
 PROXY_HOST = '127.0.0.1'
-PROXY_PORT = 9090
+PROXY_PORT = 3117
 CHROME = 'chromium'
 CHROME_DRIVER = 'chromedriver'
 

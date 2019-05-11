@@ -43,15 +43,15 @@ class MetadataRequest(MyCloudRequest):
         return (dirs, files)
 
     @staticmethod
-    def _get_files(json):
-        if 'Files' in json:
-            files = json['Files']
+    def _get_files(json_content):
+        if 'Files' in json_content:
+            files = json_content['Files']
             return files
         return []
 
     @staticmethod
-    def _get_directories(json):
-        if 'Directories' in json:
-            directories = json['Directories']
+    def _get_directories(json_content):
+        if 'Directories' in json_content:
+            directories = json_content['Directories']
             return directories
         return []

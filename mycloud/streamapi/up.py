@@ -4,14 +4,20 @@ from mycloud.streamapi import UpStream, StreamDirection
 from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
 from mycloud.streamapi.stream_accessor import CloudStreamAccessor
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH, MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.helper import operation_timeout
+from mycloud.common import operation_timeout
 
 
 class UpStreamExecutor:
 
-    def __init__(self, request_executor: MyCloudRequestExecutor, progress_reporter: ProgressReporter=None):
+    def __init__(self, request_executor: MyCloudRequestExecutor, progress_reporter: ProgressReporter = None):
         self.request_executor = request_executor
         self.progress_reporter = progress_reporter
+        self._tmp_total_read = 0
+        self._tmp_bps = 0
+        self._tmp_iteration = 0
+        self._tmp_start_time = None
+        self._tmp_current_object_resource = 0
+
 
     def upload_stream(self, stream_accessor: CloudStreamAccessor):
         self._tmp_total_read = 0
@@ -23,7 +29,7 @@ class UpStreamExecutor:
         if file_stream.stream_direction != StreamDirection.Up:
             raise ValueError('Invalid stream direction')
 
-        current_part_index = file_stream.continued_append_starting_at_part_index or 0
+        current_part_index = file_stream.continued_append_starting_index or 0
         if current_part_index < 0:
             raise ValueError('Part index cannot be negative')
         while not file_stream.is_finished():
