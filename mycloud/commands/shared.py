@@ -10,5 +10,9 @@ def get_progress_tracker(skip_paths):
     return tracker
 
 
+def container(ctx):
+    return ctx.obj['injector']
+
+
 def executor_from_ctx(ctx):
     return ctx.obj['injector'].provide(MyCloudRequestExecutor)

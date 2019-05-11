@@ -23,6 +23,7 @@ class MyCloudRequestExecutor:
         # TODO: also use aiohttp instead of requests
         content_type = request.get_content_type()
         token = self.authenticator.get_token()
+        print(token)
         headers = MyCloudRequestExecutor._get_headers(content_type, token)
         request_url = request.get_request_url()
         request_method = request.get_method()
