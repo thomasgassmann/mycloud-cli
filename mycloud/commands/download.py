@@ -1,28 +1,28 @@
 import click
 from typing import List
-from mycloud.filesync import upsync_folder
-from mycloud.filesync.progress import ProgressTracker
+from mycloud.filesync import downsync_folder
 from mycloud.mycloudapi import ObjectResourceBuilder
+from mycloud.filesystem import BasicRemotePath
 from mycloud.commands.shared import get_progress_tracker, executor_from_ctx
 
 
-@click.command(name='upload')
+@click.command(name='download')
 @click.pass_context
-@click.argument('local')
 @click.argument('remote')
+@click.argument('local')
 @click.option('--password', required=False)
 @click.option('--skip', multiple=True, required=False, default=None)
 @click.option('--skip_by_hash', is_flag=True, required=False, default=False)
-def upload_command(ctx, local: str, remote: str, password: str, skip: List[str], skip_by_hash: bool):
+def download_command(ctx, remote: str, local: str, password: str, skip: List[str], skip_by_hash: bool):
     if skip is None:
         skip = []
 
-    request_executor = executor_from_ctx(ctx)
+    executor = executor_from_ctx(ctx)
     builder = ObjectResourceBuilder(local, remote)
-    upsync_folder(
-        request_executor,
+    tracker = get_progress_tracker(skip)
+    downsync_folder(
+        executor,
         builder,
-        local,
-        get_progress_tracker(skip),
-        password,
-        not skip_by_hash)
+        BasicRemotePath(remote),
+        tracker,
+        password)

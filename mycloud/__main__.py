@@ -15,7 +15,7 @@ from mycloud.filesync.progress import ProgressTracker
 import click
 import pinject
 from click.exceptions import ClickException
-from mycloud.commands import auth_command, statistics_command, upload_command
+from mycloud.commands import auth_command, statistics_command, upload_command, download_command
 
 
 class InstanceBindingSpec(pinject.BindingSpec):
@@ -56,6 +56,7 @@ def mycloud_cli(ctx, token):
 mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 mycloud_cli.add_command(upload_command)
+mycloud_cli.add_command(download_command)
 
 if __name__ == '__main__':
     mycloud_cli(obj={})
@@ -81,24 +82,6 @@ class Application:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
-
-    def upload(self):
-        parser = argparse.ArgumentParser(
-            description='Swisscom myCloud Upload', formatter_class=argparse.RawTextHelpFormatter)
-        self._add_remote_directory_argument(parser)
-        self._add_local_directory_argument(parser)
-        self._add_token_argument(parser)
-        self._add_encryption_argument(parser)
-        self._add_skip_argument(parser)
-        self._add_user_name_password(parser)
-        self._add_skip_by_hash(parser)
-        args = self._parse_sub_command_arguments(parser)
-        executor = self._get_request_executor(args)
-        tracker = self._get_progress_tracker(args.skip)
-        builder = self._get_resource_builder(args.local_dir, args.mycloud_dir)
-        self._set_log_file(args.log_file)
-        upsync_folder(executor, builder, args.local_dir,
-                      tracker, args.encryption_pwd, not args.skip_by_hash)
 
     def download(self):
         parser = argparse.ArgumentParser(
