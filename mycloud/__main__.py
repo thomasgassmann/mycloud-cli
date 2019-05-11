@@ -15,7 +15,7 @@ from mycloud.filesync.progress import ProgressTracker
 import click
 import pinject
 from click.exceptions import ClickException
-from mycloud.commands import auth_command, statistics_command
+from mycloud.commands import auth_command, statistics_command, upload_command
 
 
 class InstanceBindingSpec(pinject.BindingSpec):
@@ -30,7 +30,7 @@ class InstanceBindingSpec(pinject.BindingSpec):
 
 def construct_authenticator(bearer: str):
     authenticator = MyCloudAuthenticator()
-    if bearer:
+    if bearer is not None:
         authenticator.set_bearer_auth(bearer)
     else:
         username, password = get_credentials()
@@ -55,7 +55,7 @@ def mycloud_cli(ctx, token):
 
 mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
-
+mycloud_cli.add_command(upload_command)
 
 if __name__ == '__main__':
     mycloud_cli(obj={})

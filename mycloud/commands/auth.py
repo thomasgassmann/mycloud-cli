@@ -10,6 +10,7 @@ def auth_command():
 
 
 @auth_command.command()
+# TODO: click.password_option()
 def login():
     user = input('Email: ')
     password = getpass.getpass()

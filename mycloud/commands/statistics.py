@@ -10,7 +10,7 @@ def statistics_command():
 
 @statistics_command.command()
 @click.pass_context
-@click.argument('dir', str, required=True)
+@click.argument('dir', required=True)
 def summary(ctx, dir: str):
     request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
     summarize(request_executor, dir)
@@ -18,8 +18,8 @@ def summary(ctx, dir: str):
 
 @statistics_command.command()
 @click.pass_context
-@click.argument('dir', str, required=True)
-@click.argument('top', int, required=False, default=10)
+@click.argument('dir', required=True)
+@click.argument('top', required=False, default=10)
 def changes(ctx, dir: str, top: int):
     request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
     track_changes(request_executor, dir, top)
@@ -34,7 +34,7 @@ def usage(ctx):
 
 @statistics_command.command()
 @click.pass_context
-@click.argument('dir', str, required=True)
+@click.argument('dir', required=True)
 def size(ctx, dir: str):
     request_executor = ctx.obj['injector'].provide(MyCloudRequestExecutor)
     calculate_size(request_executor, dir)
