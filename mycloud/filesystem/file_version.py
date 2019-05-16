@@ -1,9 +1,6 @@
 from abc import ABC, abstractmethod
-import hashlib
-import os
-from mycloud.helper import operation_timeout, sha256_file
-from mycloud.logger import log
-from mycloud.constants import ENCRYPTION_CHUNK_LENGTH, VERSION_HASH_LENGTH
+from mycloud.common import sha256_file
+from mycloud.constants import VERSION_HASH_LENGTH
 
 
 class CalculatableVersion(ABC):
@@ -31,5 +28,4 @@ class HashCalculatedVersion(CalculatableVersion):
         return sha256_file(self.local_file)[:VERSION_HASH_LENGTH]
 
     def get_hash(self):
-        # TODO: calculate hash in main loop as well, don't read file twice
         return sha256_file(self.local_file)

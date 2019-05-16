@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from mycloud.mycloudapi import ObjectResourceBuilder
-from mycloud.helper import operation_timeout
+from mycloud.common import operation_timeout
 from mycloud.filesystem.file_version import HashCalculatedVersion
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
 

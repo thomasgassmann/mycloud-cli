@@ -7,9 +7,10 @@
             "request": "launch",
             "pythonPath": "${workspaceRoot}/.venv/bin/python",
             "module": "mycloud",
+            "stopOnEntry": true,
             "console": "externalTerminal",
             "args": [
-                "auth"
+                "// TODO: prompt"
             ],
             "cwd": "${workspaceFolder}"
         }

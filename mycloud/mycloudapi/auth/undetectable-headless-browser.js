@@ -41,7 +41,7 @@ WebGLRenderingContext.prototype.getParameter = function (parameter) {
             }
             // otherwise, return the actual dimension
             return imageDescriptor.get.apply(this);
-        },
+        }
     });
 });
 
@@ -55,6 +55,7 @@ Object.defineProperty(HTMLDivElement.prototype, 'offsetHeight', {
         if (this.id === 'modernizr') {
             return 1;
         }
+
         return elementDescriptor.get.apply(this);
     },
 });

@@ -1,4 +1,3 @@
-from sys import platform
 import threading
 from mycloud.constants import MAX_TIMEOUT
 
@@ -27,5 +26,4 @@ def _operation_timeout(operation, timeout, values):
     func_thread.join(timeout)
     if func_thread.is_alive() or func_thread.result is None:
         raise TimeoutException
-    else:
-        return func_thread.result
+    return func_thread.result

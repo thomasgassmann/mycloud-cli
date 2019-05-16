@@ -1,8 +1,6 @@
 import os
-import gc
 from mycloud.constants import METADATA_FILE_NAME, PARTIAL_EXTENSION, START_NUMBER_LENGTH
-from mycloud.helper import is_int
-from mycloud.logger import log
+from mycloud.common import is_int
 
 
 class RelativeFileTree:
@@ -15,7 +13,7 @@ class RelativeFileTree:
     def add_file(self, path: str, base: str):
         above = os.path.dirname(path)
         current = path
-        while above != current and current != base:
+        while current not in (above, base):
             container = self._get_container(above)
             if current == path:
                 container.add_file(current)
@@ -46,7 +44,7 @@ class RelativeFileTree:
             del generator[1]
             del generator[0]
             cont = self._filedircontainers[container_key]
-            if len(cont.dirs) == 0:
+            if not any(cont.dirs):
                 del cont.dirs
                 del cont.files
                 self._filedircontainers[container_key] = None
@@ -62,8 +60,7 @@ class RelativeFileTree:
 
     @staticmethod
     def get_directory_generator(files, dirs):
-        if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME and len(dirs) > 0:
-            metadata_path = files[0]
+        if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME and any(dirs):
             yield False
             return
 
@@ -78,7 +75,7 @@ class RelativeFileTree:
     @staticmethod
     def is_partial_directory(files):
         base_names = [os.path.basename(file) for file in files]
-        if len(files) == 0 or not all([PARTIAL_EXTENSION in file for file in base_names]):
+        if not any(files) or not all([PARTIAL_EXTENSION in file for file in base_names]):
             return False
 
         for file in base_names:
@@ -99,6 +96,6 @@ class FileDirContainer:
         if file not in self.files:
             self.files.append(file)
 
-    def add_dir(self, dir: str):
-        if dir not in self.dirs:
-            self.dirs.append(dir)
+    def add_dir(self, directory: str):
+        if directory not in self.dirs:
+            self.dirs.append(directory)

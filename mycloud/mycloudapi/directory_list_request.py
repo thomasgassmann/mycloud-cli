@@ -2,7 +2,7 @@ import json
 from enum import Enum
 from time import time
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
-from mycloud.mycloudapi.requests.request import MyCloudRequest, Method
+from mycloud.mycloudapi.request import MyCloudRequest, Method
 
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/sync/list?p={}&$type={}&nocache={}'
@@ -50,8 +50,7 @@ class DirectoryListRequest(MyCloudRequest):
         unix_time = int(time())
         return REQUEST_URL.format(resource, list_type, unix_time)
 
-    @staticmethod
-    def format_response(response):
+    def format_response(self, response):
         if response.status_code == 404:
             if not self._ignore_404:
                 raise ConnectionError('404')
@@ -62,16 +61,16 @@ class DirectoryListRequest(MyCloudRequest):
     def is_timeout(response):
         if response is None:
             return False
-        TIMEOUT = 'Operation exceeded time limit.'
-        ERROR_KEY = 'error'
-        if TIMEOUT not in response.text:
+        timeout = 'Operation exceeded time limit.'
+        error_key = 'error'
+        if timeout not in response.text:
             return False
 
         error_dic = json.loads(response.text)
-        if response.status_code != 500 or ERROR_KEY not in error_dic:
+        if response.status_code != 500 or error_key not in error_dic:
             return False
 
-        return TIMEOUT in error_dic[ERROR_KEY]
+        return timeout in error_dic[error_key]
 
     @staticmethod
     def _json_generator(string: str):
