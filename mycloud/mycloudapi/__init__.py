@@ -1,5 +1,5 @@
 from mycloud.mycloudapi.metadata_request import MetadataRequest
-from mycloud.mycloudapi.object_request import GetObjectRequest, PutObjectRequest
+from mycloud.mycloudapi.object_request import GetObjectRequest, PutObjectRequest, DeleteObjectRequest
 from mycloud.mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloud.mycloudapi.request import MyCloudRequest
 from mycloud.mycloudapi.request_executor import MyCloudRequestExecutor

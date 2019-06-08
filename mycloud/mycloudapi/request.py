@@ -13,6 +13,7 @@ class ContentType:
 class Method(Enum):
     GET = 0
     PUT = 1
+    DELETE = 2
 
 
 class MyCloudRequest(ABC):

@@ -41,6 +41,8 @@ class MyCloudRequestExecutor:
             response = self.session.put(request_url, headers=headers) \
                 if not data_generator \
                 else requests.put(request_url, headers=headers, data=data_generator)
+        elif request_method == Method.DELETE:
+            response = self.session.delete(request_url, headers=headers)
         else:
             raise ValueError('Invalid request method')
         if self._request_count % RESET_SESSION_EVERY == 0:

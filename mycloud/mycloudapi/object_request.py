@@ -56,3 +56,14 @@ class GetObjectRequest(ObjectRequest):
 
     def is_query_parameter_access_token(self):
         return True
+
+class DeleteObjectRequest(ObjectRequest):
+
+    def __init__(self, object_resource: str):
+        super().__init__(object_resource)
+
+    def get_method(self):
+        return Method.DELETE
+
+    def ignored_error_status_codes(self):
+        return []

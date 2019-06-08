@@ -4,7 +4,8 @@ from mycloud.commands import (
     statistics_command,
     upload_command,
     download_command,
-    convert_command
+    convert_command,
+    delete_command
 )
 from mycloud.pinject import build_container
 
@@ -20,6 +21,7 @@ mycloud_cli.add_command(statistics_command)
 mycloud_cli.add_command(upload_command)
 mycloud_cli.add_command(download_command)
 mycloud_cli.add_command(convert_command)
+mycloud_cli.add_command(delete_command)
 
 if __name__ == '__main__':
     mycloud_cli(obj={})
