@@ -20,12 +20,13 @@ def open_for_cert():
 
 def get_bearer_token(user_name: str, password: str):
     token = None
-    with ProxySelenium(headless=True) as driver:
+    with ProxySelenium(headless=False) as driver:
+        time.sleep(2)
         driver.get(START_LOGIN_URL)
         driver.set_window_size(1920, 1080)
 
         _click(driver, 'span.button.button--primary.outline')
-        _enter(driver, 'input[type=email]', user_name)
+        _enter(driver, 'input#username', user_name)
         _click(driver, '#anmelden')
         _enter(driver, 'input[type=password]', password)
 
