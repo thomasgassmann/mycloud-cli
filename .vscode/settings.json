@@ -4,7 +4,8 @@
     "python.jediEnabled": false,
     "files.exclude": {
         "**/__pycache__": true,
-        "mycloud_cli.egg-info": true
+        "mycloud_cli.egg-info": true,
+        "XDG_CACHE_HOME": true
     },
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true

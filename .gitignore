@@ -24,6 +24,7 @@ parts/
 sdist/
 var/
 wheels/
+XDG_CACHE_HOME/
 *.egg-info/
 .installed.cfg
 *.egg
