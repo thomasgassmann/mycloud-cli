@@ -8,11 +8,18 @@
             "pythonPath": "${workspaceRoot}/.venv/bin/python",
             "module": "mycloud",
             "stopOnEntry": true,
-            "console": "externalTerminal",
+            "console": "integratedTerminal",
             "args": [
-                "// TODO: prompt"
+                "${input:args}"
             ],
             "cwd": "${workspaceFolder}"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "args",
+            "type": "command",
+            "command": "Command line args for debugging"
         }
     ]
 }
