@@ -1,3 +1,4 @@
+import logging
 from mycloud.logger import log
 
 
@@ -14,4 +15,5 @@ class ProgressReporter:
     @staticmethod
     def report_progress(report: ProgressReport):
         if report.iteration % 1000 == 0:
-            log('{}: {} bps | {} iteration | {} bytes'.format(report.object_resource, report.bps, report.iteration, report.uploaded_bytes))
+            logging.info('{}: {} bps | {} iteration | {} bytes'.format(
+                report.object_resource, report.bps, report.iteration, report.uploaded_bytes))

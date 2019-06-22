@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 import requests
 from requests.models import PreparedRequest
@@ -18,12 +19,10 @@ class MyCloudRequestExecutor:
         self.session = requests.Session()
         self._reset_wait_time()
 
-
     def execute_request(self, request: MyCloudRequest):
         # TODO: also use aiohttp instead of requests
         content_type = request.get_content_type()
         token = self.authenticator.get_token()
-        print(token)
         headers = MyCloudRequestExecutor._get_headers(content_type, token)
         request_url = request.get_request_url()
         request_method = request.get_method()
@@ -56,16 +55,13 @@ class MyCloudRequestExecutor:
             return self.execute_request(request)
         return response
 
-
     def reset_session(self):
         self.session.close()
         del self.session
         self.session = requests.Session()
 
-
     def _reset_wait_time(self):
         self.wait_time = 10
-
 
     @staticmethod
     def _get_headers(content_type: ContentType, bearer_token: str):
@@ -74,7 +70,6 @@ class MyCloudRequestExecutor:
         headers['Authorization'] = 'Bearer ' + bearer_token
         headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         return headers
-
 
     def _check_validity(self, response, ignored, request_url: str):
         separately_handled = [401, 500, 404, 400, 409, 502]
@@ -88,9 +83,11 @@ class MyCloudRequestExecutor:
             retry = True
 
         if response.status_code == 500 and 500 not in ignored:
-            log(f'HTTP {response.status_code} returned from server', error=True)
-            log('ERR: {}'.format(str(response.content)), error=True)
-            log('Waiting {} seconds until retry...'.format(self.wait_time))
+            logging.error(
+                f'HTTP {response.status_code} returned from server')
+            logging.error('ERR: {}'.format(str(response.content)))
+            logging.warn(
+                'Waiting {} seconds until retry...'.format(self.wait_time))
             sleep(self.wait_time)
             retry = True
             # TODO: make logarithmic instead of exponential?
@@ -98,7 +95,7 @@ class MyCloudRequestExecutor:
         else:
             self._reset_wait_time()
 
-        log('Checking status code {} (Status {})...'.format(
+        logging.info('Checking status code {} (Status {})...'.format(
             request_url, str(response.status_code)))
         if response.status_code == 404 and 404 not in ignored:
             raise ValueError('File not found in myCloud')
@@ -111,7 +108,8 @@ class MyCloudRequestExecutor:
 
         if not str(response.status_code).startswith('2') and \
            response.status_code not in separately_handled:
-            log('ERR: Status code {}!'.format(str(response.status_code)))
-            log('ERR: {}'.format(str(response.content)))
+            logging.error('ERR: Status code {}!'.format(
+                str(response.status_code)))
+            logging.error('ERR: {}'.format(str(response.content)))
             raise ValueError('Error while performing myCloud request')
         return retry

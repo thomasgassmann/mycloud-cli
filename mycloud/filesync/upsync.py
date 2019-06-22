@@ -1,4 +1,5 @@
 import os
+import logging
 from mycloud.logger import log
 from mycloud.mycloudapi import (
     ObjectResourceBuilder,
@@ -32,10 +33,10 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
                 upsync_file(request_executor, resource_builder,
                             local_file, progress_tracker, encryption_pwd, skip_by_date)
             except TimeoutException:
-                log('Failed to access file {} within the given time'.format(
-                    local_file), error=True)
+                logging.error('Failed to access file {} within the given time'.format(
+                    local_file))
             except ValueError as ex:
-                log(str(ex), error=True)
+                logging.error(str(ex))
 
 
 def upsync_file(request_executor: MyCloudRequestExecutor,
@@ -46,7 +47,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
                 skip_by_date=True):
     # global _mtime_cache
     if progress_tracker.skip_file(local_file):
-        log('Skipping file {}'.format(local_file))
+        logging.info('Skipping file {}'.format(local_file))
         return
 
     # remote_path = resource_builder.build_remote_file(local_file)

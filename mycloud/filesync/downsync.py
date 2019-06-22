@@ -1,4 +1,5 @@
 import os
+import logging
 import tempfile
 import traceback
 from mycloud.filesync.progress import ProgressTracker
@@ -29,11 +30,13 @@ def downsync_folder(request_executor: MyCloudRequestExecutor,
             downsync_file(request_executor, resource_builder,
                           file, progress_tracker, decryption_pwd)
         except TimeoutException:
-            log('Failed to write to the local file within the given time', error=True)
+            logging.error(
+                'Failed to write to the local file within the given time')
         except ValueError as ex:
-            log('{}'.format(str(ex)), error=True)
+            logging.error('{}'.format(str(ex)))
         except Exception as ex:
-            log('Unhandled exception: {}'.format(str(ex)), error=True)
+            logging.fatal('Unhandled exception: {}'.format(
+                str(ex)))
             traceback.print_exc()
 
 
@@ -45,12 +48,14 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
     if progress_tracker.skip_file(remote_file.calculate_remote()):
         return
 
-    transforms = [] if decryption_pwd is None else [AES256CryptoTransform(decryption_pwd)]
+    transforms = [] if decryption_pwd is None else [
+        AES256CryptoTransform(decryption_pwd)]
     del decryption_pwd
-    file_manager = FileManager(request_executor, transforms, ProgressReporter())
+    file_manager = FileManager(
+        request_executor, transforms, ProgressReporter())
 
     remote_base_path = remote_file.calculate_remote()
-    log('Downsyncing file {}...'.format(remote_base_path))
+    logging.info('Downsyncing file {}...'.format(remote_base_path))
     metadata: FileMetadata = file_manager.read_file_metadata(remote_file)
     latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())

@@ -1,4 +1,5 @@
 import os
+import logging
 from enum import Enum
 from mycloud.logger import log
 from mycloud.mycloudapi.auth.bearer_token import get_bearer_token
@@ -51,7 +52,7 @@ class MyCloudAuthenticator:
 
             if self.current_token is None or self.token_refresh_required:
                 if USE_TOKEN_CACHE and self._load_cached_token() and not self.tried_cached_token:
-                    log('Trying to use cached token...')
+                    logging.info('Trying to use cached token...')
                     self.tried_cached_token = True
                     self.token_refresh_required = False
                     return self.current_token

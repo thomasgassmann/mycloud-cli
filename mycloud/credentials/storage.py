@@ -1,4 +1,5 @@
 import json
+import logging
 import keyring
 from halo import Halo
 from mycloud.constants import AUTHENTICATION_INFO_LOCATION, SERVICE_NAME
@@ -8,7 +9,7 @@ from mycloud.logger import log
 
 def save_validate(user_name: str, password: str):
     if not _validate_credentials(user_name, password):
-        log('Invalid credentials provided! Aborting...')
+        logging.error('Invalid credentials provided! Aborting...')
         return
 
     with open(AUTHENTICATION_INFO_LOCATION, 'w') as file:
@@ -16,7 +17,7 @@ def save_validate(user_name: str, password: str):
             'user': user_name
         }, file)
     keyring.set_password(SERVICE_NAME, user_name, password)
-    log('Successfully logged into myCloud!')
+    logging.info('Successfully logged into myCloud!')
 
 
 def get_credentials():

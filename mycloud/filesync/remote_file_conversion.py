@@ -1,5 +1,6 @@
 import os
 import gc
+import logging
 from typing import List
 from threading import Thread
 import requests
@@ -49,20 +50,21 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
     thread_file_sizes = {}
 
     def del_thread(thread):
-        log('Deleting thread {}'.format(thread.ident))
+        logging.debug('Deleting thread {}'.format(thread.ident))
         if thread in threads:
             threads.remove(thread)
         else:
-            log('Thread {} not found in thread list'.format(
-                thread.ident), error=True)
+            logging.debug('Thread {} not found in thread list'.format(
+                thread.ident))
         if thread.ident in thread_file_sizes:
             del thread_file_sizes[thread.ident]
         else:
-            log('Thread file size for thread {} not found in dictionary'.format(
-                thread.ident), error=True)
+            logging.debug('Thread file size for thread {} not found in dictionary'.format(
+                thread.ident))
 
     generator = list_candidates_recursively(request_executor, mycloud_dir)
-    get_file_size = lambda x: os.stat(x['path']).st_size if os.path.isfile(x['path']) else 0
+    def get_file_size(x): return os.stat(
+        x['path']).st_size if os.path.isfile(x['path']) else 0
     for is_partial, files in generator:
         try:
             thread = Thread(target=convert, args=(
@@ -76,23 +78,25 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
             thread_file_sizes[thread.ident] = file_size
             threads.append(thread)
         except TimeoutException:
-            log('Timeout while accessing resources', error=True)
+            logging.error('Timeout while accessing resources')
 
         to_be_removed = [thread for thread in threads if not thread.is_alive()]
         for thread_to_be_removed in to_be_removed:
             del_thread(thread_to_be_removed)
 
         if len(threads) >= MAX_THREADS_FOR_REMOTE_FILE_CONVERSION:
-            log('More than 10 threads active... Searching for a thread to join...')
+            logging.debug(
+                'More than 10 threads active... Searching for a thread to join...')
             min_file_size_thread = min(
                 thread_file_sizes, key=thread_file_sizes.get)
-            log('Found thread with least amount of work to join (id {})'.format(
+            logging.debug('Found thread with least amount of work to join (id {})'.format(
                 min_file_size_thread))
             thread = list(filter(lambda t: t.ident ==
                                  min_file_size_thread, threads))[0]
-            log('Got thread {} from list... Joining thread...'.format(thread.ident))
+            logging.debug(
+                'Got thread {} from list... Joining thread...'.format(thread.ident))
             thread.join()
-            log('Finished joining thread... Removing thread from list {}'.format(
+            logging.debug('Finished joining thread... Removing thread from list {}'.format(
                 thread.ident))
             del_thread(thread)
 
@@ -125,10 +129,10 @@ def convert_partials(request_executor: MyCloudRequestExecutor,
                      files,
                      skip_fn):
     base_directory = os.path.dirname(files[0])
-    log('Converting partial files in {}...'.format(base_directory))
+    logging.info('Converting partial files in {}...'.format(base_directory))
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = get_local_file(True, files, remote_dir, local_dir)
-    log('Mapped partial files in directory {} to local file {}'.format(
+    logging.info('Mapped partial files in directory {} to local file {}'.format(
         base_directory, local_file))
 
     translatable_path, version = _get_path_and_version_for_local_file(local_file,
@@ -168,10 +172,10 @@ def convert_file(request_executor: MyCloudRequestExecutor,
                  remote_dir: str,
                  remote_file: str,
                  skip_fn):
-    log('Converting file {}...'.format(remote_file))
+    logging.info('Converting file {}...'.format(remote_file))
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = get_local_file(False, [remote_file], remote_dir, local_dir)
-    log('Mapped {} to local file {}'.format(remote_file, local_file))
+    logging.info('Mapped {} to local file {}'.format(remote_file, local_file))
 
     without_aes_extension = remote_file
     if resource_builder.ends_with_aes_extension(remote_file):
@@ -188,7 +192,8 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     partial_destination = versioned_stream_accessor.get_part_file(0)
 
     temporary_file = remote_file + temp_file_extension
-    log('Renaming file {} to {}...'.format(remote_file, partial_destination))
+    logging.info('Renaming file {} to {}...'.format(
+        remote_file, partial_destination))
     while True:
         rename_request = RenameRequest(
             remote_file, temporary_file, is_file=True, ignore_conflict=True)
@@ -201,10 +206,11 @@ def convert_file(request_executor: MyCloudRequestExecutor,
         temporary_file, partial_destination, is_file=True, ignore_conflict=True)
     response = request_executor.execute_request(rename_request)
     if response.status_code == 409:
-        log(f'File already exists at {partial_destination}!', error=True)
+        logging.error(
+            f'File already exists at {partial_destination}!')
         return
 
-    log('Renamed file successfully')
+    logging.info('Renamed file successfully')
 
     _create_file_metadata(request_executor,
                           version,
@@ -216,8 +222,8 @@ def convert_file(request_executor: MyCloudRequestExecutor,
 
 
 def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
-    log(f'Listing directory {mycloud_dir}...')
-    log(f'Trying to read entire directory {mycloud_dir} at once...')
+    logging.info(f'Listing directory {mycloud_dir}...')
+    logging.info(f'Trying to read entire directory {mycloud_dir} at once...')
     list_request = DirectoryListRequest(mycloud_dir, ListType.File,
                                         ignore_internal_server_error=True, ignore_not_found=True)
     failed = False
@@ -225,39 +231,43 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     try:
         list_response = request_executor.execute_request(list_request)
     except requests.exceptions.ConnectionError:
-        log(f'Failed to execute directory list on dir {mycloud_dir}... Continueing with usual directory list')
+        logging.warn(
+            f'Failed to execute directory list on dir {mycloud_dir}... Continuing with usual directory list')
         failed = True
 
     if list_response and list_response.status_code == 404:
-        log(f'Directory {mycloud_dir} not found... Returning')
+        logging.info(f'Directory {mycloud_dir} not found... Returning')
     elif not failed and list_response and not DirectoryListRequest.is_timeout(list_response):
-        log(
+        logging.info(
             f'Server returned successful response for entire directory {mycloud_dir}')
         files = list_request.format_response(list_response)
         tree = RelativeFileTree()
         for file in files:
             tree.add_file(file['Path'], mycloud_dir)
 
-        log(f'Added {tree.file_count} files to the relative file tree...')
+        logging.info(
+            f'Added {tree.file_count} files to the relative file tree...')
         del files
         yield from tree.loop()
 
         del tree
         gc.collect()
     else:
-        log(
+        logging.info(
             f'Couldn\'t list entire directory at once... Listing directory {mycloud_dir} in a flat way')
         metadata_request = MetadataRequest(mycloud_dir, ignore_not_found=True)
         metadata_response = None
         try:
-            metadata_response = request_executor.execute_request(metadata_request)
+            metadata_response = request_executor.execute_request(
+                metadata_request)
         except TimeoutException:
-            log(
-                f'Timeout when trying to list directory {mycloud_dir}. Returning', error=True)
+            logging.error(
+                f'Timeout when trying to list directory {mycloud_dir}. Returning...')
             return
         except Exception as ex:
-            log('Failed to list directory: {}'.format(str(ex)))
-            log('Retrying to list directory {}...'.format(mycloud_dir))
+            logging.error('Failed to list directory: {}'.format(str(ex)))
+            logging.error(
+                'Retrying to list directory {}...'.format(mycloud_dir))
             yield from list_candidates_recursively(request_executor, mycloud_dir)
             return
 
@@ -278,12 +288,13 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):
     if not os.path.isfile(local_file) or no_hash:
-        log('File {} not found. Defaulting to version {}'.format(
+        logging.warn('File {} not found. Defaulting to version {}'.format(
             local_file, DEFAULT_VERSION))
         version = BasicStringVersion(DEFAULT_VERSION)
         translatable_path = BasicRemotePath(remote_file)
     else:
-        log('Found local file {}. Using hash calculated version and uploading properties...'.format(local_file))
+        logging.info(
+            'Found local file {}. Using hash calculated version and uploading properties...'.format(local_file))
         version = HashCalculatedVersion(local_file)
         translatable_path = LocalTranslatablePath(
             resource_builder, local_file, version)
@@ -309,7 +320,8 @@ def _create_file_metadata(request_executor: MyCloudRequestExecutor,
     metadata = FileMetadata()
     metadata.update_version(file_version)
 
-    log('Uploading version {}...'.format(file_version.get_identifier()))
+    logging.info('Uploading version {}...'.format(
+        file_version.get_identifier()))
     manager = MetadataManager(request_executor)
     manager.update_metadata(translatable_path, metadata)
-    log('Successfully converted file {}'.format(remote_file))
+    logging.info('Successfully converted file {}'.format(remote_file))

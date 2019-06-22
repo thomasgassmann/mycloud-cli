@@ -1,9 +1,11 @@
+import click
 from tabulate import tabulate
 from mycloud.mycloudapi import MyCloudRequestExecutor, ChangeRequest, ObjectResourceBuilder
 
 
 def track_changes(request_executor: MyCloudRequestExecutor, mycloud_dir: str, top: int):
-    mycloud_dir = ObjectResourceBuilder.correct_suffix_sep(mycloud_dir, is_file=False)
+    mycloud_dir = ObjectResourceBuilder.correct_suffix_sep(
+        mycloud_dir, is_file=False)
     change_request = ChangeRequest(mycloud_dir, top)
     response = request_executor.execute_request(change_request)
     items = ChangeRequest.format_response(response)
@@ -16,5 +18,5 @@ def track_changes(request_executor: MyCloudRequestExecutor, mycloud_dir: str, to
             item['Length']
         ])
 
-    print(tabulate(data, ['Name', 'Creation Time',
-                          'Modification Time', 'Length'], tablefmt='fancy_grid'))
+    click.echo(tabulate(data, ['Name', 'Creation Time',
+                               'Modification Time', 'Length'], tablefmt='fancy_grid'))
