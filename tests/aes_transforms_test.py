@@ -1,11 +1,13 @@
 import os
+from Crypto.Cipher import AES
 from mycloud.streamapi.transforms import AES256CryptoTransform
 
 
 def test_aes_transform_padding_is_applied():
     transform = AES256CryptoTransform('test')
-    first_bytes = os.urandom(1024)
-    second_bytes = os.urandom(1001)
+    first_bytes = os.urandom(AES.block_size)
+    # use uneven offset
+    second_bytes = os.urandom(AES.block_size + 1)
     first = transform.up_transform(first_bytes)
     second_with_padding = transform.up_transform(second_bytes, last=True)
 
