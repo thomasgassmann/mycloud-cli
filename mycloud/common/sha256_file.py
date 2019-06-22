@@ -2,7 +2,6 @@ import hashlib
 import os
 import logging
 from mycloud.common import operation_timeout
-from mycloud.logger import log
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
 
 

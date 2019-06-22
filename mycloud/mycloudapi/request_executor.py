@@ -2,7 +2,7 @@ import logging
 from time import sleep
 import requests
 from requests.models import PreparedRequest
-from mycloud.logger import log, add_request_count, save_files
+from mycloud.logger import add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
 from mycloud.mycloudapi import MyCloudRequest
 from mycloud.mycloudapi.request import ContentType

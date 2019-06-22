@@ -1,9 +1,8 @@
-import click
 import getpass
+import click
 from mycloud.credentials.storage import save_validate
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.commands.shared import container
-from mycloud.mycloudapi.auth import MyCloudAuthenticator
 
 
 @click.group(name='auth')
@@ -34,5 +33,5 @@ def token(ctx):
     injector = container(ctx)
     authenticator = injector.provide(_Proxy).val
     authenticator.invalidate_token()
-    token = authenticator.get_token()
-    click.echo(token)
+    token_to_print = authenticator.get_token()
+    click.echo(token_to_print)

@@ -4,7 +4,6 @@ import keyring
 from halo import Halo
 from mycloud.constants import AUTHENTICATION_INFO_LOCATION, SERVICE_NAME
 from mycloud.mycloudapi.auth import get_bearer_token
-from mycloud.logger import log
 
 
 def save_validate(user_name: str, password: str):

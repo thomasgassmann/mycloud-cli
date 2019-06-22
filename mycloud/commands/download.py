@@ -1,5 +1,5 @@
-import click
 from typing import List
+import click
 from mycloud.filesync import downsync_folder
 from mycloud.mycloudapi import ObjectResourceBuilder
 from mycloud.filesystem import BasicRemotePath

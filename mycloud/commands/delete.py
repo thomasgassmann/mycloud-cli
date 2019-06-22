@@ -1,11 +1,7 @@
 import logging
 import click
-from typing import List
-from mycloud.filesystem import FileManager
-from mycloud.filesync import downsync_folder
-from mycloud.mycloudapi import ObjectResourceBuilder, DeleteObjectRequest, MetadataRequest, MyCloudRequestExecutor
-from mycloud.filesystem import BasicRemotePath
-from mycloud.commands.shared import get_progress_tracker, executor_from_ctx
+from mycloud.mycloudapi import DeleteObjectRequest, MetadataRequest, MyCloudRequestExecutor
+from mycloud.commands.shared import executor_from_ctx
 
 
 @click.command(name='delete')

@@ -34,7 +34,6 @@ from mycloud.filesync.tree import RelativeFileTree
 from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.common import is_int, TimeoutException
-from mycloud.logger import log
 
 
 def convert_remote_files(request_executor: MyCloudRequestExecutor,

@@ -1,5 +1,4 @@
 import logging
-from mycloud.logger import log
 
 
 class ProgressReport:

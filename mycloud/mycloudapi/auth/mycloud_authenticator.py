@@ -1,7 +1,6 @@
 import os
 import logging
 from enum import Enum
-from mycloud.logger import log
 from mycloud.mycloudapi.auth.bearer_token import get_bearer_token
 from mycloud.constants import USE_TOKEN_CACHE, TOKEN_CACHE_FOLDER, CACHED_TOKEN_IDENTIFIER
 

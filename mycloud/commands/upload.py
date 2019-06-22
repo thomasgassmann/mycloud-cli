@@ -1,5 +1,5 @@
-import click
 from typing import List
+import click
 from mycloud.filesync import upsync_folder
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import ObjectResourceBuilder

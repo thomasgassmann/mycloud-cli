@@ -1,6 +1,5 @@
 import os
 import logging
-from mycloud.logger import log
 from mycloud.mycloudapi import (
     ObjectResourceBuilder,
     MyCloudRequestExecutor)
