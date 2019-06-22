@@ -6,7 +6,10 @@
         "**/__pycache__": true,
         "mycloud_cli.egg-info": true,
         "XDG_CACHE_HOME": true,
-        "**/.venv": true
+        "**/.venv": true,
+        "**/.pytest_cache": true,
+        "**/.eggs": true,
+        "**/*.pyc": true
     },
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
