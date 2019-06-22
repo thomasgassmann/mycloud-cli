@@ -20,7 +20,7 @@ def open_for_cert():
 
 def get_bearer_token(user_name: str, password: str):
     token = None
-    with ProxySelenium(headless=False) as driver:
+    with ProxySelenium(headless=True) as driver:
         time.sleep(2)
         driver.get(START_LOGIN_URL)
         driver.set_window_size(1920, 1080)
