@@ -17,3 +17,7 @@ steps:
 - script: |
     python setup.py install
   displayName: 'Install myCloud CLI'
+
+- script: |
+    python -m pytest
+  displayName: 'Run tests'
