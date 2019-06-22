@@ -57,6 +57,7 @@ class GetObjectRequest(ObjectRequest):
     def is_query_parameter_access_token(self):
         return True
 
+
 class DeleteObjectRequest(ObjectRequest):
 
     def __init__(self, object_resource: str):

@@ -18,7 +18,6 @@ class UpStreamExecutor:
         self._tmp_start_time = None
         self._tmp_current_object_resource = 0
 
-
     def upload_stream(self, stream_accessor: CloudStreamAccessor):
         self._tmp_total_read = 0
         self._tmp_bps = 0

@@ -19,23 +19,22 @@ class ProxySelenium:
         self._get_web_driver(headless)
         self._run_proxy()
 
-
     def __enter__(self):
         return self._driver
-
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._driver.quit()
         self._proxy_process.terminate()
 
-
     def _run_proxy(self):
         def _wrapper():
-            opts = options.Options(listen_host=PROXY_HOST, listen_port=PROXY_PORT)
+            opts = options.Options(
+                listen_host=PROXY_HOST, listen_port=PROXY_PORT)
             opts.add_option('body_size_limit', int, 0, '')
             pconf = proxy.config.ProxyConfig(opts)
 
-            dump_master = DumpMaster(None, with_termlog=False, with_dumper=False)
+            dump_master = DumpMaster(
+                None, with_termlog=False, with_dumper=False)
             dump_master.server = proxy.server.ProxyServer(pconf)
             dump_master.addons.add(_InjectScripts())
             dump_master.run()
@@ -43,7 +42,6 @@ class ProxySelenium:
         process = Process(target=_wrapper)
         process.start()
         self._proxy_process = process
-
 
     def _get_web_driver(self, headless):
         user_agent = '''
@@ -53,7 +51,8 @@ class ProxySelenium:
         chrome_options = webdriver.ChromeOptions()
         if headless:
             chrome_options.add_argument('headless')
-        proxy_str = '--proxy-server=http://{0}:{1}'.format(PROXY_HOST, str(PROXY_PORT))
+        proxy_str = '--proxy-server=http://{0}:{1}'.format(
+            PROXY_HOST, str(PROXY_PORT))
         chrome_options.add_argument(proxy_str)
         chrome_options.add_argument('user-agent={0}'.format(user_agent))
         driver = webdriver.Chrome(CHROME_DRIVER, chrome_options=chrome_options)
@@ -69,14 +68,12 @@ class _InjectScripts:
         js_to_execute = open(js_file).read()
         self._js = js_to_execute
 
-
     def response(self, flow: http.HTTPFlow):
         ct_header = 'Content-Type'
         if ct_header in flow.response.headers and \
                 flow.response.headers[ct_header] == 'text/html' and \
                 flow.response.status_code == 200:
             self.inject_scripts(flow)
-
 
     def inject_scripts(self, flow: http.HTTPFlow):
         html = BeautifulSoup(flow.response.text, 'lxml')

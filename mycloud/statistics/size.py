@@ -13,7 +13,8 @@ def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):
     for file in get_all_files_recursively(request_executor, directory):
         file_count += 1
         original_out.write(str(' ' * longest_string) + '\r')
-        to_print = 'Bytes: {} | Size (readable): {} | Count: {}'.format(summed_up, size(summed_up), file_count)
+        to_print = 'Bytes: {} | Size (readable): {} | Count: {}'.format(
+            summed_up, size(summed_up), file_count)
         if len(to_print) > longest_string:
             longest_string = len(to_print)
 

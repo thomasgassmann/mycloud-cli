@@ -6,7 +6,7 @@ from mycloud.mycloudapi import MyCloudRequestExecutor
 
 
 class InstanceBindingSpec(pinject.BindingSpec):
-    
+
     def __init__(self, name, instance):
         self._name = name
         self._instance = instance
@@ -18,7 +18,8 @@ class InstanceBindingSpec(pinject.BindingSpec):
 def build_container(**kwargs):
     authenticator = _construct_authenticator(kwargs['token'])
     return pinject.new_object_graph(binding_specs=[
-        InstanceBindingSpec('mycloud_request_executor', MyCloudRequestExecutor(authenticator)),
+        InstanceBindingSpec('mycloud_request_executor',
+                            MyCloudRequestExecutor(authenticator)),
         InstanceBindingSpec('mycloud_authenticator', authenticator)
     ])
 
@@ -30,6 +31,7 @@ def _construct_authenticator(bearer: str):
     else:
         username, password = get_credentials()
         if not username or not password:
-            raise ClickException('Run "mycloud auth login" to authenticate yourself first, or specify a token')
+            raise ClickException(
+                'Run "mycloud auth login" to authenticate yourself first, or specify a token')
         authenticator.set_password_auth(username, password)
     return authenticator
