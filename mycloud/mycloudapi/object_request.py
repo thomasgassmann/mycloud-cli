@@ -60,9 +60,6 @@ class GetObjectRequest(ObjectRequest):
 
 class DeleteObjectRequest(ObjectRequest):
 
-    def __init__(self, object_resource: str):
-        super().__init__(object_resource)
-
     def get_method(self):
         return Method.DELETE
 
