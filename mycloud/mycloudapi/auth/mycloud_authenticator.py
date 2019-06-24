@@ -63,6 +63,8 @@ class MyCloudAuthenticator:
                     self._save_token()
                 self.token_refresh_required = False
             return self.current_token
+        else:
+            raise ValueError('Invalid auth mode')
 
     def _load_cached_token(self):
         token_file = self._get_token_file_path()

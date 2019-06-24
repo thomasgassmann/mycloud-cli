@@ -1,7 +1,6 @@
 from typing import List
 import click
 from mycloud.filesync import upsync_folder
-from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import ObjectResourceBuilder
 from mycloud.commands.shared import get_progress_tracker, executor_from_ctx
 
