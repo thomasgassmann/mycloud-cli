@@ -62,8 +62,9 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
                 thread.ident))
 
     generator = list_candidates_recursively(request_executor, mycloud_dir)
-    def get_file_size(x): return os.stat(
-        x['path']).st_size if os.path.isfile(x['path']) else 0
+
+    def get_file_size(file_obj):
+        return os.stat(file_obj['path']).st_size if os.path.isfile(file_obj['path']) else 0
     for is_partial, files in generator:
         try:
             thread = Thread(target=convert, args=(
@@ -230,7 +231,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     try:
         list_response = request_executor.execute_request(list_request)
     except requests.exceptions.ConnectionError:
-        logging.warn(
+        logging.warning(
             f'Failed to execute directory list on dir {mycloud_dir}... Continuing with usual directory list')
         failed = True
 
@@ -287,7 +288,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):
     if not os.path.isfile(local_file) or no_hash:
-        logging.warn('File {} not found. Defaulting to version {}'.format(
+        logging.warning('File {} not found. Defaulting to version {}'.format(
             local_file, DEFAULT_VERSION))
         version = BasicStringVersion(DEFAULT_VERSION)
         translatable_path = BasicRemotePath(remote_file)

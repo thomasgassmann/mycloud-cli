@@ -45,7 +45,8 @@ class MyCloudAuthenticator:
     def get_token(self):
         if self.auth_mode == AuthMode.Token:
             return self.bearer_token
-        elif self.auth_mode == AuthMode.Password:
+
+        if self.auth_mode == AuthMode.Password:
             if self.user_name is None or self.password is None:
                 raise ValueError('Username and password needs to be set')
 
@@ -63,8 +64,8 @@ class MyCloudAuthenticator:
                     self._save_token()
                 self.token_refresh_required = False
             return self.current_token
-        else:
-            raise ValueError('Invalid auth mode')
+
+        raise ValueError('Invalid auth mode')
 
     def _load_cached_token(self):
         token_file = self._get_token_file_path()

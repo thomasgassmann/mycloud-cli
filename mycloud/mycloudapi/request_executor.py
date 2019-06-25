@@ -86,7 +86,7 @@ class MyCloudRequestExecutor:
             logging.error(
                 f'HTTP {response.status_code} returned from server')
             logging.error('ERR: {}'.format(str(response.content)))
-            logging.warn(
+            logging.warning(
                 'Waiting {} seconds until retry...'.format(self.wait_time))
             sleep(self.wait_time)
             retry = True
