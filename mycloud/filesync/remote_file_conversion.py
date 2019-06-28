@@ -5,14 +5,8 @@ from typing import List
 from threading import Thread
 import requests
 from mycloud.common import operation_timeout
-from mycloud.mycloudapi import (
-    MyCloudRequestExecutor,
-    ObjectResourceBuilder,
-    RenameRequest,
-    MetadataRequest,
-    DirectoryListRequest,
-    ListType
-)
+from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
+from mycloud.mycloudapi.requests.drive import RenameRequest, MetadataRequest, DirectoryListRequest, ListType
 from mycloud.filesystem import (
     MetadataManager,
     HashCalculatedVersion,

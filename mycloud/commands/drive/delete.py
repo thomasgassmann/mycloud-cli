@@ -1,6 +1,7 @@
 import logging
 import click
-from mycloud.mycloudapi import DeleteObjectRequest, MetadataRequest, MyCloudRequestExecutor
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import DeleteObjectRequest, MetadataRequest
 from mycloud.commands.shared import executor_from_ctx
 
 

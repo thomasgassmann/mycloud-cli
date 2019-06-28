@@ -1,8 +1,6 @@
 import os
 import logging
-from mycloud.mycloudapi import (
-    ObjectResourceBuilder,
-    MyCloudRequestExecutor)
+from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculatedVersion
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.streamapi import DefaultUpStream, ProgressReporter

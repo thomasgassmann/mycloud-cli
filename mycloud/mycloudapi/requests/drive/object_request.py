@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from mycloud.mycloudapi.request import MyCloudRequest, Method, ContentType
+from mycloud.mycloudapi.requests import MyCloudRequest, Method, ContentType
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
 
 

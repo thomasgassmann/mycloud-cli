@@ -2,9 +2,6 @@ from abc import abstractmethod, ABC
 from enum import Enum
 
 
-BASE_URL = 'https://storage.prod.mdl.swisscom.ch/'
-
-
 class ContentType:
     APPLICATION_JSON = 'application/json'
     APPLICATION_OCTET_STREAM = 'application/octet-stream'

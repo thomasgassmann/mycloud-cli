@@ -2,12 +2,8 @@ import os
 from collections import defaultdict
 from pathlib import Path
 from mycloud.common import is_int, operation_timeout
-from mycloud.mycloudapi import (
-    MyCloudRequestExecutor,
-    MetadataRequest,
-    DirectoryListRequest,
-    ListType
-)
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import MetadataRequest, DirectoryListRequest, ListType
 from mycloud.streamapi import (
     UpStream,
     DownStream,

@@ -1,6 +1,7 @@
 import click
 from tabulate import tabulate
-from mycloud.mycloudapi import MyCloudRequestExecutor, ChangeRequest, ObjectResourceBuilder
+from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
+from mycloud.mycloudapi.requests.drive import ChangeRequest
 
 
 def track_changes(request_executor: MyCloudRequestExecutor, mycloud_dir: str, top: int):
