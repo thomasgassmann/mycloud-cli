@@ -18,7 +18,11 @@ def _folder_deletion(executor: MyCloudRequestExecutor, remote: str):
     if not success:
         logging.info(f'Failed to delete {remote}!')
         metadata = MetadataRequest(remote)
-        response = executor.execute_request(metadata)
+        try:
+            response = executor.execute_request(metadata)
+        except:
+            logging.warning(f'{remote} does not exist')
+            return
         (directories, files) = MetadataRequest.format_response(response)
         for remote_file in files:
             _try_delete(executor, remote_file['Path'])

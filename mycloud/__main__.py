@@ -13,18 +13,36 @@ from mycloud.commands.drive import (
 from mycloud.pinject import build_container
 
 
+def get_log_level(level_str: str) -> int:
+    try:
+        return getattr(logging, level_str) if level_str else logging.INFO
+    except AttributeError:
+        raise click.ClickException(f'Log level {level_str} not found.')
+
+
+def setup_logger(level_str: str, log_file: str):
+    log_formatter = logging.Formatter(
+        "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+    root_logger = logging.getLogger()
+    root_logger.setLevel(get_log_level(level_str))
+
+    if log_file:
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(log_formatter)
+        root_logger.addHandler(file_handler)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+    root_logger.addHandler(console_handler)
+
+
 @click.group()
 @click.pass_context
 @click.option('--token', nargs=1, required=False)
 @click.option('--log-level', nargs=1, required=False)
-def mycloud_cli(ctx, token: str, log_level: str):
-    try:
-        level = getattr(logging, log_level) if log_level else logging.INFO
-        logging.basicConfig(
-            level=level,
-            format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-    except AttributeError:
-        raise click.ClickException(f'Log level {log_level} not found.')
+@click.option('--log-file', nargs=1, required=False)
+def mycloud_cli(ctx, token: str, log_level: str, log_file: str):
+    setup_logger(log_level, log_file)
     ctx.obj['injector'] = build_container(token=token)
 
 
