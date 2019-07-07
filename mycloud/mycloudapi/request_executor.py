@@ -1,7 +1,9 @@
 import logging
 from time import sleep
 import requests
+import aiohttp
 from requests.models import PreparedRequest
+from mycloud.mycloudapi.response import MyCloudResponse
 from mycloud.logger import add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
 from mycloud.mycloudapi.requests import Method, ContentType, MyCloudRequest
@@ -16,6 +18,56 @@ class MyCloudRequestExecutor:
         self.authenticator = mycloud_authenticator
         self.session = requests.Session()
         self._reset_wait_time()
+
+    async def execute(self, request: MyCloudRequest) -> MyCloudResponse:
+        auth_token = self.authenticator.get_token()
+
+        headers = MyCloudRequestExecutor._get_headers(
+            request.get_content_type(), auth_token)
+
+        async with aiohttp.ClientSession(headers=headers) as session:
+            request_url = MyCloudRequestExecutor._get_request_url(
+                request, auth_token)
+
+            method = request.get_method()
+            response: aiohttp.ClientResponse = None
+            if method == Method.GET:
+                response = await MyCloudRequestExecutor._execute_get(session, request, request_url)
+            elif method == Method.PUT:
+                response = await MyCloudRequestExecutor._execute_put(session, request, request_url)
+            elif method == Method.DELETE:
+                response = await MyCloudRequestExecutor._execute_delete(session, request_url)
+            else:
+                raise ValueError(f'Request contains invalid method {method}')
+
+            response = MyCloudResponse(request)
+            return response
+
+    @staticmethod
+    async def _execute_get(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
+        if request.get_data_generator() is not None:
+            raise ValueError('Cannot use data generator with GET request')
+        return await session.get(request_url)
+
+    @staticmethod
+    async def _execute_put(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
+        generator = request.get_data_generator()
+        if generator:
+            return await session.put(request_url, data=generator)
+        return await session.put(request_url)
+
+    @staticmethod
+    async def _execute_delete(session: aiohttp.ClientSession, request_url: str):
+        return await session.delete(request_url)
+
+    @staticmethod
+    def _get_request_url(request: MyCloudRequest, auth_token: str) -> str:
+        request_url = request.get_request_url()
+        if request.is_query_parameter_access_token():
+            req = PreparedRequest()
+            req.prepare_url(request_url, {'access_token': auth_token})
+            request_url = req.url
+        return request_url
 
     def execute_request(self, request: MyCloudRequest):
         # TODO: also use aiohttp instead of requests

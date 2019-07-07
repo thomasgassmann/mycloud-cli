@@ -6,7 +6,7 @@
             "type": "python",
             "request": "launch",
             "pythonPath": "${workspaceRoot}/.venv/bin/python",
-            "module": "mycloud",
+            "module": "mycloud ${input:args}",
             "stopOnEntry": true,
             "console": "integratedTerminal",
             "args": [
@@ -18,8 +18,8 @@
     "inputs": [
         {
             "id": "args",
-            "type": "command",
-            "command": "Command line args for debugging"
+            "type": "promptString",
+            "description": "Command line args for debugging"
         }
     ]
 }
