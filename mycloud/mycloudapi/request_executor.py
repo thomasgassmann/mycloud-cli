@@ -40,8 +40,8 @@ class MyCloudRequestExecutor:
             else:
                 raise ValueError(f'Request contains invalid method {method}')
 
-            response = MyCloudResponse(request)
-            return response
+            mycloud_response = MyCloudResponse(request, response)
+            return mycloud_response
 
     @staticmethod
     async def _execute_get(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
