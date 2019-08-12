@@ -1,4 +1,5 @@
 import time
+import asyncio
 import urllib.parse as urlparse
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
@@ -18,10 +19,10 @@ def open_for_cert():
             pass
 
 
-def get_bearer_token(user_name: str, password: str):
+async def get_bearer_token(user_name: str, password: str):
     token = None
     with ProxySelenium(headless=True) as driver:
-        time.sleep(2)
+        await asyncio.sleep(2)
         driver.get(START_LOGIN_URL)
         driver.set_window_size(1920, 1080)
 

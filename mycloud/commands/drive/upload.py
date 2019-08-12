@@ -12,13 +12,13 @@ from mycloud.commands.shared import get_progress_tracker, executor_from_ctx
 @click.option('--password', required=False)
 @click.option('--skip', multiple=True, required=False, default=None)
 @click.option('--skip_by_hash', is_flag=True, required=False, default=False)
-def upload_command(ctx, local: str, remote: str, password: str, skip: List[str], skip_by_hash: bool):
+async def upload_command(ctx, local: str, remote: str, password: str, skip: List[str], skip_by_hash: bool):
     if skip is None:
         skip = []
 
     request_executor = executor_from_ctx(ctx)
     builder = ObjectResourceBuilder(local, remote)
-    upsync_folder(
+    await upsync_folder(
         request_executor,
         builder,
         local,

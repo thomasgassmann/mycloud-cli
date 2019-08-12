@@ -20,21 +20,21 @@ def summary(ctx, dir: str):
 @click.pass_context
 @click.argument('dir', required=True)
 @click.argument('top', required=False, default=10)
-def changes(ctx, dir: str, top: int):
+async def changes(ctx, dir: str, top: int):
     request_executor = executor_from_ctx(ctx)
-    track_changes(request_executor, dir, top)
+    await track_changes(request_executor, dir, top)
 
 
 @statistics_command.command()
 @click.pass_context
-def usage(ctx):
+async def usage(ctx):
     request_executor = executor_from_ctx(ctx)
-    print_usage(request_executor)
+    await print_usage(request_executor)
 
 
 @statistics_command.command()
 @click.pass_context
 @click.argument('dir', required=True)
-def size(ctx, dir: str):
+async def size(ctx, dir: str):
     request_executor = executor_from_ctx(ctx)
-    calculate_size(request_executor, dir)
+    await calculate_size(request_executor, dir)

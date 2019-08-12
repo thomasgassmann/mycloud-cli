@@ -1,4 +1,5 @@
-class ProgressTracker():
+class ProgressTracker:
+
     def __init__(self):
         self.set_skipped_paths([])
 

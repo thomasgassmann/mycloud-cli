@@ -30,7 +30,7 @@ from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.common import is_int, TimeoutException
 
 
-def convert_remote_files(request_executor: MyCloudRequestExecutor,
+async def convert_remote_files(request_executor: MyCloudRequestExecutor,
                          mycloud_dir: str,
                          local_dir: str,
                          skip):
@@ -55,7 +55,7 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
             logging.debug('Thread file size for thread {} not found in dictionary'.format(
                 thread.ident))
 
-    generator = list_candidates_recursively(request_executor, mycloud_dir)
+    generator = await list_candidates(request_executor, mycloud_dir)
 
     def get_file_size(file_obj):
         return os.stat(file_obj['path']).st_size if os.path.isfile(file_obj['path']) else 0
@@ -95,12 +95,12 @@ def convert_remote_files(request_executor: MyCloudRequestExecutor,
             del_thread(thread)
 
 
-def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
+async def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
     if is_partial:
-        convert_partials(request_executor, local_dir,
+        await convert_partials(request_executor, local_dir,
                          mycloud_dir, files, _skip)
     else:
-        convert_file(request_executor, local_dir,
+        await convert_file(request_executor, local_dir,
                      mycloud_dir, files[0], _skip)
 
 
@@ -117,7 +117,7 @@ def get_local_file(is_partial: bool, files: List[str], remote_dir: str, local_di
     return resource_builder.build_local_file(base_directory, remove_extension=False)
 
 
-def convert_partials(request_executor: MyCloudRequestExecutor,
+async def convert_partials(request_executor: MyCloudRequestExecutor,
                      local_dir: str,
                      remote_dir: str,
                      files,
@@ -147,7 +147,7 @@ def convert_partials(request_executor: MyCloudRequestExecutor,
 
             rename_request = RenameRequest(
                 sorted_file, partial_file, is_file=True)
-            _ = request_executor.execute_request(rename_request)
+            _ = await request_executor.execute_request(rename_request)
 
         else:
             raise ValueError('Part index could not be found in partial file')
@@ -161,7 +161,7 @@ def convert_partials(request_executor: MyCloudRequestExecutor,
                           all([AES_EXTENSION in sorted_file for sorted_file in sorted_files]))
 
 
-def convert_file(request_executor: MyCloudRequestExecutor,
+async def convert_file(request_executor: MyCloudRequestExecutor,
                  local_dir: str,
                  remote_dir: str,
                  remote_file: str,
@@ -191,14 +191,14 @@ def convert_file(request_executor: MyCloudRequestExecutor,
     while True:
         rename_request = RenameRequest(
             remote_file, temporary_file, is_file=True, ignore_conflict=True)
-        response = request_executor.execute_request(rename_request)
+        response = await request_executor.execute_request(rename_request)
         if response.status_code == 409:
             temporary_file += temp_file_extension
         else:
             break
     rename_request = RenameRequest(
         temporary_file, partial_destination, is_file=True, ignore_conflict=True)
-    response = request_executor.execute_request(rename_request)
+    response = await request_executor.execute_request(rename_request)
     if response.status_code == 409:
         logging.error(
             f'File already exists at {partial_destination}!')
@@ -215,7 +215,7 @@ def convert_file(request_executor: MyCloudRequestExecutor,
                           resource_builder.ends_with_aes_extension(remote_file))
 
 
-def list_candidates_recursively(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
+async def list_candidates(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
     logging.info(f'Listing directory {mycloud_dir}...')
     logging.info(f'Trying to read entire directory {mycloud_dir} at once...')
     list_request = DirectoryListRequest(mycloud_dir, ListType.File,
@@ -223,7 +223,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
     failed = False
     list_response = None
     try:
-        list_response = request_executor.execute_request(list_request)
+        list_response = await request_executor.execute_request(list_request)
     except requests.exceptions.ConnectionError:
         logging.warning(
             f'Failed to execute directory list on dir {mycloud_dir}... Continuing with usual directory list')
@@ -252,7 +252,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         metadata_request = MetadataRequest(mycloud_dir, ignore_not_found=True)
         metadata_response = None
         try:
-            metadata_response = request_executor.execute_request(
+            metadata_response = await request_executor.execute_request(
                 metadata_request)
         except TimeoutException:
             logging.error(
@@ -262,7 +262,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
             logging.error('Failed to list directory: {}'.format(str(ex)))
             logging.error(
                 'Retrying to list directory {}...'.format(mycloud_dir))
-            yield from list_candidates_recursively(request_executor, mycloud_dir)
+            yield from await list_candidates(request_executor, mycloud_dir)
             return
 
         (dirs, files) = MetadataRequest.format_response(metadata_response)
@@ -277,7 +277,7 @@ def list_candidates_recursively(request_executor: MyCloudRequestExecutor, myclou
         yield from generator
 
         for directory in dirs:
-            yield from list_candidates_recursively(request_executor, directory)
+            yield from await list_candidates(request_executor, directory)
 
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):

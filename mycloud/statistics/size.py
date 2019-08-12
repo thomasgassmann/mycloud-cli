@@ -1,16 +1,17 @@
 import sys
 from hurry.filesize import size
-from mycloud.common import get_all_files_recursively
+from mycloud.common import get_all_files
 from mycloud.mycloudapi import MyCloudRequestExecutor
 
 
-def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):
+async def calculate_size(request_executor: MyCloudRequestExecutor, directory: str):
     original_out = sys.stdout
     sys.stdout = None
     summed_up = 0
     longest_string = 0
     file_count = 0
-    for file in get_all_files_recursively(request_executor, directory):
+    generator = await get_all_files(request_executor, directory)
+    for file in generator:
         file_count += 1
         original_out.write(str(' ' * longest_string) + '\r')
         to_print = 'Bytes: {} | Size (readable): {} | Count: {}'.format(

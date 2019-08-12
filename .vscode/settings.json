@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": ".venv/bin/python",
+    "python.pythonPath": "/home/thomas/.pyenv/versions/3.6.9/bin/python",
     "python.linting.pylintPath": "pylint",
     "python.jediEnabled": false,
     "files.exclude": {

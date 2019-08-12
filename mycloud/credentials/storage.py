@@ -1,35 +1,40 @@
 import json
 import logging
 import keyring
-from halo import Halo
+import asyncio
 from mycloud.constants import AUTHENTICATION_INFO_LOCATION, SERVICE_NAME
 from mycloud.mycloudapi.auth import get_bearer_token
 
 
-def save_validate(user_name: str, password: str):
-    if not _validate_credentials(user_name, password):
-        logging.error('Invalid credentials provided! Aborting...')
-        return
+class CredentialStorage:
 
-    with open(AUTHENTICATION_INFO_LOCATION, 'w') as file:
-        json.dump({
-            'user': user_name
-        }, file)
-    keyring.set_password(SERVICE_NAME, user_name, password)
-    logging.info('Successfully logged into myCloud!')
+    def __init__(self):
+        pass
 
+    @classmethod
+    async def save(cls, username: str, password: str, skip_validation: bool = False) -> asyncio.Future:
+        validation_result = True if skip_validation else await _validate_credentials(username, password)
+        if not validation_result:
+            return False
+        
+        with open(AUTHENTICATION_INFO_LOCATION, 'w') as file:
+            json.dump({
+                'user': username
+            }, file)
+        keyring.set_password(SERVICE_NAME, username, password)
+        return True
 
-def get_credentials():
-    with open(AUTHENTICATION_INFO_LOCATION, 'r') as file:
-        auth_info = json.load(file)
-    password = keyring.get_password(SERVICE_NAME, auth_info['user'])
-    return (auth_info['user'], password)
+    @classmethod
+    def load(cls):
+        with open(AUTHENTICATION_INFO_LOCATION, 'r') as file:
+            auth_info = json.load(file)
+        password = keyring.get_password(SERVICE_NAME, auth_info['user'])
+        return (auth_info['user'], password)
+            
 
-
-@Halo(text='Validating credentials...', spinner='dots')
-def _validate_credentials(user_name: str, password: str) -> bool:
+async def _validate_credentials(user_name: str, password: str) -> bool:
     try:
-        get_bearer_token(user_name, password)
+        await get_bearer_token(user_name, password)
         return True
     except ValueError:
         return False

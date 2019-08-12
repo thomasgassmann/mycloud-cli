@@ -13,14 +13,14 @@ from mycloud.commands.shared import get_progress_tracker, executor_from_ctx
 @click.option('--password', required=False)
 @click.option('--skip', multiple=True, required=False, default=None)
 @click.option('--skip_by_hash', is_flag=True, required=False, default=False)
-def download_command(ctx, remote: str, local: str, password: str, skip: List[str], skip_by_hash: bool):
+async def download_command(ctx, remote: str, local: str, password: str, skip: List[str], skip_by_hash: bool):
     if skip is None:
         skip = []
 
     executor = executor_from_ctx(ctx)
     builder = ObjectResourceBuilder(local, remote)
     tracker = get_progress_tracker(skip)
-    downsync_folder(
+    await downsync_folder(
         executor,
         builder,
         BasicRemotePath(remote),

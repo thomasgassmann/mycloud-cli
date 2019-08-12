@@ -20,7 +20,7 @@ class MyCloudRequestExecutor:
         self._reset_wait_time()
 
     async def execute(self, request: MyCloudRequest) -> MyCloudResponse:
-        auth_token = self.authenticator.get_token()
+        auth_token = await self.authenticator.get_token()
 
         headers = MyCloudRequestExecutor._get_headers(
             request.get_content_type(), auth_token)
@@ -69,10 +69,10 @@ class MyCloudRequestExecutor:
             request_url = req.url
         return request_url
 
-    def execute_request(self, request: MyCloudRequest):
+    async def execute_request(self, request: MyCloudRequest):
         # TODO: also use aiohttp instead of requests
         content_type = request.get_content_type()
-        token = self.authenticator.get_token()
+        token = await self.authenticator.get_token()
         headers = MyCloudRequestExecutor._get_headers(content_type, token)
         request_url = request.get_request_url()
         request_method = request.get_method()
@@ -102,7 +102,7 @@ class MyCloudRequestExecutor:
         ignored = request.ignored_error_status_codes()
         retry = self._check_validity(response, ignored, request_url)
         if retry:
-            return self.execute_request(request)
+            return await self.execute_request(request)
         return response
 
     def reset_session(self):

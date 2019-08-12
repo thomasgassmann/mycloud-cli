@@ -28,35 +28,37 @@ class FileManager:
         self._metadata_manager = MetadataManager(request_executor)
         self._reporter = ProgressReporter() if reporter is None else reporter
 
-    def read_directory(self,
+    async def read_directory(self,
                        translatable_path: TranslatablePath,
                        recursive=False,
                        deep=False,
                        _second=False):
+        data = None
         if deep:
             if not recursive:
                 raise ValueError(
                     'Cannot perform non-recursive deep directory list using directory list request')
-            yield from self._read_directory_using_directory_list_request(
+            data = await self._read_directory_using_directory_list_request(
                 translatable_path)
         else:
-            yield from self._read_directory_using_metadata_request(
+            data = await self._read_directory_using_metadata_request(
                 translatable_path, recursive, False)
+        yield from data
 
-    def started_partial_upload(self,
+    async def started_partial_upload(self,
                                translatable_path: TranslatablePath,
                                calculatable_version: CalculatableVersion):
         versioned_stream_accessor = VersionedCloudStreamAccessor(
             translatable_path, calculatable_version, None)
         path = versioned_stream_accessor.get_base_path()
         metadata_request = MetadataRequest(path, ignore_not_found=True)
-        response = self._request_executor.execute_request(metadata_request)
+        response = await self._request_executor.execute_request(metadata_request)
         if response.status_code == 404:
             return False, 0
         (_, files) = MetadataRequest.format_response(response)
         return True, len(files)
 
-    def started_partial_download(self,
+    async def started_partial_download(self,
                                  translatable_path: TranslatablePath,
                                  calculatable_version: CalculatableVersion,
                                  local_path: str):
@@ -71,7 +73,7 @@ class FileManager:
         parts = version.get_parts()
         directory = os.path.dirname(parts[0])
         metadata_request = MetadataRequest(directory)
-        response = self._request_executor.execute_request(metadata_request)
+        response = await self._request_executor.execute_request(metadata_request)
         (dirs, files) = MetadataRequest.format_response(response)
         if any(dirs):
             raise ValueError(
@@ -101,7 +103,7 @@ class FileManager:
             return True, False, 0
         return False, True, file_length // chunk_size
 
-    def read_file(self,
+    async def read_file(self,
                   downstream: DownStream,
                   translatable_path: TranslatablePath,
                   calculatable_version: CalculatableVersion):
@@ -114,14 +116,14 @@ class FileManager:
             translatable_path, calculatable_version, downstream)
         downstreamer = DownStreamExecutor(
             self._request_executor, self._reporter)
-        downstreamer.download_stream(versioned_stream_accessor)
+        await downstreamer.download_stream(versioned_stream_accessor)
 
     def read_file_metadata(self,
                            translatable_path: TranslatablePath):
         metadata = self._metadata_manager.get_metadata(translatable_path)
         return metadata
 
-    def write_file(self,
+    async def write_file(self,
                    upstream: UpStream,
                    translatable_path: TranslatablePath,
                    calculatable_version: CalculatableVersion):
@@ -143,7 +145,7 @@ class FileManager:
             versioned_base_path = versioned_stream_accessor.get_base_path()
             list_directory_request = MetadataRequest(
                 versioned_base_path, ignore_not_found=True)
-            listed_directory = self._request_executor.execute_request(
+            listed_directory = await self._request_executor.execute_request(
                 list_directory_request)
             (dirs, files) = MetadataRequest.format_response(listed_directory)
             if any(dirs):
@@ -159,7 +161,7 @@ class FileManager:
                 version.add_part_file(file['Path'])
 
         upstreamer = UpStreamExecutor(self._request_executor, self._reporter)
-        upstreamer.upload_stream(versioned_stream_accessor)
+        await upstreamer.upload_stream(versioned_stream_accessor)
 
         for transform in self._transforms:
             version.add_transform(transform.get_name())
@@ -182,38 +184,39 @@ class FileManager:
             versioned_cloud_stream_accessor.add_transform(transform)
         return versioned_cloud_stream_accessor
 
-    def _read_directory_using_metadata_request(self, translatable_path: TranslatablePath, recursive: bool, _second: bool):
+    async def _read_directory_using_metadata_request(self, translatable_path: TranslatablePath, recursive: bool, _second: bool):
         base = translatable_path.calculate_remote()
         metadata_request = MetadataRequest(base, ignore_not_found=True)
-        response = self._request_executor.execute_request(metadata_request)
+        response = await self._request_executor.execute_request(metadata_request)
         if response.status_code == 404:
             yield from []
         (dirs, files) = MetadataRequest.format_response(response)
         if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
             yield translatable_path
 
-        def loop_dirs(rec, sec):
+        async def loop_dirs(rec, sec):
             for directory in dirs:
                 remote_path = BasicRemotePath(directory['Path'])
-                yield from self._read_directory_using_metadata_request(remote_path, recursive=rec, _second=sec)
+                data = await self._read_directory_using_metadata_request(remote_path, recursive=rec, _second=sec)
+                yield from data
 
         if recursive:
-            yield from loop_dirs(True, False)
+            yield from await loop_dirs(True, False)
         elif not _second:
-            yield from loop_dirs(False, True)
+            yield from await loop_dirs(False, True)
 
-    def _read_directory_using_directory_list_request(self, translatable_path: TranslatablePath):
+    async def _read_directory_using_directory_list_request(self, translatable_path: TranslatablePath):
         remote_path = translatable_path.calculate_remote()
         directory_list_command = DirectoryListRequest(
             remote_path, ListType.File, ignore_not_found=True, ignore_internal_server_error=True)
-        response = self._request_executor.execute_request(
+        response = await self._request_executor.execute_request(
             directory_list_command)
         if response.status_code == 404:
             return
 
         if DirectoryListRequest.is_timeout(response):
             metadata_request = MetadataRequest(remote_path)
-            metadata_response = self._request_executor.execute_request(
+            metadata_response = await self._request_executor.execute_request(
                 metadata_request)
             (dirs, files) = MetadataRequest.format_response(metadata_response)
             if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME:
@@ -222,7 +225,7 @@ class FileManager:
 
             for directory in dirs:
                 dir_path = BasicRemotePath(directory['Path'])
-                yield from self._read_directory_using_directory_list_request(dir_path)
+                yield from await self._read_directory_using_directory_list_request(dir_path)
         else:
             files = directory_list_command.format_response(response)
             # TODO: use less memory and make proper use of `files` generator

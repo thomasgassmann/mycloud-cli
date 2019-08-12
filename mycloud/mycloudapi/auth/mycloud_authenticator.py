@@ -42,7 +42,7 @@ class MyCloudAuthenticator:
     def invalidate_token(self):
         self.token_refresh_required = True
 
-    def get_token(self):
+    async def get_token(self):
         if self.auth_mode == AuthMode.Token:
             return self.bearer_token
 
@@ -57,7 +57,7 @@ class MyCloudAuthenticator:
                     self.token_refresh_required = False
                     return self.current_token
 
-                self.current_token = get_bearer_token(
+                self.current_token = await get_bearer_token(
                     self.user_name, self.password)
                 if USE_TOKEN_CACHE:
                     self.tried_cached_token = False
