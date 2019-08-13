@@ -29,7 +29,7 @@ def _construct_authenticator(bearer: str):
     if bearer is not None:
         authenticator.set_bearer_auth(bearer)
     else:
-        username, password = get_credentials()
+        username, password = CredentialStorage().load()
         if not username or not password:
             raise ClickException(
                 'Run "mycloud auth login" to authenticate yourself first, or specify a token')

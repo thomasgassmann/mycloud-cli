@@ -2,7 +2,7 @@ import getpass
 import click
 from halo import Halo
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
-from mycloud.commands.shared import container, provide
+from mycloud.commands.shared import container, provide, async_click
 from mycloud.credentials import CredentialStorage
 
 
@@ -14,12 +14,13 @@ def auth_command():
 @auth_command.command()
 @Halo(text='Saving credentials...', spinner='dots')
 @click.pass_context
+@async_click
 # TODO: click.password_option()
-def login(ctx):
+async def login(ctx):
     credential_storage: CredentialStorage = provide(ctx, CredentialStorage)
     user = input('Email: ')
     password = getpass.getpass()
-    credential_storage.save(user, password)
+    await credential_storage.save(user, password)
 
 
 @auth_command.command()
@@ -29,6 +30,7 @@ def cert():
 
 @auth_command.command()
 @click.pass_context
+@async_click
 async def token(ctx):
     class _Proxy:
         def __init__(self, mycloud_authenticator):
