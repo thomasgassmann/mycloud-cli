@@ -13,5 +13,9 @@ def container(ctx):
     return ctx.obj['injector']
 
 
+def provide(ctx, t):
+    return ctx.obj['injector'].provide(t)
+
+
 def executor_from_ctx(ctx):
     return ctx.obj['injector'].provide(MyCloudRequestExecutor)

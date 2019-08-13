@@ -1,8 +1,8 @@
 import pinject
 from click.exceptions import ClickException
-from mycloud.credentials.storage import get_credentials
 from mycloud.mycloudapi.auth import MyCloudAuthenticator
 from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.credentials import CredentialStorage
 
 
 class InstanceBindingSpec(pinject.BindingSpec):

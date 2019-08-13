@@ -1,9 +1,9 @@
 import getpass
 import click
 from halo import Halo
-from mycloud.credentials.storage import save_validate
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
-from mycloud.commands.shared import container
+from mycloud.commands.shared import container, provide
+from mycloud.credentials import CredentialStorage
 
 
 @click.group(name='auth')
@@ -13,11 +13,13 @@ def auth_command():
 
 @auth_command.command()
 @Halo(text='Saving credentials...', spinner='dots')
+@click.pass_context
 # TODO: click.password_option()
-def login():
+def login(ctx):
+    credential_storage: CredentialStorage = provide(ctx, CredentialStorage)
     user = input('Email: ')
     password = getpass.getpass()
-    save_validate(user, password)
+    credential_storage.save(user, password)
 
 
 @auth_command.command()

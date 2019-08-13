@@ -152,7 +152,7 @@ async def convert_partials(request_executor: MyCloudRequestExecutor,
         else:
             raise ValueError('Part index could not be found in partial file')
 
-    _create_file_metadata(request_executor,
+    await _create_file_metadata(request_executor,
                           version,
                           translatable_path,
                           base_directory,
@@ -206,7 +206,7 @@ async def convert_file(request_executor: MyCloudRequestExecutor,
 
     logging.info('Renamed file successfully')
 
-    _create_file_metadata(request_executor,
+    await _create_file_metadata(request_executor,
                           version,
                           translatable_path,
                           without_aes_extension,
@@ -242,7 +242,8 @@ async def list_candidates(request_executor: MyCloudRequestExecutor, mycloud_dir:
         logging.info(
             f'Added {tree.file_count} files to the relative file tree...')
         del files
-        yield from tree.loop()
+        for item in tree.loop():
+            yield item
 
         del tree
         gc.collect()
@@ -262,7 +263,8 @@ async def list_candidates(request_executor: MyCloudRequestExecutor, mycloud_dir:
             logging.error('Failed to list directory: {}'.format(str(ex)))
             logging.error(
                 'Retrying to list directory {}...'.format(mycloud_dir))
-            yield from await list_candidates(request_executor, mycloud_dir)
+            for item in await list_candidates(request_executor, mycloud_dir):
+                yield item
             return
 
         (dirs, files) = MetadataRequest.format_response(metadata_response)
@@ -274,10 +276,12 @@ async def list_candidates(request_executor: MyCloudRequestExecutor, mycloud_dir:
         if not continue_traversal:
             return
 
-        yield from generator
+        for item in generator:
+            yield item
 
         for directory in dirs:
-            yield from await list_candidates(request_executor, directory)
+            for item in await list_candidates(request_executor, directory):
+                yield item
 
 
 def _get_path_and_version_for_local_file(local_file: str, remote_file: str, resource_builder: ObjectResourceBuilder, no_hash: bool = False):
@@ -295,7 +299,7 @@ def _get_path_and_version_for_local_file(local_file: str, remote_file: str, reso
     return translatable_path, version
 
 
-def _create_file_metadata(request_executor: MyCloudRequestExecutor,
+async def _create_file_metadata(request_executor: MyCloudRequestExecutor,
                           version: CalculatableVersion,
                           translatable_path: TranslatablePath,
                           remote_file: str,
@@ -317,5 +321,5 @@ def _create_file_metadata(request_executor: MyCloudRequestExecutor,
     logging.info('Uploading version {}...'.format(
         file_version.get_identifier()))
     manager = MetadataManager(request_executor)
-    manager.update_metadata(translatable_path, metadata)
+    await manager.update_metadata(translatable_path, metadata)
     logging.info('Successfully converted file {}'.format(remote_file))

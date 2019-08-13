@@ -55,7 +55,7 @@ async def downsync_file(request_executor: MyCloudRequestExecutor,
 
     remote_base_path = remote_file.calculate_remote()
     logging.info('Downsyncing file {}...'.format(remote_base_path))
-    metadata: FileMetadata = file_manager.read_file_metadata(remote_file)
+    metadata: FileMetadata = await file_manager.read_file_metadata(remote_file)
     latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())
     local_file = resource_builder.build_local_file(remote_base_path)

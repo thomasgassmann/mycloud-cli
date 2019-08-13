@@ -10,4 +10,5 @@ async def get_all_files(request_executor: MyCloudRequestExecutor, directory: str
         yield file
 
     for sub_directory in directories:
-        yield from get_all_files(request_executor, sub_directory['Path'])
+        for file in get_all_files(request_executor, sub_directory['Path']):
+            yield file

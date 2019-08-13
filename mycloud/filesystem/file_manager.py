@@ -43,7 +43,8 @@ class FileManager:
         else:
             data = await self._read_directory_using_metadata_request(
                 translatable_path, recursive, False)
-        yield from data
+        for item in data:
+            yield item
 
     async def started_partial_upload(self,
                                translatable_path: TranslatablePath,
@@ -67,7 +68,7 @@ class FileManager:
         stats = operation_timeout(lambda x: os.stat(
             x['local_path']), local_path=local_path)
         file_length = stats.st_size
-        metadata = self.read_file_metadata(translatable_path)
+        metadata = await self.read_file_metadata(translatable_path)
         version = metadata.get_version(
             calculatable_version.calculate_version())
         parts = version.get_parts()
@@ -107,7 +108,7 @@ class FileManager:
                   downstream: DownStream,
                   translatable_path: TranslatablePath,
                   calculatable_version: CalculatableVersion):
-        metadata = self._metadata_manager.get_metadata(translatable_path)
+        metadata = await self._metadata_manager.get_metadata(translatable_path)
         calculated_version = calculatable_version.calculate_version()
         if not metadata.contains_version(calculated_version):
             raise ValueError('Version does not exist for given file')
@@ -118,16 +119,16 @@ class FileManager:
             self._request_executor, self._reporter)
         await downstreamer.download_stream(versioned_stream_accessor)
 
-    def read_file_metadata(self,
+    async def read_file_metadata(self,
                            translatable_path: TranslatablePath):
-        metadata = self._metadata_manager.get_metadata(translatable_path)
+        metadata = await self._metadata_manager.get_metadata(translatable_path)
         return metadata
 
     async def write_file(self,
                    upstream: UpStream,
                    translatable_path: TranslatablePath,
                    calculatable_version: CalculatableVersion):
-        existing_metadata = self._metadata_manager.get_metadata(
+        existing_metadata = await self._metadata_manager.get_metadata(
             translatable_path)
         existing_metadata = existing_metadata if existing_metadata is not None else FileMetadata()
         version_identifier = calculatable_version.calculate_version()
@@ -174,7 +175,7 @@ class FileManager:
             version.add_part_file(accessed)
         existing_metadata.update_version(version)
 
-        self._metadata_manager.update_metadata(
+        await self._metadata_manager.update_metadata(
             translatable_path, existing_metadata)
 
     def _prepare_versioned_stream(self, translatable_path: TranslatablePath, calculatable_version: CalculatableVersion, cloud_stream: CloudStream):
@@ -189,7 +190,7 @@ class FileManager:
         metadata_request = MetadataRequest(base, ignore_not_found=True)
         response = await self._request_executor.execute_request(metadata_request)
         if response.status_code == 404:
-            yield from []
+            return
         (dirs, files) = MetadataRequest.format_response(response)
         if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
             yield translatable_path
@@ -198,12 +199,12 @@ class FileManager:
             for directory in dirs:
                 remote_path = BasicRemotePath(directory['Path'])
                 data = await self._read_directory_using_metadata_request(remote_path, recursive=rec, _second=sec)
-                yield from data
+                for item in data:
+                    yield item
 
-        if recursive:
-            yield from await loop_dirs(True, False)
-        elif not _second:
-            yield from await loop_dirs(False, True)
+        items = await loop_dirs(True, False) if recursive else await loop_dirs(False, True)
+        for item in items:
+            yield item
 
     async def _read_directory_using_directory_list_request(self, translatable_path: TranslatablePath):
         remote_path = translatable_path.calculate_remote()
@@ -225,7 +226,9 @@ class FileManager:
 
             for directory in dirs:
                 dir_path = BasicRemotePath(directory['Path'])
-                yield from await self._read_directory_using_directory_list_request(dir_path)
+                items = await self._read_directory_using_directory_list_request(dir_path)
+                for item in items:
+                    yield item
         else:
             files = directory_list_command.format_response(response)
             # TODO: use less memory and make proper use of `files` generator

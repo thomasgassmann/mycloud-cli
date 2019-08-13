@@ -11,13 +11,13 @@ class MetadataManager:
     def __init__(self, request_executor: MyCloudRequestExecutor):
         self._request_executor = request_executor
 
-    def get_metadata(self, path: TranslatablePath):
+    async def get_metadata(self, path: TranslatablePath):
         metadata_path = MetadataManager._get_metadata_path(path)
         get_request = GetObjectRequest(metadata_path, ignore_not_found=True)
         response = await self._request_executor.execute_request(get_request)
         return None if response.status_code == 404 else FileMetadata.from_json(response.text)
 
-    def update_metadata(self, path: TranslatablePath, metadata: FileMetadata):
+    async def update_metadata(self, path: TranslatablePath, metadata: FileMetadata):
         metadata_path = MetadataManager._get_metadata_path(path)
         json_representation = FileMetadata.to_json(metadata)
         byte_generator = get_string_generator(json_representation)
