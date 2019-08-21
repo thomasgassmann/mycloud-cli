@@ -1,43 +1,55 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Terminal",
-            "type": "python",
-            "request": "launch",
-            "pythonPath": "${workspaceRoot}/.venv/bin/python",
-            "module": "mycloud",
-            "stopOnEntry": false,
-            "console": "integratedTerminal",
-            "args": [
-                "${input:args0}",
-                "${input:args1}",
-                "${input:args2}",
-                "${input:args3}"
-            ],
-            "cwd": "${workspaceFolder}"
-        }
-    ],
-    "inputs": [
-        {
-            "id": "args0",
-            "type": "promptString",
-            "description": "Command line args for debugging"
-        },
-        {
-            "id": "args1",
-            "type": "promptString",
-            "description": "Command line args for debugging"
-        },
-        {
-            "id": "args2",
-            "type": "promptString",
-            "description": "Command line args for debugging"
-        },
-        {
-            "id": "args3",
-            "type": "promptString",
-            "description": "Command line args for debugging"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Terminal",
+      "type": "python",
+      "request": "launch",
+      "pythonPath": "${workspaceRoot}/.venv/bin/python",
+      "module": "mycloud",
+      "stopOnEntry": false,
+      "console": "integratedTerminal",
+      "args": [
+        "${input:args0}",
+        "${input:args1}",
+        "${input:args2}",
+        "${input:args3}",
+        "${input:args4}",
+        "${input:args5}"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "args0",
+      "type": "promptString",
+      "description": "Command line args for debugging"
+    },
+    {
+      "id": "args1",
+      "type": "promptString",
+      "description": "Command line args for debugging"
+    },
+    {
+      "id": "args2",
+      "type": "promptString",
+      "description": "Command line args for debugging"
+    },
+    {
+      "id": "args3",
+      "type": "promptString",
+      "description": "Command line args for debugging"
+    },
+    {
+      "id": "args4",
+      "type": "promptString",
+      "description": "Command line args for debugging"
+    },
+    {
+      "id": "args5",
+      "type": "promptString",
+      "description": "Command line args for debugging"
+    }
+  ]
 }
