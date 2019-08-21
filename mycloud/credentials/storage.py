@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import keyring
@@ -26,6 +27,8 @@ class CredentialStorage:
 
     @classmethod
     def load(cls):
+        if not os.path.isfile(AUTHENTICATION_INFO_LOCATION):
+            return None, None
         with open(AUTHENTICATION_INFO_LOCATION, 'r') as file:
             auth_info = json.load(file)
         password = keyring.get_password(SERVICE_NAME, auth_info['user'])

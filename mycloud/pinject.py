@@ -30,8 +30,7 @@ def _construct_authenticator(bearer: str):
         authenticator.set_bearer_auth(bearer)
     else:
         username, password = CredentialStorage().load()
-        if not username or not password:
-            raise ClickException(
-                'Run "mycloud auth login" to authenticate yourself first, or specify a token')
-        authenticator.set_password_auth(username, password)
+        if username and password:
+            authenticator.set_password_auth(username, password)
+
     return authenticator

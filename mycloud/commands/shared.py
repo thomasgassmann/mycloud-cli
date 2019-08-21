@@ -1,7 +1,9 @@
 import asyncio
+from click import ClickException
 from functools import update_wrapper
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.auth import MyCloudAuthenticator
 
 
 def get_progress_tracker(skip_paths):
@@ -21,6 +23,18 @@ def provide(ctx, t):
 
 def executor_from_ctx(ctx):
     return ctx.obj['injector'].provide(MyCloudRequestExecutor)
+
+
+def authenticated(func):
+    def wrapper(ctx, *args, **kwargs):
+        if ctx is None:
+            raise AssertionError('"ctx" needs to be passed!')
+        authenticator: MyCloudAuthenticator = provide(ctx, MyCloudAuthenticator)
+        if authenticator.auth_mode == None:
+            raise ClickException(
+                'Run "mycloud auth login" to authenticate yourself first, or specify a token')
+
+    return update_wrapper(wrapper, func)
 
 
 def async_click(func):

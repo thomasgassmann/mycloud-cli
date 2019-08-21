@@ -6,18 +6,36 @@
             "type": "python",
             "request": "launch",
             "pythonPath": "${workspaceRoot}/.venv/bin/python",
-            "module": "mycloud ${input:args}",
+            "module": "mycloud",
             "stopOnEntry": true,
             "console": "integratedTerminal",
             "args": [
-                "${input:args}"
+                "${input:args0}",
+                "${input:args1}",
+                "${input:args2}",
+                "${input:args3}"
             ],
             "cwd": "${workspaceFolder}"
         }
     ],
     "inputs": [
         {
-            "id": "args",
+            "id": "args0",
+            "type": "promptString",
+            "description": "Command line args for debugging"
+        },
+        {
+            "id": "args1",
+            "type": "promptString",
+            "description": "Command line args for debugging"
+        },
+        {
+            "id": "args2",
+            "type": "promptString",
+            "description": "Command line args for debugging"
+        },
+        {
+            "id": "args3",
             "type": "promptString",
             "description": "Command line args for debugging"
         }

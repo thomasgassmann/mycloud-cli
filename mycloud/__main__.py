@@ -41,7 +41,7 @@ def setup_logger(level_str: str, log_file: str):
 @click.option('--token', nargs=1, required=False)
 @click.option('--log-level', nargs=1, required=False)
 @click.option('--log-file', nargs=1, required=False)
-def mycloud_cli(ctx, token: str, log_level: str, log_file: str):
+def mycloud_cli(ctx: click.Context, token: str, log_level: str, log_file: str):
     setup_logger(log_level, log_file)
     ctx.obj['injector'] = build_container(token=token)
 

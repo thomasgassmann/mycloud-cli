@@ -1,6 +1,7 @@
 import getpass
 import click
 from halo import Halo
+from mycloud.mycloudapi.auth import MyCloudAuthenticator
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 from mycloud.commands.shared import container, provide, async_click
 from mycloud.credentials import CredentialStorage
@@ -32,12 +33,8 @@ def cert():
 @click.pass_context
 @async_click
 async def token(ctx):
-    class _Proxy:
-        def __init__(self, mycloud_authenticator):
-            self.val = mycloud_authenticator
-
     injector = container(ctx)
-    authenticator = injector.provide(_Proxy).val
+    authenticator = provide(ctx, MyCloudAuthenticator)
     authenticator.invalidate_token()
     token_to_print = await authenticator.get_token()
     click.echo(token_to_print)
