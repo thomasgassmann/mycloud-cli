@@ -1,4 +1,5 @@
 import os
+import asyncio
 from multiprocessing import Process
 from bs4 import BeautifulSoup
 from mitmproxy import proxy, options, http
@@ -28,6 +29,7 @@ class ProxySelenium:
 
     def _run_proxy(self):
         def _wrapper():
+            loop = asyncio.new_event_loop()
             opts = options.Options(
                 listen_host=PROXY_HOST, listen_port=PROXY_PORT)
             opts.add_option('body_size_limit', int, 0, '')
@@ -37,7 +39,7 @@ class ProxySelenium:
                 None, with_termlog=False, with_dumper=False)
             dump_master.server = proxy.server.ProxyServer(pconf)
             dump_master.addons.add(_InjectScripts())
-            dump_master.run()
+            dump_master.run_loop(loop.run_forever)
 
         process = Process(target=_wrapper)
         process.start()

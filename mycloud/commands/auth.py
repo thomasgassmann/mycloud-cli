@@ -13,7 +13,6 @@ def auth_command():
 
 
 @auth_command.command()
-@Halo(text='Saving credentials...', spinner='dots')
 @click.pass_context
 @async_click
 # TODO: click.password_option()
