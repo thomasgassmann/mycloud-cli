@@ -13,8 +13,8 @@ class CredentialStorage:
         pass
 
     @classmethod
-    async def save(cls, username: str, password: str, skip_validation: bool = False) -> asyncio.Future:
-        validation_result = True if skip_validation else await _validate_credentials(username, password)
+    async def save(cls, username: str, password: str, skip_validation: bool = False, no_headless_validation: bool = False) -> asyncio.Future:
+        validation_result = True if skip_validation else await _validate_credentials(username, password, not no_headless_validation)
         if not validation_result:
             return False
         
@@ -35,9 +35,9 @@ class CredentialStorage:
         return (auth_info['user'], password)
             
 
-async def _validate_credentials(user_name: str, password: str) -> bool:
+async def _validate_credentials(user_name: str, password: str, headless: bool) -> bool:
     try:
-        await get_bearer_token(user_name, password)
+        await get_bearer_token(user_name, password, headless)
         return True
     except ValueError:
         return False

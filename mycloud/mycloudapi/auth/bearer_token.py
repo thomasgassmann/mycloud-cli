@@ -19,9 +19,9 @@ def open_for_cert():
             pass
 
 
-async def get_bearer_token(user_name: str, password: str):
+async def get_bearer_token(user_name: str, password: str, headless: bool):
     token = None
-    with ProxySelenium(headless=True) as driver:
+    with ProxySelenium(headless=headless) as driver:
         await asyncio.sleep(2)
         driver.get(START_LOGIN_URL)
         driver.set_window_size(1920, 1080)

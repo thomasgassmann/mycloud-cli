@@ -14,13 +14,14 @@ def auth_command():
 
 @auth_command.command()
 @click.pass_context
+@click.option('--no-headless', required=False, is_flag=True, default=False)
 @async_click
 # TODO: click.password_option()
-async def login(ctx):
+async def login(ctx, no_headless):
     credential_storage: CredentialStorage = provide(ctx, CredentialStorage)
     user = input('Email: ')
     password = getpass.getpass()
-    await credential_storage.save(user, password)
+    await credential_storage.save(user, password, skip_validation=False, no_headless_validation=no_headless)
 
 
 @auth_command.command()
