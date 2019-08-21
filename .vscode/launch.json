@@ -7,7 +7,7 @@
             "request": "launch",
             "pythonPath": "${workspaceRoot}/.venv/bin/python",
             "module": "mycloud",
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "console": "integratedTerminal",
             "args": [
                 "${input:args0}",
