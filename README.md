@@ -17,7 +17,7 @@ python3 -m pip install --user --upgrade mycloud-cli
 After installing myCloud CLI make sure to add the certificates for mitmproxy to your CA in your OS / Chromium. Run:
 
 ```
-mycloud cert
+mycloud auth cert
 ```
 
 to download the required certificate.
