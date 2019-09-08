@@ -16,7 +16,11 @@ from mycloud.inject import build_container
 
 def get_log_level(level_str: str) -> int:
     try:
-        return getattr(logging, level_str) if level_str else logging.INFO
+        try:
+            import pydevd
+            return logging.DEBUG
+        except ImportError:
+            return getattr(logging, level_str) if level_str else logging.INFO
     except AttributeError:
         raise click.ClickException(f'Log level {level_str} not found.')
 
@@ -63,6 +67,7 @@ mycloud_cli.add_command(statistics_command)
 
 if __name__ == '__main__':
     # filter empty arguments (vscode debugging)
-    sys.argv = list(filter(lambda x: x is not None and str(x).strip() != '', sys.argv))
+    sys.argv = list(
+        filter(lambda x: x is not None and str(x).strip() != '', sys.argv))
 
     mycloud_cli(obj={})

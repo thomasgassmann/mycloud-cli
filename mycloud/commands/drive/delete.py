@@ -1,22 +1,22 @@
 import logging
 import click
+import inject
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import DeleteObjectRequest, MetadataRequest
 from mycloud.commands.shared import executor_from_ctx, async_click, authenticated
 
 
 @click.command(name='delete')
-@click.pass_context
 @click.argument('remote')
-@async_click
 @authenticated
-async def delete_command(ctx, remote: str):
-    executor = executor_from_ctx(ctx)
-    await _folder_deletion(executor, remote)
+@inject.params(request_executor=MyCloudRequestExecutor)
+@async_click
+async def delete_command(remote: str, request_executor: MyCloudRequestExecutor):
+    await _folder_deletion(request_executor, remote)
 
 
 async def _folder_deletion(executor: MyCloudRequestExecutor, remote: str):
-    success = _try_delete(executor, remote)
+    success = await _try_delete(executor, remote)
     logging.info(f'Trying to delete {remote}...')
     if not success:
         logging.info(f'Failed to delete {remote}!')
