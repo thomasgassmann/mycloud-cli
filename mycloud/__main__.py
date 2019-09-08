@@ -11,7 +11,7 @@ from mycloud.commands.drive import (
     convert_command,
     delete_command
 )
-from mycloud.pinject import build_container
+from mycloud.inject import build_container
 
 
 def get_log_level(level_str: str) -> int:
@@ -44,7 +44,7 @@ def setup_logger(level_str: str, log_file: str):
 @click.option('--log-file', nargs=1, required=False)
 def mycloud_cli(ctx: click.Context, token: str, log_level: str, log_file: str):
     setup_logger(log_level, log_file)
-    ctx.obj['injector'] = build_container(token=token)
+    build_container(token=token)
 
 
 @click.group(name='drive')
@@ -62,6 +62,7 @@ mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 
 if __name__ == '__main__':
+    # filter empty arguments (vscode debugging)
     sys.argv = list(filter(lambda x: x is not None and str(x).strip() != '', sys.argv))
 
     mycloud_cli(obj={})

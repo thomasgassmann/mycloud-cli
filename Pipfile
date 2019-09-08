@@ -28,8 +28,8 @@ keyring = "*"
 halo = "*"
 better-exceptions = "*"
 click = "*"
-pinject = "*"
 pytest = "*"
+inject = "*"
 
 [requires]
 python_version = "3.7"
