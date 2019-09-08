@@ -17,17 +17,16 @@ from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, ENCRYPTION_CHUNK_LEN
 
 
 async def downsync_folder(request_executor: MyCloudRequestExecutor,
-                    resource_builder: ObjectResourceBuilder,
-                    remote_directory: TranslatablePath,
-                    progress_tracker: ProgressTracker,
-                    decryption_pwd: str = None):
+                          resource_builder: ObjectResourceBuilder,
+                          remote_directory: TranslatablePath,
+                          progress_tracker: ProgressTracker,
+                          decryption_pwd: str = None):
     # No transforms needed just to read directory
     file_manager = FileManager(request_executor, [], ProgressReporter())
-    generator = await file_manager.read_directory(remote_directory, recursive=True)
-    for file in generator:
+    async for file in file_manager.read_directory(remote_directory, recursive=True):
         try:
             await downsync_file(request_executor, resource_builder,
-                          file, progress_tracker, decryption_pwd)
+                                file, progress_tracker, decryption_pwd)
         except TimeoutException:
             logging.error(
                 'Failed to write to the local file within the given time')
@@ -40,10 +39,10 @@ async def downsync_folder(request_executor: MyCloudRequestExecutor,
 
 
 async def downsync_file(request_executor: MyCloudRequestExecutor,
-                  resource_builder: ObjectResourceBuilder,
-                  remote_file: TranslatablePath,
-                  progress_tracker: ProgressTracker,
-                  decryption_pwd: str = None):
+                        resource_builder: ObjectResourceBuilder,
+                        remote_file: TranslatablePath,
+                        progress_tracker: ProgressTracker,
+                        decryption_pwd: str = None):
     if progress_tracker.skip_file(remote_file.calculate_remote()):
         return
 
@@ -66,8 +65,8 @@ async def downsync_file(request_executor: MyCloudRequestExecutor,
         skip, started_partial, partial_index = False, False, 0
     else:
         skip, started_partial, partial_index = await file_manager.started_partial_download(remote_file,
-                                                                                     basic_version,
-                                                                                     local_file)
+                                                                                           basic_version,
+                                                                                           local_file)
     if skip:
         return
 

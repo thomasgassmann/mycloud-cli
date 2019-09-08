@@ -58,7 +58,7 @@ class MyCloudAuthenticator:
                     return self.current_token
 
                 self.current_token = await get_bearer_token(
-                    self.user_name, self.password)
+                    self.user_name, self.password, headless=True)
                 if USE_TOKEN_CACHE:
                     self.tried_cached_token = False
                     self._save_token()

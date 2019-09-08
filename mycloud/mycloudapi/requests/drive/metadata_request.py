@@ -1,4 +1,5 @@
 import json
+import logging
 from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_drive_path
 from mycloud.mycloudapi.requests import MyCloudRequest, Method
 
@@ -40,6 +41,8 @@ class MetadataRequest(MyCloudRequest):
         json_data = json.loads(response.text)
         files = MetadataRequest._get_files(json_data)
         dirs = MetadataRequest._get_directories(json_data)
+        logging.debug(
+            f'Formatted response ({len(files)} files, {len(dirs)} dirs)')
         return (dirs, files)
 
     @staticmethod

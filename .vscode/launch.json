@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Terminal",
+      "name": "myCloud Debug",
       "type": "python",
       "request": "launch",
       "pythonPath": "${workspaceRoot}/.venv/bin/python",

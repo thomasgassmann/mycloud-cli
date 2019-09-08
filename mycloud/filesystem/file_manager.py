@@ -1,4 +1,5 @@
 import os
+import logging
 from collections import defaultdict
 from pathlib import Path
 from mycloud.common import is_int, operation_timeout
@@ -29,26 +30,29 @@ class FileManager:
         self._reporter = ProgressReporter() if reporter is None else reporter
 
     async def read_directory(self,
-                       translatable_path: TranslatablePath,
-                       recursive=False,
-                       deep=False,
-                       _second=False):
+                             translatable_path: TranslatablePath,
+                             recursive=False,
+                             deep=False,
+                             _second=False):
+        logging.debug(f'Reading directory...')
         data = None
         if deep:
             if not recursive:
                 raise ValueError(
                     'Cannot perform non-recursive deep directory list using directory list request')
-            data = await self._read_directory_using_directory_list_request(
+            logging.debug('Using directory list request...')
+            data = self._read_directory_using_directory_list_request(
                 translatable_path)
         else:
-            data = await self._read_directory_using_metadata_request(
+            logging.debug('Using metadata request...')
+            data = self._read_directory_using_metadata_request(
                 translatable_path, recursive, False)
-        for item in data:
+        async for item in data:
             yield item
 
     async def started_partial_upload(self,
-                               translatable_path: TranslatablePath,
-                               calculatable_version: CalculatableVersion):
+                                     translatable_path: TranslatablePath,
+                                     calculatable_version: CalculatableVersion):
         versioned_stream_accessor = VersionedCloudStreamAccessor(
             translatable_path, calculatable_version, None)
         path = versioned_stream_accessor.get_base_path()
@@ -60,9 +64,9 @@ class FileManager:
         return True, len(files)
 
     async def started_partial_download(self,
-                                 translatable_path: TranslatablePath,
-                                 calculatable_version: CalculatableVersion,
-                                 local_path: str):
+                                       translatable_path: TranslatablePath,
+                                       calculatable_version: CalculatableVersion,
+                                       local_path: str):
         if not operation_timeout(lambda x: os.path.isfile(x['local_path']), local_path=local_path):
             return False, False, 0
         stats = operation_timeout(lambda x: os.stat(
@@ -105,9 +109,9 @@ class FileManager:
         return False, True, file_length // chunk_size
 
     async def read_file(self,
-                  downstream: DownStream,
-                  translatable_path: TranslatablePath,
-                  calculatable_version: CalculatableVersion):
+                        downstream: DownStream,
+                        translatable_path: TranslatablePath,
+                        calculatable_version: CalculatableVersion):
         metadata = await self._metadata_manager.get_metadata(translatable_path)
         calculated_version = calculatable_version.calculate_version()
         if not metadata.contains_version(calculated_version):
@@ -120,14 +124,14 @@ class FileManager:
         await downstreamer.download_stream(versioned_stream_accessor)
 
     async def read_file_metadata(self,
-                           translatable_path: TranslatablePath):
+                                 translatable_path: TranslatablePath):
         metadata = await self._metadata_manager.get_metadata(translatable_path)
         return metadata
 
     async def write_file(self,
-                   upstream: UpStream,
-                   translatable_path: TranslatablePath,
-                   calculatable_version: CalculatableVersion):
+                         upstream: UpStream,
+                         translatable_path: TranslatablePath,
+                         calculatable_version: CalculatableVersion):
         existing_metadata = await self._metadata_manager.get_metadata(
             translatable_path)
         existing_metadata = existing_metadata if existing_metadata is not None else FileMetadata()
@@ -189,6 +193,7 @@ class FileManager:
         base = translatable_path.calculate_remote()
         metadata_request = MetadataRequest(base, ignore_not_found=True)
         response = await self._request_executor.execute_request(metadata_request)
+        logging.debug(f'Got response for path {base}')
         if response.status_code == 404:
             return
         (dirs, files) = MetadataRequest.format_response(response)
@@ -198,12 +203,13 @@ class FileManager:
         async def loop_dirs(rec, sec):
             for directory in dirs:
                 remote_path = BasicRemotePath(directory['Path'])
-                data = await self._read_directory_using_metadata_request(remote_path, recursive=rec, _second=sec)
-                for item in data:
+                data = self._read_directory_using_metadata_request(
+                    remote_path, recursive=rec, _second=sec)
+                async for item in data:
                     yield item
 
-        items = await loop_dirs(True, False) if recursive else await loop_dirs(False, True)
-        for item in items:
+        items = loop_dirs(True, False) if recursive else await loop_dirs(False, True)
+        async for item in items:
             yield item
 
     async def _read_directory_using_directory_list_request(self, translatable_path: TranslatablePath):
