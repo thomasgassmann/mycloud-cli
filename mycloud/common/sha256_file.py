@@ -30,10 +30,10 @@ def sha256_file(local_file: str):
             read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
         if (read_length / ENCRYPTION_CHUNK_LENGTH) % 1000 == 0:
             percentage = '{0:.2f}'.format((read_length / file_size) * 100)
-            logging.info('Hashing file {}: {}% complete...'.format(
+            print('Hashing file {}: {}% complete...'.format(
                 local_file, percentage), end='\r')
         read_length += ENCRYPTION_CHUNK_LENGTH
-    logging.info('Hashing file {}: {}% complete...'.format(
+    print('Hashing file {}: {}% complete...'.format(
         local_file, percentage), end='\n')
     stream.close()
     digested = sha.hexdigest()
