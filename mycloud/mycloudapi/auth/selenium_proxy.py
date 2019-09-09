@@ -28,18 +28,23 @@ class ProxySelenium:
         self._driver.quit()
 
     def _run_proxy(self):
-        logging.debug('Running selenium proxy...')
-        loop = asyncio.new_event_loop()
-        opts = options.Options(
-            listen_host=PROXY_HOST, listen_port=PROXY_PORT)
-        opts.add_option('body_size_limit', int, 0, '')
-        pconf = proxy.config.ProxyConfig(opts)
+        def _wrapper():
+            logging.debug('Running selenium proxy...')
 
-        dump_master = DumpMaster(None)
-        dump_master.server = proxy.server.ProxyServer(pconf)
-        dump_master.addons.add(_InjectScripts())
-        dump_master.run()
-        logging.debug('Started selenium proxy successfully...')
+            opts = options.Options(
+                listen_host=PROXY_HOST, listen_port=PROXY_PORT)
+            opts.add_option('body_size_limit', int, 0, '')
+            pconf = proxy.config.ProxyConfig(opts)
+
+            dump_master = DumpMaster(None)
+            dump_master.server = proxy.server.ProxyServer(pconf)
+            dump_master.addons.add(_InjectScripts())
+            dump_master.run()
+
+            logging.debug('Started selenium proxy successfully...')
+
+        p = Process(target=_wrapper)
+        p.start()
 
     def _get_web_driver(self, headless):
         user_agent = '''
