@@ -12,8 +12,9 @@ WAIT_TIME = 15
 START_LOGIN_URL = 'https://start.mycloud.ch'
 
 
-def open_for_cert():
+async def open_for_cert():
     with ProxySelenium(headless=False) as driver:
+        await asyncio.sleep(2)
         driver.get('http://mitm.it')
         while any(driver.window_handles):
             pass
@@ -23,8 +24,8 @@ async def get_bearer_token(user_name: str, password: str, headless: bool):
     token = None
     with ProxySelenium(headless=headless) as driver:
         await asyncio.sleep(2)
-        driver.get(START_LOGIN_URL)
         driver.set_window_size(1920, 1080)
+        driver.get(START_LOGIN_URL)
 
         _click(driver, 'span.button.button--primary.outline')
         _enter(driver, 'input#username', user_name)

@@ -25,8 +25,9 @@ async def login(storage: CredentialStorage, no_headless):
 
 
 @auth_command.command()
-def cert():
-    open_for_cert()
+@async_click
+async def cert():
+    await open_for_cert()
 
 
 @auth_command.command()
