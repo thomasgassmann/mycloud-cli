@@ -13,6 +13,8 @@ START_LOGIN_URL = 'https://start.mycloud.ch'
 
 
 async def open_for_cert():
+    # TODO: problem with proxy only occurs when running async
+    # removing async and "async_click" will fix proxy.
     with ProxySelenium(headless=False) as driver:
         await asyncio.sleep(2)
         driver.get('http://mitm.it')
