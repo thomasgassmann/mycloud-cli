@@ -13,11 +13,11 @@ class CredentialStorage:
         pass
 
     @classmethod
-    async def save(cls, username: str, password: str, skip_validation: bool = False, no_headless_validation: bool = False) -> asyncio.Future:
+    async def save(cls, username: str, password: str, skip_validation: bool = False, no_headless_validation: bool = False) -> bool:
         validation_result = True if skip_validation else await _validate_credentials(username, password, not no_headless_validation)
         if not validation_result:
             return False
-        
+
         with open(AUTHENTICATION_INFO_LOCATION, 'w') as file:
             json.dump({
                 'user': username
@@ -33,7 +33,7 @@ class CredentialStorage:
             auth_info = json.load(file)
         password = keyring.get_password(SERVICE_NAME, auth_info['user'])
         return (auth_info['user'], password)
-            
+
 
 async def _validate_credentials(user_name: str, password: str, headless: bool) -> bool:
     try:

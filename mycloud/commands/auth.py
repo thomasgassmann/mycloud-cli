@@ -1,5 +1,6 @@
 import getpass
 import click
+import inject
 from halo import Halo
 from mycloud.mycloudapi.auth import MyCloudAuthenticator
 from mycloud.mycloudapi.auth.bearer_token import open_for_cert
@@ -13,15 +14,14 @@ def auth_command():
 
 
 @auth_command.command()
-@click.pass_context
 @click.option('--no-headless', required=False, is_flag=True, default=False)
+@inject.params(storage=CredentialStorage)
 @async_click
 # TODO: click.password_option()
-async def login(ctx, no_headless):
-    credential_storage: CredentialStorage = provide(ctx, CredentialStorage)
+async def login(storage: CredentialStorage, no_headless):
     user = input('Email: ')
     password = getpass.getpass()
-    await credential_storage.save(user, password, skip_validation=False, no_headless_validation=no_headless)
+    await storage.save(user, password, skip_validation=False, no_headless_validation=no_headless)
 
 
 @auth_command.command()
