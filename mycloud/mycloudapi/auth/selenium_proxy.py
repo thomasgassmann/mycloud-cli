@@ -1,10 +1,9 @@
 import os
 import asyncio
 import logging
-from multiprocessing import Process
 from bs4 import BeautifulSoup
 from mitmproxy import proxy, options, http
-from mitmproxy.tools.dump import DumpMaster
+from mitmproxy.tools.main import master
 from selenium import webdriver
 
 
@@ -28,23 +27,18 @@ class ProxySelenium:
         self._driver.quit()
 
     def _run_proxy(self):
-        def _wrapper():
-            logging.debug('Running selenium proxy...')
+        logging.debug('Running selenium proxy...')
 
-            opts = options.Options(
-                listen_host=PROXY_HOST, listen_port=PROXY_PORT)
-            opts.add_option('body_size_limit', int, 0, '')
-            pconf = proxy.config.ProxyConfig(opts)
+        opts = options.Options(
+            listen_host=PROXY_HOST, listen_port=PROXY_PORT)
+        opts.add_option('body_size_limit', int, 0, '')
+        pconf = proxy.config.ProxyConfig(opts)
+        dump_master = master.Master(None)
+        dump_master.server = proxy.server.ProxyServer(pconf)
+        dump_master.addons.add(_InjectScripts())
+        dump_master.start()
 
-            dump_master = DumpMaster(None)
-            dump_master.server = proxy.server.ProxyServer(pconf)
-            dump_master.addons.add(_InjectScripts())
-            dump_master.run()
-
-            logging.debug('Started selenium proxy successfully...')
-
-        p = Process(target=_wrapper)
-        p.start()
+        logging.debug('Started selenium proxy successfully...')
 
     def _get_web_driver(self, headless):
         user_agent = '''
