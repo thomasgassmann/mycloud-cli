@@ -9,7 +9,7 @@ from mycloud.mycloudapi.auth.selenium_proxy import ProxySelenium
 
 
 WAIT_TIME = 15
-START_LOGIN_URL = 'https://start.mycloud.ch'
+START_LOGIN_URL = 'https://www.mycloud.ch/login/'
 
 
 async def open_for_cert():
@@ -29,9 +29,7 @@ async def get_bearer_token(user_name: str, password: str, headless: bool):
         driver.set_window_size(1920, 1080)
         driver.get(START_LOGIN_URL)
 
-        _click(driver, 'span.button.button--primary.outline')
         _enter(driver, 'input#username', user_name)
-        _click(driver, '#anmelden')
         _enter(driver, 'input[type=password]', password)
 
         start = time.time()
