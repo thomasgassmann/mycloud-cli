@@ -1,7 +1,6 @@
 import os
 import asyncio
 import logging
-from multiprocessing import Process
 from bs4 import BeautifulSoup
 from mitmproxy import proxy, options, http
 from mitmproxy.tools.dump import DumpMaster
