@@ -1,15 +1,18 @@
 import os
 import asyncio
 import logging
+from multiprocessing import Process
 from bs4 import BeautifulSoup
 from mitmproxy import proxy, options, http
+from mitmproxy.tools.dump import DumpMaster
+from threading import Thread
 from mitmproxy.tools.main import master
 from selenium import webdriver
 
 
 JS_FILE = 'undetectable-headless-browser.js'
 PROXY_HOST = '127.0.0.1'
-PROXY_PORT = 3117
+PROXY_PORT = 49111
 CHROME = 'chromium'
 CHROME_DRIVER = 'chromedriver'
 
@@ -29,14 +32,20 @@ class ProxySelenium:
     def _run_proxy(self):
         logging.debug('Running selenium proxy...')
 
-        opts = options.Options(
-            listen_host=PROXY_HOST, listen_port=PROXY_PORT)
-        opts.add_option('body_size_limit', int, 0, '')
-        pconf = proxy.config.ProxyConfig(opts)
-        dump_master = master.Master(None)
-        dump_master.server = proxy.server.ProxyServer(pconf)
-        dump_master.addons.add(_InjectScripts())
-        dump_master.start()
+        def _wrapper():
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            opts = options.Options(
+                listen_host=PROXY_HOST, listen_port=PROXY_PORT)
+            opts.add_option('body_size_limit', int, 0, '')
+            pconf = proxy.config.ProxyConfig(opts)
+
+            dump_master = DumpMaster(None)
+            dump_master.server = proxy.server.ProxyServer(pconf)
+            dump_master.addons.add(_InjectScripts())
+            dump_master.run()
+
+        t = Thread(target=_wrapper, daemon=True)
+        t.start()
 
         logging.debug('Started selenium proxy successfully...')
 
