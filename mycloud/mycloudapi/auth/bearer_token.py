@@ -1,5 +1,6 @@
 import time
 import asyncio
+import logging
 import urllib.parse as urlparse
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
@@ -63,6 +64,7 @@ def _get_element(driver, selector):
 
 def _get_token_from_url(url):
     token_name = 'access_token'
+    logging.debug(f'Looking for token in URL {url}...')
     query_strings = urlparse.parse_qs(
         urlparse.urlparse(url).query, keep_blank_values=True)
     if token_name in query_strings:
