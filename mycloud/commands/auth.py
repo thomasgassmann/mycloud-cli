@@ -31,12 +31,10 @@ async def cert():
 
 
 @auth_command.command()
-@click.pass_context
-@async_click
+@inject.params(auth=MyCloudAuthenticator)
 @authenticated
-async def token(ctx):
-    injector = container(ctx)
-    authenticator = provide(ctx, MyCloudAuthenticator)
-    authenticator.invalidate_token()
-    token_to_print = await authenticator.get_token()
+@async_click
+async def token(auth):
+    auth.invalidate_token()
+    token_to_print = await auth.get_token()
     click.echo(token_to_print)
