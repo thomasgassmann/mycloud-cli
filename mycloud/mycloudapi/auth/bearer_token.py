@@ -25,7 +25,8 @@ async def open_for_cert():
 
 async def get_bearer_token(user_name: str, password: str, headless: bool):
     token = None
-    with ProxySelenium(headless=headless) as driver:
+    proxy_selenium = ProxySelenium(headless=headless)
+    with proxy_selenium as driver:
         await asyncio.sleep(2)
         driver.set_window_size(1920, 1080)
         driver.get(START_LOGIN_URL)
@@ -35,7 +36,7 @@ async def get_bearer_token(user_name: str, password: str, headless: bool):
 
         start = time.time()
         while token is None:
-            token = _get_token_from_url(driver.current_url)
+            token = _get_token_from_urls(proxy_selenium.urls)
             if time.time() - start > WAIT_TIME:
                 break
 
@@ -62,12 +63,13 @@ def _get_element(driver, selector):
     return input_element
 
 
-def _get_token_from_url(url):
-    token_name = 'access_token'
-    logging.debug(f'Looking for token in URL {url}...')
-    query_strings = urlparse.parse_qs(
-        urlparse.urlparse(url).query, keep_blank_values=True)
-    if token_name in query_strings:
-        token = query_strings[token_name][0]
-        return token.replace(' ', '+')
+def _get_token_from_urls(urls):
+    for url in urls:
+        token_name = 'access_token'
+        logging.debug(f'Looking for token in URL {url}...')
+        query_strings = urlparse.parse_qs(
+            urlparse.urlparse(url).query, keep_blank_values=True)
+        if token_name in query_strings:
+            token = query_strings[token_name][0]
+            return token.replace(' ', '+')
     return None

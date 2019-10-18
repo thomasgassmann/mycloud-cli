@@ -21,6 +21,11 @@ class ProxySelenium:
     def __init__(self, headless: bool):
         self._get_web_driver(headless)
         self._run_proxy()
+        self._urls = []
+
+    @property
+    def urls(self):
+        return self._urls
 
     def __enter__(self):
         return self._driver
@@ -40,7 +45,7 @@ class ProxySelenium:
 
             dump_master = DumpMaster(None)
             dump_master.server = proxy.server.ProxyServer(pconf)
-            dump_master.addons.add(_InjectScripts())
+            dump_master.addons.add(_InjectScripts(self._urls))
             dump_master.run()
 
         t = Thread(target=_wrapper, daemon=True)
@@ -67,11 +72,12 @@ class ProxySelenium:
 
 class _InjectScripts:
 
-    def __init__(self):
+    def __init__(self, url_list):
         current_directory = os.path.dirname(__file__)
         js_file = os.path.join(current_directory, JS_FILE)
         js_to_execute = open(js_file).read()
         self._js = js_to_execute
+        self._list = url_list
 
     def response(self, flow: http.HTTPFlow):
         ct_header = 'Content-Type'
@@ -81,6 +87,8 @@ class _InjectScripts:
             self.inject_scripts(flow)
 
     def inject_scripts(self, flow: http.HTTPFlow):
+        self._list.append(flow.request.url)
+
         html = BeautifulSoup(flow.response.text, 'lxml')
         container = html.head or html.body
         if container:
