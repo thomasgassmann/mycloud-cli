@@ -15,14 +15,6 @@ def get_progress_tracker(skip_paths):
     return tracker
 
 
-def container(ctx):
-    return ctx.obj['injector']
-
-
-def provide(ctx, t):
-    return ctx.obj['injector'].provide(t)
-
-
 def authenticated(func):
     def wrapper(*args, **kwargs):
         @inject.params(mycloud_authenticator=MyCloudAuthenticator)
