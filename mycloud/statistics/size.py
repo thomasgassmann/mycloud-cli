@@ -10,8 +10,7 @@ async def calculate_size(request_executor: MyCloudRequestExecutor, directory: st
     summed_up = 0
     longest_string = 0
     file_count = 0
-    generator = await get_all_files(request_executor, directory)
-    for file in generator:
+    async for file in get_all_files(request_executor, directory):
         file_count += 1
         original_out.write(str(' ' * longest_string) + '\r')
         to_print = 'Bytes: {} | Size (readable): {} | Count: {}'.format(
