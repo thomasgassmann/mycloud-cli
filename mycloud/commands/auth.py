@@ -21,7 +21,11 @@ def auth_command():
 async def login(storage: CredentialStorage, no_headless):
     user = input('Email: ')
     password = getpass.getpass()
-    await storage.save(user, password, skip_validation=False, no_headless_validation=no_headless)
+    res = await storage.save(user, password, skip_validation=False, no_headless_validation=no_headless)
+    if res:
+        click.echo('Successfully authenticated!')
+    else:
+        click.echo('Failed to authenticate')
 
 
 @auth_command.command()
