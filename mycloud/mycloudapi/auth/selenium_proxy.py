@@ -19,8 +19,13 @@ CHROME_DRIVER = 'chromedriver'
 class ProxySelenium:
 
     def __init__(self, headless: bool):
+        self._urls = []
         self._get_web_driver(headless)
         self._run_proxy()
+
+    @property
+    def urls(self):
+        return self._urls
 
     def __enter__(self):
         return self._driver
@@ -31,7 +36,7 @@ class ProxySelenium:
     def _run_proxy(self):
         logging.debug('Running selenium proxy...')
 
-        def _wrapper():
+        def _wrapper(url_list):
             asyncio.set_event_loop(asyncio.new_event_loop())
             opts = options.Options(
                 listen_host=PROXY_HOST, listen_port=PROXY_PORT)
@@ -40,10 +45,10 @@ class ProxySelenium:
 
             dump_master = DumpMaster(None)
             dump_master.server = proxy.server.ProxyServer(pconf)
-            dump_master.addons.add(_InjectScripts())
+            dump_master.addons.add(_InjectScripts(url_list))
             dump_master.run()
 
-        t = Thread(target=_wrapper, daemon=True)
+        t = Thread(target=_wrapper, daemon=True, args=(self._urls,))
         t.start()
 
         logging.debug('Started selenium proxy successfully...')
@@ -67,13 +72,15 @@ class ProxySelenium:
 
 class _InjectScripts:
 
-    def __init__(self):
+    def __init__(self, url_list):
         current_directory = os.path.dirname(__file__)
         js_file = os.path.join(current_directory, JS_FILE)
         js_to_execute = open(js_file).read()
         self._js = js_to_execute
+        self._list = url_list
 
     def response(self, flow: http.HTTPFlow):
+        self._list.append(flow.request.url)
         ct_header = 'Content-Type'
         if ct_header in flow.response.headers and \
                 flow.response.headers[ct_header] == 'text/html' and \
@@ -81,7 +88,6 @@ class _InjectScripts:
             self.inject_scripts(flow)
 
     def inject_scripts(self, flow: http.HTTPFlow):
-
         html = BeautifulSoup(flow.response.text, 'lxml')
         container = html.head or html.body
         if container:
