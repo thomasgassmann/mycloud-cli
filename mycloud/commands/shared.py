@@ -23,10 +23,6 @@ def provide(ctx, t):
     return ctx.obj['injector'].provide(t)
 
 
-def executor_from_ctx(ctx):
-    return ctx.obj['injector'].provide(MyCloudRequestExecutor)
-
-
 def authenticated(func):
     def wrapper(*args, **kwargs):
         @inject.params(mycloud_authenticator=MyCloudAuthenticator)

@@ -1,7 +1,7 @@
 from typing import List
 import click
 import inject
-from mycloud.commands.shared import executor_from_ctx, async_click, authenticated
+from mycloud.commands.shared import async_click, authenticated
 from mycloud.filesync import convert_remote_files
 from mycloud.mycloudapi import MyCloudRequestExecutor
 

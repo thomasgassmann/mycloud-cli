@@ -5,7 +5,6 @@ from mycloud.filesync import upsync_folder
 from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.commands.shared import (
     get_progress_tracker,
-    executor_from_ctx,
     async_click,
     authenticated
 )

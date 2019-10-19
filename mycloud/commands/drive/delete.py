@@ -3,7 +3,7 @@ import click
 import inject
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import DeleteObjectRequest, MetadataRequest
-from mycloud.commands.shared import executor_from_ctx, async_click, authenticated
+from mycloud.commands.shared import async_click, authenticated
 
 
 @click.command(name='delete')

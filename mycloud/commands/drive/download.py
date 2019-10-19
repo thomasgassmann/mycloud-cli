@@ -6,7 +6,6 @@ from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.filesystem import BasicRemotePath
 from mycloud.commands.shared import (
     get_progress_tracker,
-    executor_from_ctx,
     async_click,
     authenticated
 )
