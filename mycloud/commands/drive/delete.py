@@ -30,7 +30,7 @@ async def _folder_deletion(executor: MyCloudRequestExecutor, remote: str):
         for remote_file in files:
             await _try_delete(executor, remote_file['Path'])
         for directory in directories:
-            _folder_deletion(executor, directory['Path'])
+            await _folder_deletion(executor, directory['Path'])
 
 
 async def _try_delete(executor: MyCloudRequestExecutor, path: str):
