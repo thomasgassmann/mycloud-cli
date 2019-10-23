@@ -1,9 +1,15 @@
 trigger:
 - master
 
-pool: 'Azure Pipelines'
+pool:
+  vmImage: 'Ubuntu-16.04'
 
 steps:
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.7'
+    architecture: 'x64'
 
 - script: |
     python setup.py install
