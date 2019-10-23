@@ -24,7 +24,7 @@ setup(
     description='myCloud Command Line Interface',
     long_description_content_type='text/markdown',
     author_email='thomas.gassmann@hotmail.com',
-    url='https://github.com/ThomasGassmann/mycloud-cli',
+    url='https://github.com/thomasgassmann/mycloud-cli',
     install_requires=install_requires,
     packages=find_packages(),
     include_package_data=True,
@@ -34,7 +34,6 @@ setup(
     keywords='swisscom cloud cli mycloud',
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "License :: OSI Approved :: MIT License"
     ]
 )

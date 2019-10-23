@@ -1,6 +1,6 @@
 from abc import abstractmethod
-from mycloud.mycloudapi.request import MyCloudRequest, Method, ContentType
-from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
+from mycloud.mycloudapi.requests import MyCloudRequest, Method, ContentType
+from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_drive_path
 
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
@@ -9,7 +9,7 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
 class ObjectRequest(MyCloudRequest):
 
     def __init__(self, object_resource: str):
-        raise_if_invalid_cloud_path(object_resource)
+        raise_if_invalid_drive_path(object_resource)
         self.object_resource = object_resource
 
     def get_request_url(self):
@@ -56,3 +56,12 @@ class GetObjectRequest(ObjectRequest):
 
     def is_query_parameter_access_token(self):
         return True
+
+
+class DeleteObjectRequest(ObjectRequest):
+
+    def get_method(self):
+        return Method.DELETE
+
+    def ignored_error_status_codes(self):
+        return []

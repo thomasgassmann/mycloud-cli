@@ -1,8 +1,6 @@
 import os
-from mycloud.logger import log
-from mycloud.mycloudapi import (
-    ObjectResourceBuilder,
-    MyCloudRequestExecutor)
+import logging
+from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
 from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculatedVersion
 from mycloud.streamapi.transforms import AES256CryptoTransform
 from mycloud.streamapi import DefaultUpStream, ProgressReporter
@@ -14,7 +12,7 @@ from mycloud.filesync.progress import ProgressTracker
 # _mtime_cache = {}
 
 
-def upsync_folder(request_executor: MyCloudRequestExecutor,
+async def upsync_folder(request_executor: MyCloudRequestExecutor,
                   resource_builder: ObjectResourceBuilder,
                   local_directory: str,
                   progress_tracker: ProgressTracker,
@@ -29,16 +27,16 @@ def upsync_folder(request_executor: MyCloudRequestExecutor,
         for file in files:
             local_file = os.path.join(root, file)
             try:
-                upsync_file(request_executor, resource_builder,
+                await upsync_file(request_executor, resource_builder,
                             local_file, progress_tracker, encryption_pwd, skip_by_date)
             except TimeoutException:
-                log('Failed to access file {} within the given time'.format(
-                    local_file), error=True)
+                logging.error('Failed to access file {} within the given time'.format(
+                    local_file))
             except ValueError as ex:
-                log(str(ex), error=True)
+                logging.error(str(ex))
 
 
-def upsync_file(request_executor: MyCloudRequestExecutor,
+async def upsync_file(request_executor: MyCloudRequestExecutor,
                 resource_builder: ObjectResourceBuilder,
                 local_file: str,
                 progress_tracker: ProgressTracker,
@@ -46,7 +44,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
                 skip_by_date=True):
     # global _mtime_cache
     if progress_tracker.skip_file(local_file):
-        log('Skipping file {}'.format(local_file))
+        logging.info('Skipping file {}'.format(local_file))
         return
 
     # remote_path = resource_builder.build_remote_file(local_file)
@@ -64,7 +62,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
     calculatable_version = HashCalculatedVersion(local_file)
     translatable_path = LocalTranslatablePath(
         resource_builder, local_file, calculatable_version)
-    started_partial_upload, index = file_manager.started_partial_upload(
+    started_partial_upload, index = await file_manager.started_partial_upload(
         translatable_path, calculatable_version)
     local_stream = operation_timeout(
         lambda x: open(x['path'], 'rb'), path=local_file)
@@ -73,7 +71,7 @@ def upsync_file(request_executor: MyCloudRequestExecutor,
         operation_timeout(lambda x: x['stream'].seek(
             x['pos']), stream=local_stream, pos=stream_position)
     cloud_stream = DefaultUpStream(local_stream, index)
-    file_manager.write_file(
+    await file_manager.write_file(
         cloud_stream, translatable_path, calculatable_version)
 
 

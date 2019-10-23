@@ -1,4 +1,4 @@
-from mycloud.common.directory_list import get_all_files_recursively
+from mycloud.common.directory_list import get_all_files
 from mycloud.common.operation_timeout import operation_timeout, TimeoutException
 from mycloud.common.functions import get_string_generator
 from mycloud.common.sha256_file import sha256_file

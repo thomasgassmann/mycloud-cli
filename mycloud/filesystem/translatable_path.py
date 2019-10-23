@@ -52,7 +52,5 @@ class LocalTranslatablePath(TranslatablePath):
         dictionary['utime'] = operation_timeout(
             lambda x: os.path.getmtime(x['file']), file=self._local_file)
         if self._calculatable_version is not None:
-            # TODO: this is a potential security risk. For really small files, hash could be brute-forced
-            # Hash is of unencrypted file!!!
             dictionary['hash'] = self._calculatable_version.get_hash()
         return dictionary

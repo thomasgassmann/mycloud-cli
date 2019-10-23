@@ -1,6 +1,6 @@
 import os
+import logging
 from enum import Enum
-from mycloud.logger import log
 from mycloud.mycloudapi.auth.bearer_token import get_bearer_token
 from mycloud.constants import USE_TOKEN_CACHE, TOKEN_CACHE_FOLDER, CACHED_TOKEN_IDENTIFIER
 
@@ -42,27 +42,30 @@ class MyCloudAuthenticator:
     def invalidate_token(self):
         self.token_refresh_required = True
 
-    def get_token(self):
+    async def get_token(self):
         if self.auth_mode == AuthMode.Token:
             return self.bearer_token
-        elif self.auth_mode == AuthMode.Password:
+
+        if self.auth_mode == AuthMode.Password:
             if self.user_name is None or self.password is None:
                 raise ValueError('Username and password needs to be set')
 
             if self.current_token is None or self.token_refresh_required:
                 if USE_TOKEN_CACHE and self._load_cached_token() and not self.tried_cached_token:
-                    log('Trying to use cached token...')
+                    logging.info('Trying to use cached token...')
                     self.tried_cached_token = True
                     self.token_refresh_required = False
                     return self.current_token
 
-                self.current_token = get_bearer_token(
-                    self.user_name, self.password)
+                self.current_token = await get_bearer_token(
+                    self.user_name, self.password, headless=True)
                 if USE_TOKEN_CACHE:
                     self.tried_cached_token = False
                     self._save_token()
                 self.token_refresh_required = False
             return self.current_token
+
+        raise ValueError('Invalid auth mode')
 
     def _load_cached_token(self):
         token_file = self._get_token_file_path()

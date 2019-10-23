@@ -1,10 +1,12 @@
+import click
 from tabulate import tabulate
-from mycloud.mycloudapi import MyCloudRequestExecutor, UsageRequest
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import UsageRequest
 
 
-def print_usage(request_executor: MyCloudRequestExecutor):
+async def print_usage(request_executor: MyCloudRequestExecutor):
     request = UsageRequest()
-    response = request_executor.execute_request(request)
+    response = await request_executor.execute_request(request)
     formatted = UsageRequest.format_response(response)
     data = []
     for item in formatted:
@@ -13,4 +15,4 @@ def print_usage(request_executor: MyCloudRequestExecutor):
             formatted[item]
         ])
 
-    print(tabulate(data, ['Name', 'Value'], tablefmt='fancy_grid'))
+    click.echo(tabulate(data, ['Name', 'Value'], tablefmt='fancy_grid'))

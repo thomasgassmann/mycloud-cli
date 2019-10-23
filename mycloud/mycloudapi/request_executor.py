@@ -1,11 +1,12 @@
+import logging
 from time import sleep
 import requests
+import aiohttp
 from requests.models import PreparedRequest
-from mycloud.logger import log, add_request_count, save_files
+from mycloud.mycloudapi.response import MyCloudResponse
+from mycloud.logger import add_request_count, save_files
 from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
-from mycloud.mycloudapi import MyCloudRequest
-from mycloud.mycloudapi.request import ContentType
-from mycloud.mycloudapi.request import Method
+from mycloud.mycloudapi.requests import Method, ContentType, MyCloudRequest
 from mycloud.constants import WAIT_TIME_MULTIPLIER, RESET_SESSION_EVERY
 
 
@@ -18,12 +19,60 @@ class MyCloudRequestExecutor:
         self.session = requests.Session()
         self._reset_wait_time()
 
+    async def execute(self, request: MyCloudRequest) -> MyCloudResponse:
+        auth_token = await self.authenticator.get_token()
 
-    def execute_request(self, request: MyCloudRequest):
+        headers = MyCloudRequestExecutor._get_headers(
+            request.get_content_type(), auth_token)
+
+        async with aiohttp.ClientSession(headers=headers) as session:
+            request_url = MyCloudRequestExecutor._get_request_url(
+                request, auth_token)
+
+            method = request.get_method()
+            response: aiohttp.ClientResponse = None
+            if method == Method.GET:
+                response = await MyCloudRequestExecutor._execute_get(session, request, request_url)
+            elif method == Method.PUT:
+                response = await MyCloudRequestExecutor._execute_put(session, request, request_url)
+            elif method == Method.DELETE:
+                response = await MyCloudRequestExecutor._execute_delete(session, request_url)
+            else:
+                raise ValueError(f'Request contains invalid method {method}')
+
+            mycloud_response = MyCloudResponse(request, response)
+            return mycloud_response
+
+    @staticmethod
+    async def _execute_get(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
+        if request.get_data_generator() is not None:
+            raise ValueError('Cannot use data generator with GET request')
+        return await session.get(request_url)
+
+    @staticmethod
+    async def _execute_put(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
+        generator = request.get_data_generator()
+        if generator:
+            return await session.put(request_url, data=generator)
+        return await session.put(request_url)
+
+    @staticmethod
+    async def _execute_delete(session: aiohttp.ClientSession, request_url: str):
+        return await session.delete(request_url)
+
+    @staticmethod
+    def _get_request_url(request: MyCloudRequest, auth_token: str) -> str:
+        request_url = request.get_request_url()
+        if request.is_query_parameter_access_token():
+            req = PreparedRequest()
+            req.prepare_url(request_url, {'access_token': auth_token})
+            request_url = req.url
+        return request_url
+
+    async def execute_request(self, request: MyCloudRequest):
         # TODO: also use aiohttp instead of requests
         content_type = request.get_content_type()
-        token = self.authenticator.get_token()
-        print(token)
+        token = await self.authenticator.get_token()
         headers = MyCloudRequestExecutor._get_headers(content_type, token)
         request_url = request.get_request_url()
         request_method = request.get_method()
@@ -41,6 +90,8 @@ class MyCloudRequestExecutor:
             response = self.session.put(request_url, headers=headers) \
                 if not data_generator \
                 else requests.put(request_url, headers=headers, data=data_generator)
+        elif request_method == Method.DELETE:
+            response = self.session.delete(request_url, headers=headers)
         else:
             raise ValueError('Invalid request method')
         if self._request_count % RESET_SESSION_EVERY == 0:
@@ -51,19 +102,16 @@ class MyCloudRequestExecutor:
         ignored = request.ignored_error_status_codes()
         retry = self._check_validity(response, ignored, request_url)
         if retry:
-            return self.execute_request(request)
+            return await self.execute_request(request)
         return response
-
 
     def reset_session(self):
         self.session.close()
         del self.session
         self.session = requests.Session()
 
-
     def _reset_wait_time(self):
         self.wait_time = 10
-
 
     @staticmethod
     def _get_headers(content_type: ContentType, bearer_token: str):
@@ -72,7 +120,6 @@ class MyCloudRequestExecutor:
         headers['Authorization'] = 'Bearer ' + bearer_token
         headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         return headers
-
 
     def _check_validity(self, response, ignored, request_url: str):
         separately_handled = [401, 500, 404, 400, 409, 502]
@@ -86,9 +133,11 @@ class MyCloudRequestExecutor:
             retry = True
 
         if response.status_code == 500 and 500 not in ignored:
-            log(f'HTTP {response.status_code} returned from server', error=True)
-            log('ERR: {}'.format(str(response.content)), error=True)
-            log('Waiting {} seconds until retry...'.format(self.wait_time))
+            logging.error(
+                f'HTTP {response.status_code} returned from server')
+            logging.error('ERR: {}'.format(str(response.content)))
+            logging.warning(
+                'Waiting {} seconds until retry...'.format(self.wait_time))
             sleep(self.wait_time)
             retry = True
             # TODO: make logarithmic instead of exponential?
@@ -96,7 +145,7 @@ class MyCloudRequestExecutor:
         else:
             self._reset_wait_time()
 
-        log('Checking status code {} (Status {})...'.format(
+        logging.info('Checking status code {} (Status {})...'.format(
             request_url, str(response.status_code)))
         if response.status_code == 404 and 404 not in ignored:
             raise ValueError('File not found in myCloud')
@@ -109,7 +158,8 @@ class MyCloudRequestExecutor:
 
         if not str(response.status_code).startswith('2') and \
            response.status_code not in separately_handled:
-            log('ERR: Status code {}!'.format(str(response.status_code)))
-            log('ERR: {}'.format(str(response.content)))
+            logging.error('ERR: Status code {}!'.format(
+                str(response.status_code)))
+            logging.error('ERR: {}'.format(str(response.content)))
             raise ValueError('Error while performing myCloud request')
         return retry

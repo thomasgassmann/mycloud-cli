@@ -1,5 +1,6 @@
 import time
-from mycloud.mycloudapi import MyCloudRequestExecutor, GetObjectRequest
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import GetObjectRequest
 from mycloud.streamapi import StreamDirection
 from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
 from mycloud.streamapi.stream_accessor import CloudStreamAccessor
@@ -12,7 +13,7 @@ class DownStreamExecutor:
         self.request_executor = request_executor
         self.progress_reporter = progress_reporter
 
-    def download_stream(self, stream_accessor: CloudStreamAccessor):
+    async def download_stream(self, stream_accessor: CloudStreamAccessor):
         tmp_total_read = 0
         tmp_iteration = 0
         tmp_start_time = time.time()
@@ -27,7 +28,7 @@ class DownStreamExecutor:
                 transform.reset_state()
             resource_url = stream_accessor.get_part_file(current_part_index)
             get_request = GetObjectRequest(resource_url, ignore_not_found=True)
-            response = self.request_executor.execute_request(get_request)
+            response = await self.request_executor.execute_request(get_request)
             if response.status_code == 404:
                 file_stream.finished()
                 break

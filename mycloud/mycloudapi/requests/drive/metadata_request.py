@@ -1,6 +1,7 @@
 import json
-from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_cloud_path
-from mycloud.mycloudapi.request import MyCloudRequest, Method
+import logging
+from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_drive_path
+from mycloud.mycloudapi.requests import MyCloudRequest, Method
 
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/metadata?p='
@@ -10,7 +11,7 @@ class MetadataRequest(MyCloudRequest):
     def __init__(self, object_resource: str, ignore_not_found=False, ignore_bad_request=False):
         if not object_resource.endswith('/'):
             object_resource += '/'
-        raise_if_invalid_cloud_path(object_resource)
+        raise_if_invalid_drive_path(object_resource)
         self.object_resource = object_resource
         self._ignore_404 = ignore_not_found
         self._ignore_400 = ignore_bad_request
@@ -40,6 +41,8 @@ class MetadataRequest(MyCloudRequest):
         json_data = json.loads(response.text)
         files = MetadataRequest._get_files(json_data)
         dirs = MetadataRequest._get_directories(json_data)
+        logging.debug(
+            f'Formatted response ({len(files)} files, {len(dirs)} dirs)')
         return (dirs, files)
 
     @staticmethod

@@ -1,4 +1,6 @@
 import time
+import asyncio
+import logging
 import urllib.parse as urlparse
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
@@ -8,30 +10,33 @@ from mycloud.mycloudapi.auth.selenium_proxy import ProxySelenium
 
 
 WAIT_TIME = 15
-START_LOGIN_URL = 'https://start.mycloud.ch'
+START_LOGIN_URL = 'https://www.mycloud.ch/login/'
 
 
-def open_for_cert():
+async def open_for_cert():
+    # TODO: problem with proxy only occurs when running async
+    # removing async and "async_click" will fix proxy.
     with ProxySelenium(headless=False) as driver:
+        await asyncio.sleep(2)
         driver.get('http://mitm.it')
         while any(driver.window_handles):
             pass
 
 
-def get_bearer_token(user_name: str, password: str):
+async def get_bearer_token(user_name: str, password: str, headless: bool):
     token = None
-    with ProxySelenium(headless=True) as driver:
-        driver.get(START_LOGIN_URL)
+    proxy_selenium = ProxySelenium(headless=headless)
+    with proxy_selenium as driver:
+        await asyncio.sleep(2)
         driver.set_window_size(1920, 1080)
+        driver.get(START_LOGIN_URL)
 
-        _click(driver, 'span.button.button--primary.outline')
-        _enter(driver, 'input[type=email]', user_name)
-        _click(driver, '#anmelden')
+        _enter(driver, 'input#username', user_name)
         _enter(driver, 'input[type=password]', password)
 
         start = time.time()
         while token is None:
-            token = _get_token_from_url(driver.current_url)
+            token = _get_token_from_urls(proxy_selenium.urls)
             if time.time() - start > WAIT_TIME:
                 break
 
@@ -58,11 +63,13 @@ def _get_element(driver, selector):
     return input_element
 
 
-def _get_token_from_url(url):
-    token_name = 'access_token'
-    query_strings = urlparse.parse_qs(
-        urlparse.urlparse(url).query, keep_blank_values=True)
-    if token_name in query_strings:
-        token = query_strings[token_name][0]
-        return token.replace(' ', '+')
+def _get_token_from_urls(urls):
+    for url in urls:
+        token_name = 'access_token'
+        logging.debug(f'Looking for token in URL {url}...')
+        query_strings = urlparse.parse_qs(
+            urlparse.urlparse(url).query, keep_blank_values=True)
+        if token_name in query_strings:
+            token = query_strings[token_name][0]
+            return token.replace(' ', '+')
     return None

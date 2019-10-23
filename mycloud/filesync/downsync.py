@@ -1,4 +1,5 @@
 import os
+import logging
 import tempfile
 import traceback
 from mycloud.filesync.progress import ProgressTracker
@@ -11,47 +12,49 @@ from mycloud.filesystem import (
     Version)
 from mycloud.streamapi import ProgressReporter, DefaultDownStream
 from mycloud.streamapi.transforms import AES256CryptoTransform
-from mycloud.logger import log
 from mycloud.common import TimeoutException, operation_timeout
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, ENCRYPTION_CHUNK_LENGTH
 
 
-def downsync_folder(request_executor: MyCloudRequestExecutor,
-                    resource_builder: ObjectResourceBuilder,
-                    remote_directory: TranslatablePath,
-                    progress_tracker: ProgressTracker,
-                    decryption_pwd: str = None):
+async def downsync_folder(request_executor: MyCloudRequestExecutor,
+                          resource_builder: ObjectResourceBuilder,
+                          remote_directory: TranslatablePath,
+                          progress_tracker: ProgressTracker,
+                          decryption_pwd: str = None):
     # No transforms needed just to read directory
     file_manager = FileManager(request_executor, [], ProgressReporter())
-    generator = file_manager.read_directory(remote_directory, recursive=True)
-    for file in generator:
+    async for file in file_manager.read_directory(remote_directory, recursive=True):
         try:
-            downsync_file(request_executor, resource_builder,
-                          file, progress_tracker, decryption_pwd)
+            await downsync_file(request_executor, resource_builder,
+                                file, progress_tracker, decryption_pwd)
         except TimeoutException:
-            log('Failed to write to the local file within the given time', error=True)
+            logging.error(
+                'Failed to write to the local file within the given time')
         except ValueError as ex:
-            log('{}'.format(str(ex)), error=True)
+            logging.error('{}'.format(str(ex)))
         except Exception as ex:
-            log('Unhandled exception: {}'.format(str(ex)), error=True)
+            logging.fatal('Unhandled exception: {}'.format(
+                str(ex)))
             traceback.print_exc()
 
 
-def downsync_file(request_executor: MyCloudRequestExecutor,
-                  resource_builder: ObjectResourceBuilder,
-                  remote_file: TranslatablePath,
-                  progress_tracker: ProgressTracker,
-                  decryption_pwd: str = None):
+async def downsync_file(request_executor: MyCloudRequestExecutor,
+                        resource_builder: ObjectResourceBuilder,
+                        remote_file: TranslatablePath,
+                        progress_tracker: ProgressTracker,
+                        decryption_pwd: str = None):
     if progress_tracker.skip_file(remote_file.calculate_remote()):
         return
 
-    transforms = [] if decryption_pwd is None else [AES256CryptoTransform(decryption_pwd)]
+    transforms = [] if decryption_pwd is None else [
+        AES256CryptoTransform(decryption_pwd)]
     del decryption_pwd
-    file_manager = FileManager(request_executor, transforms, ProgressReporter())
+    file_manager = FileManager(
+        request_executor, transforms, ProgressReporter())
 
     remote_base_path = remote_file.calculate_remote()
-    log('Downsyncing file {}...'.format(remote_base_path))
-    metadata: FileMetadata = file_manager.read_file_metadata(remote_file)
+    logging.info('Downsyncing file {}...'.format(remote_base_path))
+    metadata: FileMetadata = await file_manager.read_file_metadata(remote_file)
     latest_version: Version = metadata.get_latest_version()
     basic_version = BasicStringVersion(latest_version.get_identifier())
     local_file = resource_builder.build_local_file(remote_base_path)
@@ -61,9 +64,9 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
         os.makedirs(file_dir)
         skip, started_partial, partial_index = False, False, 0
     else:
-        skip, started_partial, partial_index = file_manager.started_partial_download(remote_file,
-                                                                                     basic_version,
-                                                                                     local_file)
+        skip, started_partial, partial_index = await file_manager.started_partial_download(remote_file,
+                                                                                           basic_version,
+                                                                                           local_file)
     if skip:
         return
 
@@ -100,5 +103,5 @@ def downsync_file(request_executor: MyCloudRequestExecutor,
             x['local_file'], 'wb'), local_file=local_file)
 
     downstream = DefaultDownStream(local_stream, partial_index)
-    file_manager.read_file(downstream, remote_file, basic_version)
+    await file_manager.read_file(downstream, remote_file, basic_version)
     local_stream.close()

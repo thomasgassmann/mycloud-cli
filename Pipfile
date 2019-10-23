@@ -4,10 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
-rope = "*"
-autopep8 = "*"
-flake8 = "*"
+mypy = "*"
 
 [packages]
 requests = "==2.20.0"
@@ -19,7 +16,6 @@ tabulate = "==0.8.2"
 appdirs = "==1.4.3"
 mitmproxy = "==4.0.4"
 aiohttp = "==3.4.2"
-colorama = "==0.3.9"
 beautifulsoup4 = "==4.6.3"
 Flask = "==1.0.2"
 "hurry.filesize" = "==0.9"
@@ -29,7 +25,8 @@ keyring = "*"
 halo = "*"
 better-exceptions = "*"
 click = "*"
-pinject = "*"
+pytest = "*"
+inject = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
