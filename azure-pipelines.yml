@@ -1,7 +1,7 @@
 trigger:
 - master
 
-pool: 'python'
+pool: 'Azure Pipelines'
 
 steps:
 
