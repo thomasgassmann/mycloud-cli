@@ -22,8 +22,8 @@ def summary(executor, dir: str):
 @inject.params(executor=MyCloudRequestExecutor)
 @click.argument('dir', required=True)
 @click.argument('top', required=False, default=10)
-@async_click
 @authenticated
+@async_click
 async def changes(executor, dir: str, top: int):
     await track_changes(executor, dir, top)
 
