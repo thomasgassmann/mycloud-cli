@@ -18,3 +18,10 @@ steps:
 - script: |
     python -m pytest
   displayName: 'Run tests'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'dockerhub'
+    repository: 'mycloud-cli'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
