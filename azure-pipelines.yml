@@ -27,3 +27,12 @@ steps:
     repository: 'thomasgassmann/mycloud-cli'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
+    tags: '$(GitVersion.MajorMinorPatch)'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'dockerhub'
+    repository: 'thomasgassmann/mycloud-cli'
+    command: 'push'
+    tags: 'latest'
+  
