@@ -6,6 +6,10 @@ pool:
 
 steps:
 
+- task: replacetokens@3
+  inputs:
+    targetFiles: 'mycloud/__init__.py'
+
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '3.7'
