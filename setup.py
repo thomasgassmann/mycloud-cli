@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
+from mycloud import __version__
+from typing import List
 import json
 
 
-install_requires = []
+install_requires: List[str] = []
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -17,7 +19,7 @@ with open('Pipfile.lock') as fd:
 
 setup(
     name='mycloud-cli',
-    version='1.2.3',
+    version=__version__,
     license='MIT',
     author='Thomas Gassmann',
     long_description=long_description,
