@@ -1,6 +1,10 @@
 name: release
 
 on: [push]
+on:
+  push:
+    branches:
+      - master
 # on:
 #   release:
 #     types: [created]
@@ -43,6 +47,9 @@ jobs:
       run: python setup.py install
 
     - name: Publish Docker
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       run: |
         docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
         docker image build -t thomasgassmann/mycloud-cli:latest -t thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }} .
