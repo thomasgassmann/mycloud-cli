@@ -1,6 +1,9 @@
 name: release
 
 on:
+  push:
+    branches:
+      - master
   release:
     types: [created]
 
@@ -41,16 +44,18 @@ jobs:
     - name: 'Install myCloud CLI'
       run: python setup.py install
 
-    - name: Publish Docker
-      uses: thomasgassmann/docker-publish-action@0.0.1
-      with:
-        image: thomasgassmann/mycloud-cli
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        tags: ${{ format('latest,{0}', steps.gitversion.outputs.majorMinorPatch) }}
-
     - name: 'Run tests'
       run: pip install pytest && python -m pytest
+
+    - name: Publish Docker
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
+        docker image build -t thomasgassmann/mycloud-cli:latest -t thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }} .
+        docker push thomasgassmann/mycloud-cli:latest
+        docker push thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }}
     
     - name: Install dependencies
       run: |
