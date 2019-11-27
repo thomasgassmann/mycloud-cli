@@ -1,8 +1,9 @@
 name: release
 
-on:
-  release:
-    types: [created]
+on: [push]
+# on:
+#   release:
+#     types: [created]
 
 jobs:
   deploy:
@@ -40,6 +41,16 @@ jobs:
 
     - name: 'Install myCloud CLI'
       run: python setup.py install
+
+    - name: Publish Docker
+      uses: elgohr/Publish-Docker-Github-Action@2.8
+      with:
+        name: 
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        tag_names:
+        - latest
+        - ${{ steps.gitversion.outputs.majorMinorPatch }}
 
     - name: 'Run tests'
       run: pip install pytest && python -m pytest
