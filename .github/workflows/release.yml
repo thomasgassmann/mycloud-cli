@@ -46,6 +46,9 @@ jobs:
     - name: 'Install myCloud CLI'
       run: python setup.py install
 
+    - name: 'Run tests'
+      run: pip install pytest && python -m pytest
+
     - name: Publish Docker
       env:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -55,9 +58,6 @@ jobs:
         docker image build -t thomasgassmann/mycloud-cli:latest -t thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }} .
         docker push thomasgassmann/mycloud-cli:latest
         docker push thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }}
-
-    - name: 'Run tests'
-      run: pip install pytest && python -m pytest
     
     - name: Install dependencies
       run: |
