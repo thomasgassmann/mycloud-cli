@@ -22,6 +22,7 @@ steps:
   displayName: 'Run tests'
 
 - task: Docker@2
+  displayName: 'Build and push docker image'
   inputs:
     containerRegistry: 'dockerhub'
     repository: 'thomasgassmann/mycloud-cli'
@@ -34,12 +35,16 @@ steps:
 - script: |
     pip install wheel
     pip install twine
+  displayName: 'Install wheel/twine'
   
 - script: |
     python setup.py bdist_wheel
+  displayName: 'Build wheel'
 
 - task: TwineAuthenticate@0
+  displayName: 'Twine authenticate'
   inputs:
     externalFeeds: 'pypi'
 
 - script: 'twine upload --verbose -r pypi --config-file $(PYPIRC_PATH) dist/*.whl'
+  displayName: 'Twine upload'
