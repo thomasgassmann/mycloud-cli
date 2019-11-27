@@ -44,7 +44,7 @@ steps:
 
 - task: TwineAuthenticate@0
   inputs:
-    artifactFeeds: 'Default'
+    artifactFeeds: 'mycloud'
     externalFeeds: 'pypi'
 
 - script: 'twine upload -r pypi --config-file $(PYPIRC_PATH) dist/*.whl'
