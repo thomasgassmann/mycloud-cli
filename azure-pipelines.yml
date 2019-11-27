@@ -33,7 +33,7 @@ steps:
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
     tags: |
-      $(GitVersion.MajorMinorPatch)
+      $(Build.BuildNumber)
       latest
 
 - script: |
