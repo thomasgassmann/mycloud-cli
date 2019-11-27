@@ -48,7 +48,7 @@ jobs:
         image: thomasgassmann/mycloud-cli
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        tags: ${{ 'latest,' + steps.gitversion.outputs.majorMinorPatch }}
+        tags: format('latest,{0}', steps.gitversion.outputs.majorMinorPatch)
 
     - name: 'Run tests'
       run: pip install pytest && python -m pytest
