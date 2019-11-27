@@ -43,14 +43,12 @@ jobs:
       run: python setup.py install
 
     - name: Publish Docker
-      uses: elgohr/Publish-Docker-Github-Action@2.8
+      uses: thomasgassmann/docker-publish-action@0.0.1
       with:
-        name: 
+        image: thomasgassmann/mycloud-cli
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        tag_names:
-        - latest
-        - ${{ steps.gitversion.outputs.majorMinorPatch }}
+        tags: latest,{{ steps.gitversion.outputs.majorMinorPatch }}
 
     - name: 'Run tests'
       run: pip install pytest && python -m pytest
