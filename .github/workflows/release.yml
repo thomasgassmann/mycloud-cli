@@ -16,7 +16,7 @@ jobs:
     - name: Install GitVersion
       uses: gittools/use-gitversion/setup@v0.2
       with:
-        versionSpec: '1.2.x'
+        versionSpec: '5.1.x'
 
     - name: Use GitVersion
       id: gitversion
