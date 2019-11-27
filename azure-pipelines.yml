@@ -22,10 +22,11 @@ steps:
   displayName: 'Install myCloud CLI'
 
 - script: |
-    python -m pytest
+    pip install pytest && python -m pytest
   displayName: 'Run tests'
 
 - task: Docker@2
+  displayName: 'Build and push docker image'
   inputs:
     containerRegistry: 'dockerhub'
     repository: 'thomasgassmann/mycloud-cli'
@@ -34,17 +35,17 @@ steps:
     tags: |
       $(GitVersion.MajorMinorPatch)
       latest
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
 - script: |
-    pip install wheel
-    pip install twine
+    pip install wheel twine
+  displayName: 'Install wheel/twine'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   
 - script: |
     python setup.py bdist_wheel
+  displayName: 'Build wheel'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
-- task: TwineAuthenticate@0
-  inputs:
-    artifactFeeds: 'mycloud'
-    externalFeeds: 'pypi'
-
-- script: 'twine upload -r pypi --config-file $(PYPIRC_PATH) dist/*.whl'
+- script: 'twine upload -r pypi -u $(PYPI_USERNAME) -p $(PYPI_PASSWORD) dist/*.whl'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
