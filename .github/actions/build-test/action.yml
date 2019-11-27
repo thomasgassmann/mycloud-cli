@@ -1,8 +1,6 @@
 name: 'Build and test'
 author: 'thomasgassmann'
 runs:
-- uses: actions/checkout@v1
-
 - name: Setup Python environment
   uses: actions/setup-python@v1.1.1
   with:
