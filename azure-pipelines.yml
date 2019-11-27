@@ -41,10 +41,4 @@ steps:
     python setup.py bdist_wheel
   displayName: 'Build wheel'
 
-- task: TwineAuthenticate@0
-  displayName: 'Twine authenticate'
-  inputs:
-    externalFeeds: 'pypi'
-
-- script: 'twine upload --verbose -r pypi --config-file $(PYPIRC_PATH) dist/*.whl'
-  displayName: 'Twine upload'
+- script: 'twine upload -r pypi -u $(PYPI_USERNAME) -p $(PYPI_PASSWORD) dist/*.whl'
