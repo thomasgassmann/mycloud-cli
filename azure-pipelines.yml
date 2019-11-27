@@ -45,3 +45,4 @@ steps:
   displayName: 'Build wheel'
 
 - script: 'twine upload -r pypi -u $(PYPI_USERNAME) -p $(PYPI_PASSWORD) dist/*.whl'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
