@@ -1,0 +1,21 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup Python environment
+      uses: actions/setup-python@v1.1.1
+      with:
+        python-version: 3.7
+        architecture: x64
+    - name: 'Install myCloud CLI'
+      run: python setup.py install
+    - name: 'Run tests'
+      run: pip install pytest && python -m pytest
+  
