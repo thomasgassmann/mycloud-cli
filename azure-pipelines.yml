@@ -18,6 +18,10 @@ steps:
     targetFiles: 'mycloud/__init__.py'
 
 - script: |
+    python setup.py install
+  displayName: 'Install myCloud CLI'
+
+- script: |
     pip install pytest && python -m pytest
   displayName: 'Run tests'
 
@@ -33,8 +37,7 @@ steps:
       latest
 
 - script: |
-    pip install wheel
-    pip install twine
+    pip install wheel twine
   displayName: 'Install wheel/twine'
   
 - script: |
