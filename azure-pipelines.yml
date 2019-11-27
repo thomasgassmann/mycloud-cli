@@ -18,7 +18,7 @@ steps:
     targetFiles: 'mycloud/__init__.py'
 
 - script: |
-    python -m pytest
+    pip install pytest && python -m pytest
   displayName: 'Run tests'
 
 - task: Docker@2
