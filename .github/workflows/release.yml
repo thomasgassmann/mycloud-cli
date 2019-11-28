@@ -2,70 +2,68 @@ name: release
 
 on:
   push:
-    branches:
-      - master
-  release:
-    types: [created]
+    tags:
+       - '*'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+      - uses: actions/checkout@v1
 
-    - name: Fetch tags and master for GitVersion
-      run: |
-        git fetch --tags
-        git branch --create-reflog master origin/master
+      - name: Fetch tags and master for GitVersion
+        run: |
+          git fetch --tags
+          git branch --create-reflog master origin/master
 
-    - name: Install GitVersion
-      uses: gittools/use-gitversion/setup@v0.2
-      with:
-        versionSpec: '5.1.x'
+      - name: Install GitVersion
+        uses: gittools/use-gitversion/setup@v0.2
+        with:
+          versionSpec: "5.1.x"
 
-    - name: Use GitVersion
-      id: gitversion
-      uses: gittools/use-gitversion/execute@v0.2
-    - run: |
-        echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+      - name: Use GitVersion
+        id: gitversion
+        uses: gittools/use-gitversion/execute@v0.2
+      - run: |
+          echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
 
-    - name: Replace tokens
-      uses: cschleiden/replace-tokens@v1.0
-      with:
-        files: mycloud/__init__.py
-      env:
-        GitVersion: ${{ steps.gitversion.outputs.majorMinorPatch }}
+      - name: Replace tokens
+        uses: cschleiden/replace-tokens@v1.0
+        with:
+          files: mycloud/__init__.py
+        env:
+          GitVersion: ${{ steps.gitversion.outputs.majorMinorPatch }}
 
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: '3.7'
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
 
-    - name: 'Install myCloud CLI'
-      run: python setup.py install
+      - name: "Install myCloud CLI"
+        run: python setup.py install
 
-    - name: 'Run tests'
-      run: pip install pytest && python -m pytest
+      - name: "Run tests"
+        run: pip install pytest && python -m pytest
 
-    - name: Publish Docker
-      env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      run: |
-        docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
-        docker image build -t thomasgassmann/mycloud-cli:latest -t thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }} .
-        docker push thomasgassmann/mycloud-cli:latest
-        docker push thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }}
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+      - name: Publish Docker
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
+          docker image build -t thomasgassmann/mycloud-cli:latest -t thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }} .
+          docker push thomasgassmann/mycloud-cli:latest
+          docker push thomasgassmann/mycloud-cli:${{ steps.gitversion.outputs.majorMinorPatch }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          python setup.py sdist bdist_wheel
+          twine upload dist/*
