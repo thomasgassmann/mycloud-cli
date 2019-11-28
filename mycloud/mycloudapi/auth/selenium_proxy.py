@@ -61,6 +61,8 @@ class ProxySelenium:
         chrome_options = webdriver.ChromeOptions()
         if headless:
             chrome_options.add_argument('headless')
+        if os.getenv('MYCLOUD_DOCKER'):
+            chrome_options.add_argument('no-sandbox')
         proxy_str = '--proxy-server=http://{0}:{1}'.format(
             PROXY_HOST, str(PROXY_PORT))
         chrome_options.add_argument(proxy_str)
