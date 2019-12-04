@@ -4,6 +4,8 @@ WORKDIR /mycloud
 
 ENV MYCLOUD_DOCKER=1
 
+RUN pip install keyrings.cryptfile
+
 COPY ./Pipfile ./Pipfile
 COPY ./Pipfile.lock ./Pipfile.lock
 RUN pip install pipenv && \

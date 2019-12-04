@@ -5,7 +5,7 @@
 Swisscom myCloud CLI is a command line utility to manage all your data stored on Swisscom myCloud. To achieve this, it uses the public Swisscom myCloud API.
 
 # Requirements
-[Gnome Keyring](https://wiki.gnome.org/Projects/GnomeKeyring) is required in order to store the the credentials for myCloud.
+Any Keyring Backend comptatible with the [keyring](https://pypi.org/project/keyring) package is required in order to store the credentials for myCloud.
 
 # Installation
 
