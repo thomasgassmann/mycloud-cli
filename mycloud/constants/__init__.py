@@ -1,6 +1,6 @@
 import os
-import appdirs
 
+import appdirs
 
 DATA_DIR = appdirs.user_data_dir('.mycloud', 'thomasgassmann')
 TOKEN_DIR = os.path.join(DATA_DIR, 'tokens')

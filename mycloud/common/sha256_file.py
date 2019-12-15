@@ -1,9 +1,9 @@
 import hashlib
-import os
 import logging
+import os
+
 from mycloud.common import operation_timeout
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
-
 
 CACHED_HASHES = {}
 

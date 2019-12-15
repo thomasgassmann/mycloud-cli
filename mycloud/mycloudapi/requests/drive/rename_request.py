@@ -1,8 +1,8 @@
 import json
-from mycloud.mycloudapi.requests import MyCloudRequest, Method
-from mycloud.mycloudapi.object_resource_builder import ObjectResourceBuilder
-from mycloud.common.functions import get_string_generator
 
+from mycloud.common.functions import get_string_generator
+from mycloud.mycloudapi.object_resource_builder import ObjectResourceBuilder
+from mycloud.mycloudapi.requests import Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/commands/rename'
 

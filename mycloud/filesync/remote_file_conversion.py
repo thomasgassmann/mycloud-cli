@@ -1,39 +1,32 @@
-import os
 import gc
 import logging
-from typing import List
+import os
 from threading import Thread
+from typing import List
+
 import requests
-from mycloud.common import operation_timeout
-from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
-from mycloud.mycloudapi.requests.drive import RenameRequest, MetadataRequest, DirectoryListRequest, ListType
-from mycloud.filesystem import (
-    MetadataManager,
-    HashCalculatedVersion,
-    BasicStringVersion,
-    BasicRemotePath,
-    LocalTranslatablePath,
-    FileMetadata,
-    Version,
-    CalculatableVersion,
-    TranslatablePath
-)
-from mycloud.constants import (
-    START_NUMBER_LENGTH,
-    DEFAULT_VERSION,
-    AES_EXTENSION,
-    MAX_THREADS_FOR_REMOTE_FILE_CONVERSION
-)
+
+from mycloud.common import TimeoutException, is_int, operation_timeout
+from mycloud.constants import (AES_EXTENSION, DEFAULT_VERSION,
+                               MAX_THREADS_FOR_REMOTE_FILE_CONVERSION,
+                               START_NUMBER_LENGTH)
 from mycloud.filesync.tree import RelativeFileTree
-from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
+from mycloud.filesystem import (BasicRemotePath, BasicStringVersion,
+                                CalculatableVersion, FileMetadata,
+                                HashCalculatedVersion, LocalTranslatablePath,
+                                MetadataManager, TranslatablePath, Version)
+from mycloud.filesystem.versioned_stream_accessor import \
+    VersionedCloudStreamAccessor
+from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
+from mycloud.mycloudapi.requests.drive import (DirectoryListRequest, ListType,
+                                               MetadataRequest, RenameRequest)
 from mycloud.streamapi.transforms import AES256CryptoTransform
-from mycloud.common import is_int, TimeoutException
 
 
 async def convert_remote_files(request_executor: MyCloudRequestExecutor,
-                         mycloud_dir: str,
-                         local_dir: str,
-                         skip):
+                               mycloud_dir: str,
+                               local_dir: str,
+                               skip):
     def _skip(file):
         for item in skip:
             if file.startswith(item):
@@ -98,10 +91,10 @@ async def convert_remote_files(request_executor: MyCloudRequestExecutor,
 async def convert(is_partial, files, request_executor, local_dir, mycloud_dir, _skip):
     if is_partial:
         await convert_partials(request_executor, local_dir,
-                         mycloud_dir, files, _skip)
+                               mycloud_dir, files, _skip)
     else:
         await convert_file(request_executor, local_dir,
-                     mycloud_dir, files[0], _skip)
+                           mycloud_dir, files[0], _skip)
 
 
 def get_local_file(is_partial: bool, files: List[str], remote_dir: str, local_dir: str):
@@ -118,10 +111,10 @@ def get_local_file(is_partial: bool, files: List[str], remote_dir: str, local_di
 
 
 async def convert_partials(request_executor: MyCloudRequestExecutor,
-                     local_dir: str,
-                     remote_dir: str,
-                     files,
-                     skip_fn):
+                           local_dir: str,
+                           remote_dir: str,
+                           files,
+                           skip_fn):
     base_directory = os.path.dirname(files[0])
     logging.info('Converting partial files in {}...'.format(base_directory))
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
@@ -153,19 +146,19 @@ async def convert_partials(request_executor: MyCloudRequestExecutor,
             raise ValueError('Part index could not be found in partial file')
 
     await _create_file_metadata(request_executor,
-                          version,
-                          translatable_path,
-                          base_directory,
-                          parts,
-                          resource_builder,
-                          all([AES_EXTENSION in sorted_file for sorted_file in sorted_files]))
+                                version,
+                                translatable_path,
+                                base_directory,
+                                parts,
+                                resource_builder,
+                                all([AES_EXTENSION in sorted_file for sorted_file in sorted_files]))
 
 
 async def convert_file(request_executor: MyCloudRequestExecutor,
-                 local_dir: str,
-                 remote_dir: str,
-                 remote_file: str,
-                 skip_fn):
+                       local_dir: str,
+                       remote_dir: str,
+                       remote_file: str,
+                       skip_fn):
     logging.info('Converting file {}...'.format(remote_file))
     resource_builder = ObjectResourceBuilder(local_dir, remote_dir)
     local_file = get_local_file(False, [remote_file], remote_dir, local_dir)
@@ -207,12 +200,12 @@ async def convert_file(request_executor: MyCloudRequestExecutor,
     logging.info('Renamed file successfully')
 
     await _create_file_metadata(request_executor,
-                          version,
-                          translatable_path,
-                          without_aes_extension,
-                          [partial_destination],
-                          resource_builder,
-                          resource_builder.ends_with_aes_extension(remote_file))
+                                version,
+                                translatable_path,
+                                without_aes_extension,
+                                [partial_destination],
+                                resource_builder,
+                                resource_builder.ends_with_aes_extension(remote_file))
 
 
 async def list_candidates(request_executor: MyCloudRequestExecutor, mycloud_dir: str):
@@ -300,12 +293,12 @@ def _get_path_and_version_for_local_file(local_file: str, remote_file: str, reso
 
 
 async def _create_file_metadata(request_executor: MyCloudRequestExecutor,
-                          version: CalculatableVersion,
-                          translatable_path: TranslatablePath,
-                          remote_file: str,
-                          partial_files,
-                          resource_builder: ObjectResourceBuilder,
-                          is_encrypted: bool):
+                                version: CalculatableVersion,
+                                translatable_path: TranslatablePath,
+                                remote_file: str,
+                                partial_files,
+                                resource_builder: ObjectResourceBuilder,
+                                is_encrypted: bool):
     file_version = Version(version.calculate_version(), remote_file)
     for partial_file in partial_files:
         file_version.add_part_file(partial_file)

@@ -1,8 +1,9 @@
-from setuptools import setup, find_packages
-from mycloud import __version__
-from typing import List
 import json
+from typing import List
 
+from setuptools import find_packages, setup
+
+from mycloud import __version__
 
 install_requires: List[str] = []
 

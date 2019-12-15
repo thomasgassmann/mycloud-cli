@@ -1,13 +1,14 @@
-import time
 import asyncio
 import logging
+import time
 import urllib.parse as urlparse
-from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.common.by import By
-from mycloud.mycloudapi.auth.selenium_proxy import ProxySelenium
+from selenium.webdriver.support.ui import WebDriverWait
 
+from mycloud.mycloudapi.auth.selenium_proxy import ProxySelenium
 
 WAIT_TIME = 15
 START_LOGIN_URL = 'https://www.mycloud.ch/login/'

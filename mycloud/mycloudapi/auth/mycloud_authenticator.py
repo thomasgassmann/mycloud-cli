@@ -1,8 +1,10 @@
-import os
 import logging
+import os
 from enum import Enum
+
+from mycloud.constants import (CACHED_TOKEN_IDENTIFIER, TOKEN_CACHE_FOLDER,
+                               USE_TOKEN_CACHE)
 from mycloud.mycloudapi.auth.bearer_token import get_bearer_token
-from mycloud.constants import USE_TOKEN_CACHE, TOKEN_CACHE_FOLDER, CACHED_TOKEN_IDENTIFIER
 
 
 class AuthMode(Enum):

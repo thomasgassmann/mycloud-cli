@@ -1,13 +1,15 @@
 import logging
 from time import sleep
-import requests
+
 import aiohttp
+import requests
 from requests.models import PreparedRequest
-from mycloud.mycloudapi.response import MyCloudResponse
+
+from mycloud.constants import RESET_SESSION_EVERY, WAIT_TIME_MULTIPLIER
 from mycloud.logger import add_request_count, save_files
-from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
-from mycloud.mycloudapi.requests import Method, ContentType, MyCloudRequest
-from mycloud.constants import WAIT_TIME_MULTIPLIER, RESET_SESSION_EVERY
+from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
+from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
+from mycloud.mycloudapi.response import MyCloudResponse
 
 
 class MyCloudRequestExecutor:

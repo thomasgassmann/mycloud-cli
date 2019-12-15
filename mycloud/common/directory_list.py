@@ -1,5 +1,5 @@
-from mycloud.mycloudapi.requests.drive import MetadataRequest
 from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import MetadataRequest
 
 
 async def get_all_files(request_executor: MyCloudRequestExecutor, directory: str):

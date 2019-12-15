@@ -1,5 +1,6 @@
 import click
 from tabulate import tabulate
+
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import UsageRequest
 

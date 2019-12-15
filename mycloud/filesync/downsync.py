@@ -1,19 +1,17 @@
-import os
 import logging
+import os
 import tempfile
 import traceback
-from mycloud.filesync.progress import ProgressTracker
-from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
-from mycloud.filesystem import (
-    TranslatablePath,
-    FileManager,
-    BasicStringVersion,
-    FileMetadata,
-    Version)
-from mycloud.streamapi import ProgressReporter, DefaultDownStream
-from mycloud.streamapi.transforms import AES256CryptoTransform
+
 from mycloud.common import TimeoutException, operation_timeout
-from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE, ENCRYPTION_CHUNK_LENGTH
+from mycloud.constants import (ENCRYPTION_CHUNK_LENGTH,
+                               MY_CLOUD_BIG_FILE_CHUNK_SIZE)
+from mycloud.filesync.progress import ProgressTracker
+from mycloud.filesystem import (BasicStringVersion, FileManager, FileMetadata,
+                                TranslatablePath, Version)
+from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
+from mycloud.streamapi import DefaultDownStream, ProgressReporter
+from mycloud.streamapi.transforms import AES256CryptoTransform
 
 
 async def downsync_folder(request_executor: MyCloudRequestExecutor,

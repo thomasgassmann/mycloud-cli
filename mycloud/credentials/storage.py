@@ -1,8 +1,10 @@
-import os
+import asyncio
 import json
 import logging
+import os
+
 import keyring
-import asyncio
+
 from mycloud.constants import AUTHENTICATION_INFO_LOCATION, SERVICE_NAME
 from mycloud.mycloudapi.auth import get_bearer_token
 

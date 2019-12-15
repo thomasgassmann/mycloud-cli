@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from mycloud.mycloudapi.requests import MyCloudRequest, Method, ContentType
-from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_drive_path
 
+from mycloud.mycloudapi.helper import (get_object_id,
+                                       raise_if_invalid_drive_path)
+from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
 
