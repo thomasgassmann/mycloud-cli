@@ -6,15 +6,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+      - uses: actions/checkout@v1
 
-    - name: Setup Python environment
-      uses: actions/setup-python@v1.1.1
-      with:
-        python-version: 3.7
+      - name: Setup Python environment
+        uses: actions/setup-python@v1.1.1
+        with:
+          python-version: 3.7
 
-    - name: 'Install myCloud CLI'
-      run: python setup.py install
+      - name: "Install myCloud CLI"
+        run: python setup.py install
 
-    - name: 'Run tests'
-      run: pip install pytest && python -m pytest
+      - name: "Run tests"
+        run: pip install pytest && python -m pytest
+
+      - name: "Build image"
+        run: docker build .
