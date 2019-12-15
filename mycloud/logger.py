@@ -1,7 +1,8 @@
-import os
 import json
-from mycloud.constants import REQUEST_STATISTICS_LOCATION, REQUEST_COUNT_IDENTIFIER
+import os
 
+from mycloud.constants import (REQUEST_COUNT_IDENTIFIER,
+                               REQUEST_STATISTICS_LOCATION)
 
 if os.path.isfile(REQUEST_STATISTICS_LOCATION):
     with open(REQUEST_STATISTICS_LOCATION, 'r') as f:

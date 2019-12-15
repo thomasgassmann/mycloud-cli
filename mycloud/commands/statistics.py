@@ -1,8 +1,10 @@
 import click
 import inject
-from mycloud.mycloudapi import MyCloudRequestExecutor
-from mycloud.statistics import summarize, track_changes, print_usage, calculate_size
+
 from mycloud.commands.shared import async_click, authenticated
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.statistics import (calculate_size, print_usage, summarize,
+                                track_changes)
 
 
 @click.group(name='statistics')

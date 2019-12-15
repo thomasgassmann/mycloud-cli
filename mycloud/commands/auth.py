@@ -1,11 +1,13 @@
 import getpass
+
 import click
 import inject
 from halo import Halo
-from mycloud.mycloudapi.auth import MyCloudAuthenticator
-from mycloud.mycloudapi.auth.bearer_token import open_for_cert
+
 from mycloud.commands.shared import async_click, authenticated
 from mycloud.credentials import CredentialStorage
+from mycloud.mycloudapi.auth import MyCloudAuthenticator
+from mycloud.mycloudapi.auth.bearer_token import open_for_cert
 
 
 @click.group(name='auth')

@@ -1,15 +1,18 @@
 import inject
 from click.exceptions import ClickException
-from mycloud.mycloudapi.auth import MyCloudAuthenticator
-from mycloud.mycloudapi import MyCloudRequestExecutor
+
 from mycloud.credentials import CredentialStorage
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.auth import MyCloudAuthenticator
 
 
 def build_container(**kwargs):
     authenticator = _construct_authenticator(kwargs['token'])
+
     def _inject_config(binder):
         binder.bind(MyCloudAuthenticator, authenticator)
-        binder.bind(MyCloudRequestExecutor, MyCloudRequestExecutor(authenticator))
+        binder.bind(MyCloudRequestExecutor,
+                    MyCloudRequestExecutor(authenticator))
     inject.configure(_inject_config)
 
 

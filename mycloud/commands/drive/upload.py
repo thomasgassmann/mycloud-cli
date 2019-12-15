@@ -1,13 +1,12 @@
 from typing import List
+
 import click
 import inject
+
+from mycloud.commands.shared import (async_click, authenticated,
+                                     get_progress_tracker)
 from mycloud.filesync import upsync_folder
-from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
-from mycloud.commands.shared import (
-    get_progress_tracker,
-    async_click,
-    authenticated
-)
+from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
 
 
 @click.command(name='upload')

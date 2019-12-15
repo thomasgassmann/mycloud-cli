@@ -1,4 +1,5 @@
 import click
+
 from mycloud.mycloudapi import MyCloudRequestExecutor
 
 

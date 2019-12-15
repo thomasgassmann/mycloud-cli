@@ -1,9 +1,10 @@
 import json
 from enum import Enum
 from time import time
-from mycloud.mycloudapi.helper import get_object_id, raise_if_invalid_drive_path
-from mycloud.mycloudapi.requests import MyCloudRequest, Method
 
+from mycloud.mycloudapi.helper import (get_object_id,
+                                       raise_if_invalid_drive_path)
+from mycloud.mycloudapi.requests import Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/sync/list?p={}&$type={}&nocache={}'
 

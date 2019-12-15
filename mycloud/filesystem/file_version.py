@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from mycloud.common import sha256_file
 from mycloud.constants import VERSION_HASH_LENGTH
 

@@ -1,24 +1,23 @@
-import os
 import logging
+import os
 from collections import defaultdict
 from pathlib import Path
+
 from mycloud.common import is_int, operation_timeout
-from mycloud.mycloudapi import MyCloudRequestExecutor
-from mycloud.mycloudapi.requests.drive import MetadataRequest, DirectoryListRequest, ListType
-from mycloud.streamapi import (
-    UpStream,
-    DownStream,
-    UpStreamExecutor,
-    DownStreamExecutor,
-    ProgressReporter,
-    CloudStream
-)
-from mycloud.filesystem.translatable_path import TranslatablePath, BasicRemotePath
-from mycloud.filesystem.file_version import CalculatableVersion, HashCalculatedVersion
-from mycloud.filesystem.versioned_stream_accessor import VersionedCloudStreamAccessor
-from mycloud.filesystem.metadata_manager import MetadataManager
-from mycloud.filesystem.file_metadata import FileMetadata, Version
 from mycloud.constants import METADATA_FILE_NAME, MY_CLOUD_BIG_FILE_CHUNK_SIZE
+from mycloud.filesystem.file_metadata import FileMetadata, Version
+from mycloud.filesystem.file_version import (CalculatableVersion,
+                                             HashCalculatedVersion)
+from mycloud.filesystem.metadata_manager import MetadataManager
+from mycloud.filesystem.translatable_path import (BasicRemotePath,
+                                                  TranslatablePath)
+from mycloud.filesystem.versioned_stream_accessor import \
+    VersionedCloudStreamAccessor
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import (DirectoryListRequest, ListType,
+                                               MetadataRequest)
+from mycloud.streamapi import (CloudStream, DownStream, DownStreamExecutor,
+                               ProgressReporter, UpStream, UpStreamExecutor)
 
 
 class FileManager:

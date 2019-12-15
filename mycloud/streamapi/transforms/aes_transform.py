@@ -1,7 +1,8 @@
 from Crypto import Random
-from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
 from Crypto.Util.py3compat import bchr, bord
+
 from mycloud.streamapi.transforms.stream_transform import StreamTransform
 
 

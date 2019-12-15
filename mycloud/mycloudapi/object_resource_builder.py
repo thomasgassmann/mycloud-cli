@@ -1,5 +1,6 @@
 import os
-from mycloud.constants import BASE_DIR, AES_EXTENSION, REPLACEMENT_TABLE
+
+from mycloud.constants import AES_EXTENSION, BASE_DIR, REPLACEMENT_TABLE
 
 
 class ObjectResourceBuilder:

@@ -1,9 +1,12 @@
 import logging
+
 import click
 import inject
-from mycloud.mycloudapi import MyCloudRequestExecutor
-from mycloud.mycloudapi.requests.drive import DeleteObjectRequest, MetadataRequest
+
 from mycloud.commands.shared import async_click, authenticated
+from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
+                                               MetadataRequest)
 
 
 @click.command(name='delete')

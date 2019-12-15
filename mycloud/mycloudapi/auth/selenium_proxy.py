@@ -1,8 +1,8 @@
 import asyncio
 import logging
 import os
-from contextlib import redirect_stdout, redirect_stderr
 import sys
+from contextlib import redirect_stderr, redirect_stdout
 from threading import Thread
 
 from bs4 import BeautifulSoup

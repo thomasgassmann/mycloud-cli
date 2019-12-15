@@ -1,9 +1,10 @@
 import os
 from abc import ABC, abstractmethod
-from mycloud.mycloudapi import ObjectResourceBuilder
+
 from mycloud.common import operation_timeout
-from mycloud.filesystem.file_version import HashCalculatedVersion
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
+from mycloud.filesystem.file_version import HashCalculatedVersion
+from mycloud.mycloudapi import ObjectResourceBuilder
 
 
 class TranslatablePath(ABC):

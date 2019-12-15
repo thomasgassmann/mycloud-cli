@@ -1,11 +1,13 @@
 import asyncio
-import inject
 import logging
-from click import ClickException
 from functools import update_wrapper
+
+import inject
+from click import ClickException
+
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor
-from mycloud.mycloudapi.auth import MyCloudAuthenticator, AuthMode
+from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 
 
 def get_progress_tracker(skip_paths):

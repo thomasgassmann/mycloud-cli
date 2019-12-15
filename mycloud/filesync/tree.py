@@ -1,6 +1,8 @@
 import os
-from mycloud.constants import METADATA_FILE_NAME, PARTIAL_EXTENSION, START_NUMBER_LENGTH
+
 from mycloud.common import is_int
+from mycloud.constants import (METADATA_FILE_NAME, PARTIAL_EXTENSION,
+                               START_NUMBER_LENGTH)
 
 
 class RelativeFileTree:

@@ -1,23 +1,24 @@
-import os
 import logging
-from mycloud.mycloudapi import ObjectResourceBuilder, MyCloudRequestExecutor
-from mycloud.filesystem import FileManager, LocalTranslatablePath, HashCalculatedVersion
-from mycloud.streamapi.transforms import AES256CryptoTransform
-from mycloud.streamapi import DefaultUpStream, ProgressReporter
-from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.common import operation_timeout, TimeoutException
-from mycloud.filesync.progress import ProgressTracker
+import os
 
+from mycloud.common import TimeoutException, operation_timeout
+from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
+from mycloud.filesync.progress import ProgressTracker
+from mycloud.filesystem import (FileManager, HashCalculatedVersion,
+                                LocalTranslatablePath)
+from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
+from mycloud.streamapi import DefaultUpStream, ProgressReporter
+from mycloud.streamapi.transforms import AES256CryptoTransform
 
 # _mtime_cache = {}
 
 
 async def upsync_folder(request_executor: MyCloudRequestExecutor,
-                  resource_builder: ObjectResourceBuilder,
-                  local_directory: str,
-                  progress_tracker: ProgressTracker,
-                  encryption_pwd: str = None,
-                  skip_by_date=True):
+                        resource_builder: ObjectResourceBuilder,
+                        local_directory: str,
+                        progress_tracker: ProgressTracker,
+                        encryption_pwd: str = None,
+                        skip_by_date=True):
     # global _mtime_cache
     # skip_by_date: Use ctime of mycloud_metadata.json
     for root, _, files in os.walk(local_directory, topdown=True):
@@ -28,7 +29,7 @@ async def upsync_folder(request_executor: MyCloudRequestExecutor,
             local_file = os.path.join(root, file)
             try:
                 await upsync_file(request_executor, resource_builder,
-                            local_file, progress_tracker, encryption_pwd, skip_by_date)
+                                  local_file, progress_tracker, encryption_pwd, skip_by_date)
             except TimeoutException:
                 logging.error('Failed to access file {} within the given time'.format(
                     local_file))
@@ -37,11 +38,11 @@ async def upsync_folder(request_executor: MyCloudRequestExecutor,
 
 
 async def upsync_file(request_executor: MyCloudRequestExecutor,
-                resource_builder: ObjectResourceBuilder,
-                local_file: str,
-                progress_tracker: ProgressTracker,
-                encryption_pwd: str = None,
-                skip_by_date=True):
+                      resource_builder: ObjectResourceBuilder,
+                      local_file: str,
+                      progress_tracker: ProgressTracker,
+                      encryption_pwd: str = None,
+                      skip_by_date=True):
     # global _mtime_cache
     if progress_tracker.skip_file(local_file):
         logging.info('Skipping file {}'.format(local_file))
