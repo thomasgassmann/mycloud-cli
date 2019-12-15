@@ -64,9 +64,14 @@ mycloud_cli.add_command(drive_cli)
 mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 
-if __name__ == '__main__':
+
+def main():
     # filter empty arguments (vscode debugging)
     sys.argv = list(
         filter(lambda x: x is not None and str(x).strip() != '', sys.argv))
 
     mycloud_cli(obj={})
+
+
+if __name__ == '__main__':
+    main()

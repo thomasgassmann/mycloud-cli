@@ -5,6 +5,8 @@ import appdirs
 DATA_DIR = appdirs.user_data_dir('.mycloud', 'thomasgassmann')
 TOKEN_DIR = os.path.join(DATA_DIR, 'tokens')
 
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
 
 SERVICE_NAME = 'myCloud'
 MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1024 * 1024 * 256
