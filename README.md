@@ -7,7 +7,15 @@ Swisscom myCloud CLI is a command line utility to manage all your data stored on
 # Requirements
 Any Keyring Backend comptatible with the [keyring](https://pypi.org/project/keyring) package is required in order to store the credentials for myCloud.
 
-# Installation
+# Usage
+
+## Docker
+
+```
+docker run -it mycloud-cli
+```
+
+## Manual Installation
 
 First, make sure `chromium` and `chromedriver` are installed and in your `$PATH`.
 
@@ -24,6 +32,8 @@ mycloud auth cert
 ```
 
 to download the required certificate.
+
+## Authenticate
 To use myCloud CLI, run `mycloud [command]`.
 Then authenticate yourself with your username and password using:
 
