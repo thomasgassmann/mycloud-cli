@@ -1,13 +1,15 @@
-import os
 import asyncio
 import logging
-from bs4 import BeautifulSoup
-from mitmproxy import proxy, options, http
-from mitmproxy.tools.dump import DumpMaster
+import os
+from contextlib import redirect_stdout, redirect_stderr
+import sys
 from threading import Thread
+
+from bs4 import BeautifulSoup
+from mitmproxy import http, options, proxy
+from mitmproxy.tools.dump import DumpMaster
 from mitmproxy.tools.main import master
 from selenium import webdriver
-
 
 JS_FILE = 'undetectable-headless-browser.js'
 PROXY_HOST = '127.0.0.1'
@@ -43,7 +45,8 @@ class ProxySelenium:
             opts.add_option('body_size_limit', int, 0, '')
             pconf = proxy.config.ProxyConfig(opts)
 
-            dump_master = DumpMaster(None)
+            dump_master = DumpMaster(
+                None, with_termlog=False, with_dumper=False)
             dump_master.server = proxy.server.ProxyServer(pconf)
             dump_master.addons.add(_InjectScripts(url_list))
             dump_master.run()
