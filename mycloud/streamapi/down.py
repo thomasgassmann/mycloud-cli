@@ -3,7 +3,7 @@ import time
 from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import GetObjectRequest
-from mycloud.streamapi import StreamDirection
+from mycloud.streamapi.stream_object import StreamDirection
 from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
 from mycloud.streamapi.stream_accessor import CloudStreamAccessor
 
