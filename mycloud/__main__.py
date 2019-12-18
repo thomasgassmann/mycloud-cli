@@ -6,7 +6,7 @@ import click
 from mycloud.commands import auth_command, statistics_command
 from mycloud.commands.drive import (delete_command, download_command,
                                     upload_command)
-from mycloud.inject import build_container
+from mycloud.configure_inject import build_container
 
 
 def get_log_level(level_str: str) -> int:
