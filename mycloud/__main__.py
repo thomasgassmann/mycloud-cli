@@ -4,8 +4,8 @@ import sys
 import click
 
 from mycloud.commands import auth_command, statistics_command
-from mycloud.commands.drive import (convert_command, delete_command,
-                                    download_command, upload_command)
+from mycloud.commands.drive import (delete_command, download_command,
+                                    upload_command)
 from mycloud.inject import build_container
 
 
@@ -53,7 +53,6 @@ def drive_cli():
 drive_cli.add_command(delete_command)
 drive_cli.add_command(upload_command)
 drive_cli.add_command(download_command)
-drive_cli.add_command(convert_command)
 
 mycloud_cli.add_command(drive_cli)
 mycloud_cli.add_command(auth_command)
