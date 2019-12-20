@@ -4,7 +4,7 @@ import tempfile
 import traceback
 
 from mycloud.common import TimeoutException, operation_timeout
-from mycloud.constants import (ENCRYPTION_CHUNK_LENGTH,
+from mycloud.constants import (CHUNK_SIZE,
                                MY_CLOUD_BIG_FILE_CHUNK_SIZE)
 from mycloud.filesync.progress import ProgressTracker
 from mycloud.filesystem import (BasicStringVersion, FileManager, FileMetadata,
@@ -77,7 +77,7 @@ async def downsync_file(request_executor: MyCloudRequestExecutor,
             x['local_file']).st_size, local_file=local_file)
         if file_length != delete_bytes_after:
             file_handle, temp_path = tempfile.mkstemp()
-            if chunk_size % ENCRYPTION_CHUNK_LENGTH != 0:
+            if chunk_size % CHUNK_SIZE != 0:
                 raise ValueError(
                     'Chunk size in myCloud must be a multiple of encryption chunk length')
 
@@ -86,9 +86,9 @@ async def downsync_file(request_executor: MyCloudRequestExecutor,
             with os.fdopen(file_handle, 'wb') as file_stream:
                 read_length = 0
                 while read_length != delete_bytes_after:
-                    read_values = read_stream.read(ENCRYPTION_CHUNK_LENGTH)
+                    read_values = read_stream.read(CHUNK_SIZE)
                     file_stream.write(read_values)
-                    read_length += ENCRYPTION_CHUNK_LENGTH
+                    read_length += CHUNK_SIZE
             read_stream.close()
             os.remove(local_file)
 

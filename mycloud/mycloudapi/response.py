@@ -8,9 +8,5 @@ class MyCloudResponse:
         self._result = result
 
     @property
-    def success(self) -> bool:
-        raise NotImplementedError()
-
-    @property
     def result(self):
-        raise NotImplementedError()
+        return self._result

@@ -1,7 +1,7 @@
 import time
 
 from mycloud.common import operation_timeout
-from mycloud.constants import (ENCRYPTION_CHUNK_LENGTH,
+from mycloud.constants import (CHUNK_SIZE,
                                MY_CLOUD_BIG_FILE_CHUNK_SIZE)
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import PutObjectRequest
@@ -58,9 +58,9 @@ class UpStreamExecutor:
                 read_bytes = bytes([])
             else:
                 read_bytes = UpStreamExecutor._safe_file_stream_read(
-                    stream, ENCRYPTION_CHUNK_LENGTH)
+                    stream, CHUNK_SIZE)
 
-            if (len(read_bytes) < ENCRYPTION_CHUNK_LENGTH or read_bytes == b'' or read_bytes is None) and not break_execution:
+            if (len(read_bytes) < CHUNK_SIZE or read_bytes == b'' or read_bytes is None) and not break_execution:
                 stream_finished = True
 
             if applied_transforms is not None:

@@ -1,6 +1,6 @@
 import time
 
-from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
+from mycloud.constants import CHUNK_SIZE
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import GetObjectRequest
 from mycloud.streamapi.stream_object import StreamDirection
@@ -53,7 +53,7 @@ class DownStreamExecutor:
 
             previous_chunk = None
 
-            for chunk in response.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
+            for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                 if previous_chunk is None:
                     previous_chunk = chunk
                     continue
