@@ -1,3 +1,4 @@
+import io
 import logging
 from time import sleep
 
@@ -10,6 +11,7 @@ from mycloud.logger import add_request_count, save_files
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
 from mycloud.mycloudapi.response import MyCloudResponse
+from mycloud.mycloudapi.helper import generator_to_stream
 
 
 class MyCloudRequestExecutor:
@@ -23,6 +25,8 @@ class MyCloudRequestExecutor:
 
     async def execute(self, request: MyCloudRequest) -> MyCloudResponse:
         auth_token = await self.authenticator.get_token()
+
+        logging.info(f'Executing request {request}')
 
         headers = MyCloudRequestExecutor._get_headers(
             request.get_content_type(), auth_token)
@@ -42,6 +46,7 @@ class MyCloudRequestExecutor:
             else:
                 raise ValueError(f'Request contains invalid method {method}')
 
+            logging.debug(f'Received status code {response.status}')
             mycloud_response = MyCloudResponse(request, response)
             return mycloud_response
 
@@ -55,7 +60,9 @@ class MyCloudRequestExecutor:
     async def _execute_put(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
         generator = request.get_data_generator()
         if generator:
-            return await session.put(request_url, data=generator)
+            stream = generator_to_stream(generator)
+            logging.debug(f'Executing put request with generator...')
+            return await session.put(request_url, data=stream)
         return await session.put(request_url)
 
     @staticmethod
@@ -79,6 +86,7 @@ class MyCloudRequestExecutor:
         request_url = request.get_request_url()
         request_method = request.get_method()
         data_generator = request.get_data_generator()
+        io
         if request.is_query_parameter_access_token():
             req = PreparedRequest()
             req.prepare_url(request_url, {'access_token': token})

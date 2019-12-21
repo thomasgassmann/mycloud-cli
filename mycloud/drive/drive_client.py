@@ -1,6 +1,5 @@
-from io import BufferedReader, BufferedWriter
-
 import inject
+import logging
 
 from mycloud.constants import CHUNK_SIZE
 from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
@@ -16,17 +15,20 @@ class DriveClient:
     request_executor: MyCloudRequestExecutor = inject.attr(
         MyCloudRequestExecutor)
 
-    async def download(self, path: str, stream: BufferedWriter):
+    async def download(self, path: str, stream):
         full_path = self._build_path(path)
         get_request = GetObjectRequest(full_path)
         resp: MyCloudResponse = await self.request_executor.execute(get_request)
         while True:
+            logging.debug(f'Reading download content...')
             chunk = await resp.result.content.read(CHUNK_SIZE)
+            logging.debug(f'Got {len(chunk)} bytes')
             if not chunk:
                 break
+            logging.debug(f'Writing to output stream...')
             stream.write(chunk)
 
-    async def upload(self, path: str, stream: BufferedReader):
+    async def upload(self, path: str, stream):
         full_path = self._build_path(path)
 
         def _read():
