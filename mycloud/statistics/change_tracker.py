@@ -10,7 +10,7 @@ async def track_changes(request_executor: MyCloudRequestExecutor, mycloud_dir: s
         mycloud_dir, is_file=False)
     change_request = ChangeRequest(mycloud_dir, top)
     response = await request_executor.execute_request(change_request)
-    items = ChangeRequest.format_response(response)
+    items = await ChangeRequest.format_response(response)
     data = []
     for item in items:
         data.append([

@@ -17,22 +17,12 @@ class ListType(Enum):
 
 class DirectoryListRequest(MyCloudRequest):
 
-    def __init__(self, object_resource: str, list_type: ListType, ignore_not_found=False, ignore_internal_server_error=False):
+    def __init__(self, object_resource: str, list_type: ListType):
         if not object_resource.endswith('/'):
             object_resource += '/'
         raise_if_invalid_drive_path(object_resource)
         self._object_resource = object_resource
-        self._ignore_404 = ignore_not_found
-        self._ignore_500 = ignore_internal_server_error
         self._list_type = list_type
-
-    def ignored_error_status_codes(self):
-        ignored = []
-        if self._ignore_404:
-            ignored.append(404)
-        if self._ignore_500:
-            ignored.append(500)
-        return ignored
 
     def get_method(self):
         return Method.GET
@@ -51,12 +41,13 @@ class DirectoryListRequest(MyCloudRequest):
         unix_time = int(time())
         return REQUEST_URL.format(resource, list_type, unix_time)
 
-    def format_response(self, response):
+    async def format_response(self, response):
         if response.status_code == 404:
             if not self._ignore_404:
                 raise ConnectionError('404')
             return []
-        return DirectoryListRequest._json_generator(response.text)
+        text = await response.text()
+        return DirectoryListRequest._json_generator(text)
 
     @staticmethod
     def is_timeout(response):

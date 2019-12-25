@@ -17,24 +17,17 @@ class MyCloudRequest(ABC):
 
     @abstractmethod
     def get_request_url(self):
-        return None
+        raise NotImplementedError()
 
     @abstractmethod
     def get_method(self):
-        return None
+        raise NotImplementedError()
 
-    @staticmethod
-    def is_query_parameter_access_token():
+    def is_query_parameter_access_token(self):
         return False
 
-    @staticmethod
-    def ignored_error_status_codes():
-        return []
-
-    @staticmethod
-    def get_data_generator():
+    def get_data_generator(self):
         return None
 
-    @staticmethod
-    def get_content_type():
+    def get_content_type(self):
         return ContentType.APPLICATION_JSON

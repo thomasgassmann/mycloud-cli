@@ -22,6 +22,7 @@ class ChangeRequest(MyCloudRequest):
         return REQUEST_URL.format(get_object_id(self.object_resource), self.top, int(time.time()))
 
     @staticmethod
-    def format_response(response):
-        json_data = json.loads(response.text)
+    async def format_response(response):
+        text = await response.text()
+        json_data = json.loads(text)
         return json_data

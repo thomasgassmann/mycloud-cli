@@ -10,3 +10,9 @@ class MyCloudResponse:
     @property
     def result(self):
         return self._result
+
+    async def formatted(self):
+        if 'format_response' not in dir(type(self.request)):
+            return None
+
+        return await type(self.request).format_response(self.result)

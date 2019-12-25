@@ -6,7 +6,8 @@ from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
                                 ObjectResourceBuilder)
 from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                GetObjectRequest,
-                                               PutObjectRequest)
+                                               PutObjectRequest,
+                                               MetadataRequest)
 
 
 class DriveClient:
@@ -14,6 +15,12 @@ class DriveClient:
     drive_base = '/Drive/'
     request_executor: MyCloudRequestExecutor = inject.attr(
         MyCloudRequestExecutor)
+
+    async def get_directory_metadata(self, path: str):
+        full_path = self._build_path(path)
+        req = MetadataRequest(full_path)
+        resp = await self.request_executor.execute(req)
+        return await resp.formatted()
 
     async def download(self, path: str, stream):
         full_path = self._build_path(path)

@@ -13,6 +13,10 @@ class FsDriveClient:
 
     client: DriveClient = inject.attr(DriveClient)
 
+    async def download(self, remote: str, local: str):
+        metadata = await self.client.get_directory_metadata(remote)
+        print(metadata)
+
     async def upload(self, local: str, remote: str):
         builder = ObjectResourceBuilder(local, remote)
         if os.path.isfile(local):
