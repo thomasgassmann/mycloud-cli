@@ -70,6 +70,7 @@ class MyCloudRequestExecutor:
     @staticmethod
     def _get_request_url(request: MyCloudRequest, auth_token: str) -> str:
         request_url = request.get_request_url()
+        logging.debug(f'Request URL: {request_url}')
         if request.is_query_parameter_access_token():
             request_url = merge_url_query_params(
                 request_url, {'access_token': auth_token})
