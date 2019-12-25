@@ -1,7 +1,10 @@
-import inject
-import os
+import asyncio
 import logging
+import os
 from pathlib import Path
+
+import inject
+
 from mycloud.drive import DriveClient
 from mycloud.mycloudapi import ObjectResourceBuilder
 
@@ -22,7 +25,11 @@ class FsDriveClient:
                 if file.is_file():
                     upload_path = builder.build_remote_file(
                         file.relative_to(local).as_posix())
-                    with file.open('rb') as f:
-                        await self.client.upload(upload_path, f)
+
+                    async def _up():
+                        with file.open('rb') as f:
+                            await self.client.upload(upload_path, f)
+                    # TODO: parallelize
+                    await _up()
         else:
             raise ValueError(f'No valid file type {local}')
