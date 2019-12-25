@@ -3,7 +3,6 @@ import logging
 from time import sleep
 
 import aiohttp
-import requests
 from requests.models import PreparedRequest
 
 from mycloud.constants import RESET_SESSION_EVERY, WAIT_TIME_MULTIPLIER
