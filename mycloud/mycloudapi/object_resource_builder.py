@@ -1,14 +1,12 @@
 import os
 
-from mycloud.constants import AES_EXTENSION, BASE_DIR, REPLACEMENT_TABLE
+from mycloud.constants import AES_EXTENSION, REPLACEMENT_TABLE
 
 
 class ObjectResourceBuilder:
     def __init__(self, base_dir: str, mycloud_backup_dir: str):
         self.base_dir = base_dir
         self.mycloud_dir = mycloud_backup_dir
-        if not self.mycloud_dir.startswith(BASE_DIR):
-            raise ValueError('Backup directory must start with /Drive/')
         if not self.mycloud_dir.endswith('/'):
             self.mycloud_dir += '/'
         if not self.base_dir.endswith(os.sep):
