@@ -1,13 +1,15 @@
-import inject
 import logging
 
+import inject
+
 from mycloud.constants import CHUNK_SIZE
+from mycloud.drive.exceptions import DriveNotFoundException
 from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
                                 ObjectResourceBuilder)
 from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                GetObjectRequest,
-                                               PutObjectRequest,
-                                               MetadataRequest)
+                                               MetadataRequest,
+                                               PutObjectRequest)
 
 
 class DriveClient:
@@ -16,10 +18,22 @@ class DriveClient:
     request_executor: MyCloudRequestExecutor = inject.attr(
         MyCloudRequestExecutor)
 
+    async def list_files(self, remote: str):
+        (directories, fetched_files) = await self.get_directory_metadata(remote)
+        for file in fetched_files:
+            yield file
+
+        for sub_directory in directories:
+            async for file in self.list_files(sub_directory['Path']):
+                yield file
+
     async def get_directory_metadata(self, path: str):
         full_path = self._build_path(path)
         req = MetadataRequest(full_path)
         resp = await self.request_executor.execute(req)
+        if resp.result.status == 404:
+            raise DriveNotFoundException()
+
         return await resp.formatted()
 
     async def download(self, path: str, stream):
@@ -55,4 +69,7 @@ class DriveClient:
         await self.request_executor.execute(delete_request)
 
     def _build_path(self, path: str):
+        if path.startswith(self.drive_base):
+            return path
+
         return ObjectResourceBuilder.combine_cloud_path(self.drive_base, path)

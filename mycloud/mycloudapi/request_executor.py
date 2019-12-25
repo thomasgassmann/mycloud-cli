@@ -3,8 +3,8 @@ import logging
 from time import sleep
 
 import aiohttp
-from requests.models import PreparedRequest
 
+from mycloud.common import merge_url_query_params
 from mycloud.constants import RESET_SESSION_EVERY, WAIT_TIME_MULTIPLIER
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
@@ -71,14 +71,13 @@ class MyCloudRequestExecutor:
     def _get_request_url(request: MyCloudRequest, auth_token: str) -> str:
         request_url = request.get_request_url()
         if request.is_query_parameter_access_token():
-            req = PreparedRequest()
-            req.prepare_url(request_url, {'access_token': auth_token})
-            request_url = req.url
+            request_url = merge_url_query_params(
+                request_url, {'access_token': auth_token})
         return request_url
 
     @staticmethod
     def _get_headers(content_type: ContentType, bearer_token: str):
-        headers = requests.utils.default_headers()
+        headers = dict()
         headers['Content-Type'] = content_type
         headers['Authorization'] = 'Bearer ' + bearer_token
         headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'

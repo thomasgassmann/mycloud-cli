@@ -1,0 +1,2 @@
+class MyCloudException(Exception):
+    pass

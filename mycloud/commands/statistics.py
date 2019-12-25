@@ -5,6 +5,7 @@ from mycloud.commands.shared import async_click, authenticated
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.statistics import (calculate_size, print_usage, summarize,
                                 track_changes)
+from mycloud.drive import DriveClient
 
 
 @click.group(name='statistics')
@@ -40,8 +41,8 @@ async def usage(executor):
 
 @statistics_command.command()
 @click.argument('dir', required=True)
-@inject.params(executor=MyCloudRequestExecutor)
+@inject.params(client=DriveClient)
 @authenticated
 @async_click
-async def size(dir: str, executor):
-    await calculate_size(executor, dir)
+async def size(dir: str, client):
+    await calculate_size(client, dir)
