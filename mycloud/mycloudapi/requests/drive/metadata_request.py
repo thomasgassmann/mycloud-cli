@@ -29,7 +29,9 @@ class MetadataRequest(MyCloudRequest):
     async def format_response(response):
         if response.status == 404:
             return ([], [])
+        logging.debug(f'Awaiting response text...')
         text = await response.text()
+        logging.debug(f'Got response text with length {len(text)}')
         json_data = json.loads(text)
         files = MetadataRequest._get_files(json_data)
         dirs = MetadataRequest._get_directories(json_data)

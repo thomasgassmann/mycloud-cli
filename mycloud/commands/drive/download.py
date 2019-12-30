@@ -5,6 +5,7 @@ import inject
 
 from mycloud.commands.shared import (async_click, authenticated)
 from mycloud.filesystem import FsDriveClient
+from mycloud.drive import DriveNotFoundException
 
 
 @click.command(name='download')
@@ -14,4 +15,7 @@ from mycloud.filesystem import FsDriveClient
 @inject.params(client=FsDriveClient)
 @async_click
 async def download_command(client: FsDriveClient, remote: str, local: str):
-    await client.download(remote, local)
+    try:
+        await client.download(remote, local)
+    except DriveNotFoundException:
+        raise click.ClickException(f'{remote} not found')

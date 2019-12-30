@@ -25,28 +25,30 @@ class MyCloudRequestExecutor:
         headers = MyCloudRequestExecutor._get_headers(
             request.get_content_type(), auth_token)
 
-        async with aiohttp.ClientSession(headers=headers) as session:
-            request_url = MyCloudRequestExecutor._get_request_url(
-                request, auth_token)
+        session = aiohttp.ClientSession(headers=headers)
+        request_url = MyCloudRequestExecutor._get_request_url(
+            request, auth_token)
 
-            method = request.get_method()
-            response: aiohttp.ClientResponse = None
-            if method == Method.GET:
-                response = await MyCloudRequestExecutor._execute_get(session, request, request_url)
-            elif method == Method.PUT:
-                response = await MyCloudRequestExecutor._execute_put(session, request, request_url)
-            elif method == Method.DELETE:
-                response = await MyCloudRequestExecutor._execute_delete(session, request_url)
-            else:
-                raise ValueError(f'Request contains invalid method {method}')
+        method = request.get_method()
+        response: aiohttp.ClientResponse = None
+        if method == Method.GET:
+            response = await MyCloudRequestExecutor._execute_get(session, request, request_url)
+        elif method == Method.PUT:
+            response = await MyCloudRequestExecutor._execute_put(session, request, request_url)
+        elif method == Method.DELETE:
+            response = await MyCloudRequestExecutor._execute_delete(session, request_url)
+        else:
+            raise ValueError(f'Request contains invalid method {method}')
 
-            logging.debug(f'Received status code {response.status}')
+        logging.debug(f'Received status code {response.status}')
 
-            if self._check_retry(response):
-                return await self.execute(request)
+        if self._check_retry(response):
+            logging.info(f'Retrying request at {request_url}')
+            return await self.execute(request)
 
-            mycloud_response = MyCloudResponse(request, response)
-            return mycloud_response
+        mycloud_response = MyCloudResponse(request, response)
+        logging.debug(f'Returning MyCloudResponse {mycloud_response}')
+        return mycloud_response
 
     @staticmethod
     async def _execute_get(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):

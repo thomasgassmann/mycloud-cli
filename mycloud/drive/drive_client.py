@@ -28,7 +28,7 @@ class DriveClient:
                 yield file
 
     async def get_directory_metadata(self, path: str):
-        full_path = self._build_path(path)
+        full_path = self.build_path(path)
         req = MetadataRequest(full_path)
         resp = await self.request_executor.execute(req)
         if resp.result.status == 404:
@@ -36,8 +36,13 @@ class DriveClient:
 
         return await resp.formatted()
 
+    async def download_each(self, directory_path: str, stream_factory):
+        async for file in self.list_files(directory_path):
+            with stream_factory(file) as stream:
+                await self.download(file['Path'], stream)
+
     async def download(self, path: str, stream):
-        full_path = self._build_path(path)
+        full_path = self.build_path(path)
         get_request = GetObjectRequest(full_path)
         resp: MyCloudResponse = await self.request_executor.execute(get_request)
         while True:
@@ -50,7 +55,7 @@ class DriveClient:
             stream.write(chunk)
 
     async def upload(self, path: str, stream):
-        full_path = self._build_path(path)
+        full_path = self.build_path(path)
 
         def _read():
             while True:
@@ -63,13 +68,13 @@ class DriveClient:
         await self.request_executor.execute(put_request)
 
     async def delete(self, path: str):
-        full_path = self._build_path(path)
+        full_path = self.build_path(path)
 
         delete_request = DeleteObjectRequest(full_path)
         await self.request_executor.execute(delete_request)
 
-    def _build_path(self, path: str):
-        if path.startswith(self.drive_base):
-            return path
-
-        return ObjectResourceBuilder.combine_cloud_path(self.drive_base, path)
+    def build_path(self, path: str):
+        built_path = path if path.startswith(self.drive_base) else ObjectResourceBuilder.combine_cloud_path(
+            self.drive_base, path)
+        logging.info(f'Constructed path {built_path}')
+        return built_path
