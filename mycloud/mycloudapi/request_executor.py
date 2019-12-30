@@ -31,14 +31,19 @@ class MyCloudRequestExecutor:
 
         method = request.get_method()
         response: aiohttp.ClientResponse = None
-        if method == Method.GET:
-            response = await MyCloudRequestExecutor._execute_get(session, request, request_url)
-        elif method == Method.PUT:
-            response = await MyCloudRequestExecutor._execute_put(session, request, request_url)
-        elif method == Method.DELETE:
-            response = await MyCloudRequestExecutor._execute_delete(session, request_url)
-        else:
-            raise ValueError(f'Request contains invalid method {method}')
+
+        try:
+            if method == Method.GET:
+                response = await MyCloudRequestExecutor._execute_get(session, request, request_url)
+            elif method == Method.PUT:
+                response = await MyCloudRequestExecutor._execute_put(session, request, request_url)
+            elif method == Method.DELETE:
+                response = await MyCloudRequestExecutor._execute_delete(session, request_url)
+            else:
+                raise ValueError(f'Request contains invalid method {method}')
+        except aiohttp.client_exceptions.ClientConnectionError:
+            logging.info(f'Connection Error. Retrying...')
+            return await self.execute(request)
 
         logging.debug(f'Received status code {response.status}')
 
