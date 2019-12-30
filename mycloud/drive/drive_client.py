@@ -3,7 +3,7 @@ import logging
 import inject
 
 from mycloud.constants import CHUNK_SIZE
-from mycloud.drive.exceptions import DriveNotFoundException
+from mycloud.drive.exceptions import DriveNotFoundException, DriveFailedToDeleteException
 from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
                                 ObjectResourceBuilder)
 from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
@@ -71,7 +71,10 @@ class DriveClient:
         full_path = self.build_path(path)
 
         delete_request = DeleteObjectRequest(full_path)
-        await self.request_executor.execute(delete_request)
+        resp = await self.request_executor.execute(delete_request)
+        if not resp.success:
+            logging.info(f'Failed to delete {path}')
+            raise DriveFailedToDeleteException
 
     def build_path(self, path: str):
         built_path = path if path.startswith(self.drive_base) else ObjectResourceBuilder.combine_cloud_path(

@@ -5,6 +5,7 @@ import inject
 
 from mycloud.commands.shared import async_click, authenticated
 from mycloud.mycloudapi import MyCloudRequestExecutor
+from mycloud.drive import DriveClient, DriveFailedToDeleteException
 from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                MetadataRequest)
 
@@ -12,10 +13,13 @@ from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
 @click.command(name='delete')
 @click.argument('remote')
 @authenticated
-@inject.params(request_executor=MyCloudRequestExecutor)
+@inject.params(client=DriveClient)
 @async_click
-async def delete_command(remote: str, request_executor: MyCloudRequestExecutor):
-    await _folder_deletion(request_executor, remote)
+async def delete_command(remote: str, client: DriveClient):
+    try:
+        await client.delete(remote)
+    except DriveFailedToDeleteException:
+        raise click.ClickException(f'Failed to delete {remote}')
 
 
 async def _folder_deletion(executor: MyCloudRequestExecutor, remote: str):

@@ -53,3 +53,7 @@ class DeleteObjectRequest(ObjectRequest):
 
     def get_method(self):
         return Method.DELETE
+
+    @staticmethod
+    def is_success(resp):
+        return resp.status == 204
