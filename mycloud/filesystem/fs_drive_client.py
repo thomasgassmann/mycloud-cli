@@ -60,8 +60,13 @@ class FsDriveClient:
                         file.relative_to(local).as_posix())
 
                     async def _up():
-                        with file.open('rb') as f:
-                            await self.client.upload(upload_path, f)
+                        try:
+                            f = file.open('rb')
+                        except PermissionError:
+                            logging.error(f'Could not access file {file}')
+                            return
+                        await self.client.upload(upload_path, f)
+                        f.close()
                     # TODO: parallelize
                     await _up()
         else:
