@@ -77,6 +77,19 @@ class DriveClient:
         await self.request_executor.execute(put_request)
 
     async def delete(self, path: str):
+        try:
+            await self._delete_internal(path)
+        except DriveFailedToDeleteException:
+            if not self.is_directory(path):
+                raise
+
+            (dirs, files) = await self.get_directory_metadata(path)
+            for remote_file in files:
+                await self.delete(remote_file['Path'])
+            for directory in dirs:
+                await self.delete(directory['Path'])
+
+    async def _delete_internal(self, path: str):
         delete_request = DeleteObjectRequest(path)
         resp = await self.request_executor.execute(delete_request)
         DriveClient._raise_404(resp)
