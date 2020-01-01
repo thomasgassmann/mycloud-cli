@@ -10,13 +10,6 @@ from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 
 
-def get_progress_tracker(skip_paths):
-    tracker = ProgressTracker()
-    if skip_paths is not None:
-        tracker.set_skipped_paths(skip_paths)
-    return tracker
-
-
 def authenticated(func):
     def wrapper(*args, **kwargs):
         @inject.params(mycloud_authenticator=MyCloudAuthenticator)
