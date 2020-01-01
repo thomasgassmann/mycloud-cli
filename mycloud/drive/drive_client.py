@@ -59,10 +59,18 @@ class DriveClient:
 
     async def upload(self, path: str, stream):
         def _read():
+            total_read = 0
+            print_every = 1000
+            read_size = CHUNK_SIZE
             while True:
-                chunk = stream.read(CHUNK_SIZE)
+                chunk = stream.read(read_size)
                 if not chunk:
                     break
+
+                total_read += len(chunk)
+                if total_read / read_size % print_every == 0:
+                    logging.debug(f'Read total: {total_read}')
+
                 yield chunk
 
         put_request = PutObjectRequest(path, _read())
