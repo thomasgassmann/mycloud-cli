@@ -60,6 +60,7 @@ class FsDriveClient:
                         file.relative_to(local).as_posix())
 
                     async def _up():
+                        logging.info(f'Uploading {file}...')
                         try:
                             f = file.open('rb')
                         except PermissionError:
