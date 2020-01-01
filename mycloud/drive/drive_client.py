@@ -14,7 +14,6 @@ from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
 
 class DriveClient:
 
-    drive_base = '/Drive/'
     request_executor: MyCloudRequestExecutor = inject.attr(
         MyCloudRequestExecutor)
 
@@ -27,12 +26,13 @@ class DriveClient:
             async for file in self.list_files(sub_directory['Path']):
                 yield file
 
+    def is_directory(self, remote: str):
+        return remote.endswith('/')
+
     async def get_directory_metadata(self, path: str):
-        full_path = self.build_path(path)
-        req = MetadataRequest(full_path)
+        req = MetadataRequest(path)
         resp = await self.request_executor.execute(req)
-        if resp.result.status == 404:
-            raise DriveNotFoundException()
+        DriveClient._raise_404(resp)
 
         return await resp.formatted()
 
@@ -41,10 +41,12 @@ class DriveClient:
             with stream_factory(file) as stream:
                 await self.download(file['Path'], stream)
 
-    async def download(self, path: str, stream):
-        full_path = self.build_path(path)
-        get_request = GetObjectRequest(full_path)
+    async def download(self, path: str, stream_factory):
+        get_request = GetObjectRequest(path)
         resp: MyCloudResponse = await self.request_executor.execute(get_request)
+        DriveClient._raise_404(resp)
+
+        stream = stream_factory()
         while True:
             logging.debug(f'Reading download content...')
             chunk = await resp.result.content.read(CHUNK_SIZE)
@@ -53,10 +55,9 @@ class DriveClient:
                 break
             logging.debug(f'Writing to output stream...')
             stream.write(chunk)
+        stream.close()
 
     async def upload(self, path: str, stream):
-        full_path = self.build_path(path)
-
         def _read():
             while True:
                 chunk = stream.read(CHUNK_SIZE)
@@ -64,20 +65,18 @@ class DriveClient:
                     break
                 yield chunk
 
-        put_request = PutObjectRequest(full_path, _read())
+        put_request = PutObjectRequest(path, _read())
         await self.request_executor.execute(put_request)
 
     async def delete(self, path: str):
-        full_path = self.build_path(path)
-
-        delete_request = DeleteObjectRequest(full_path)
+        delete_request = DeleteObjectRequest(path)
         resp = await self.request_executor.execute(delete_request)
+        DriveClient._raise_404(resp)
         if not resp.success:
             logging.info(f'Failed to delete {path}')
             raise DriveFailedToDeleteException
 
-    def build_path(self, path: str):
-        built_path = path if path.startswith(self.drive_base) else ObjectResourceBuilder.combine_cloud_path(
-            self.drive_base, path)
-        logging.info(f'Constructed path {built_path}')
-        return built_path
+    @staticmethod
+    def _raise_404(response: MyCloudResponse):
+        if response.result.status == 404:
+            raise DriveNotFoundException

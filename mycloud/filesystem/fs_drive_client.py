@@ -14,26 +14,25 @@ class FsDriveClient:
     client: DriveClient = inject.attr(DriveClient)
 
     async def download(self, remote: str, local: str):
-        basename = os.path.basename(remote)
-        (dirs, files) = await self.client.get_directory_metadata(os.path.dirname(remote))
-        logging.debug(
-            f'Checking whether file or directory {basename} is in response')
-        if basename in [directory['Name'] for directory in dirs]:
+        is_directory = self.client.is_directory(remote)
+        if is_directory:
             await self.download_directory(remote, local)
-        elif basename in [file['Name'] for file in files]:
-            await self.download_file(remote, local)
         else:
-            raise DriveNotFoundException()
+            await self.download_file(remote, local)
 
     async def download_file(self, remote: str, local: str):
-        dir_name = os.path.dirname(local)
-        if not os.path.isdir(dir_name):
-            os.makedirs(os.path.dirname(local))
-        with open(local, 'wb') as f:
-            await self.client.download(remote, f)
+
+        def stream_factory():
+            dir_name = os.path.dirname(local)
+            if not os.path.isdir(dir_name):
+                os.makedirs(os.path.dirname(local))
+
+            return open(local, 'wb')
+
+        await self.client.download(remote, stream_factory)
 
     async def download_directory(self, remote: str, local: str):
-        builder = ObjectResourceBuilder(local, self.client.build_path(remote))
+        builder = ObjectResourceBuilder(local, remote)
 
         def stream_factory(file):
             remote_file_path = file['Path']
@@ -48,7 +47,7 @@ class FsDriveClient:
         await self.client.download_each(remote, stream_factory)
 
     async def upload(self, local: str, remote: str):
-        builder = ObjectResourceBuilder(local, self.client.build_path(remote))
+        builder = ObjectResourceBuilder(local, remote)
         if os.path.isfile(local):
             logging.debug(f'{local} is file...')
             with open(local, 'rb') as f:
