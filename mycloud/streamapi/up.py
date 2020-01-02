@@ -42,7 +42,7 @@ class UpStreamExecutor:
             upload_to = stream_accessor.get_part_file(current_part_index)
             self._tmp_current_object_resource = upload_to
             part_put_request = PutObjectRequest(upload_to, generator)
-            _ = await self.request_executor.execute_request(part_put_request)
+            _ = await self.request_executor.execute(part_put_request)
             current_part_index += 1
 
         file_stream.close()

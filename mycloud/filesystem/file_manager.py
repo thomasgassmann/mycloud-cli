@@ -55,9 +55,9 @@ class FileManager:
         versioned_stream_accessor = VersionedCloudStreamAccessor(
             translatable_path, calculatable_version, None)
         path = versioned_stream_accessor.get_base_path()
-        metadata_request = MetadataRequest(path, ignore_not_found=True)
-        response = await self._request_executor.execute_request(metadata_request)
-        if response.status_code == 404:
+        metadata_request = MetadataRequest(path)
+        response = await self._request_executor.execute(metadata_request)
+        if response.result.status == 404:
             return False, 0
         (_, files) = MetadataRequest.format_response(response)
         return True, len(files)
@@ -77,7 +77,7 @@ class FileManager:
         parts = version.get_parts()
         directory = os.path.dirname(parts[0])
         metadata_request = MetadataRequest(directory)
-        response = await self._request_executor.execute_request(metadata_request)
+        response = await self.request_executor.execute(metadata_request)
         (dirs, files) = MetadataRequest.format_response(response)
         if any(dirs):
             raise ValueError(
