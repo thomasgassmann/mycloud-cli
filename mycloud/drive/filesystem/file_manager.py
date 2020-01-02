@@ -59,7 +59,7 @@ class FileManager:
         response = await self._request_executor.execute(metadata_request)
         if response.result.status == 404:
             return False, 0
-        (_, files) = await MetadataRequest.format_response(response.result)
+        (_, files) = await response.formatted()
         return True, len(files)
 
     async def started_partial_download(self,
@@ -77,8 +77,8 @@ class FileManager:
         parts = version.get_parts()
         directory = os.path.dirname(parts[0])
         metadata_request = MetadataRequest(directory)
-        response = await self.request_executor.execute(metadata_request)
-        (dirs, files) = MetadataRequest.format_response(response)
+        response = await self._request_executor.execute(metadata_request)
+        (dirs, files) = await response.formatted()
         if any(dirs):
             raise ValueError(
                 'Cannot have directories in directory of partial files')
@@ -150,8 +150,7 @@ class FileManager:
             list_directory_request = MetadataRequest(versioned_base_path)
             listed_directory = await self._request_executor.execute(
                 list_directory_request)
-            (dirs, files) = MetadataRequest.format_response(
-                listed_directory.result)
+            (dirs, files) = await listed_directory.formatted()
             if any(dirs):
                 raise ValueError(
                     'A versioned directory with partial files cannot contain subdirectories')
@@ -195,7 +194,7 @@ class FileManager:
         logging.debug(f'Got response for path {base}')
         if response.result.status == 404:
             return
-        (dirs, files) = await MetadataRequest.format_response(response.result)
+        (dirs, files) = await response.formatted()
         if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
             yield translatable_path
 
@@ -224,7 +223,7 @@ class FileManager:
             metadata_request = MetadataRequest(remote_path)
             metadata_response = await self._request_executor.execute(
                 metadata_request)
-            (dirs, files) = await MetadataRequest.format_response(metadata_response.result)
+            (dirs, files) = await metadata_response.formatted()
             if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME:
                 yield files[0]['Path']
                 return
@@ -235,7 +234,7 @@ class FileManager:
                 for item in items:
                     yield item
         else:
-            files = directory_list_command.format_response(response.result)
+            files = await response.formatted()
             # TODO: use less memory and make proper use of `files` generator
             directory_file_count = defaultdict(int)
             for file in files:
