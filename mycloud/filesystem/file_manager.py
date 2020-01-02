@@ -59,7 +59,7 @@ class FileManager:
         response = await self._request_executor.execute(metadata_request)
         if response.result.status == 404:
             return False, 0
-        (_, files) = MetadataRequest.format_response(response)
+        (_, files) = await MetadataRequest.format_response(response.result)
         return True, len(files)
 
     async def started_partial_download(self,
@@ -147,11 +147,11 @@ class FileManager:
 
         if upstream.continued_append_starting_index > 0:
             versioned_base_path = versioned_stream_accessor.get_base_path()
-            list_directory_request = MetadataRequest(
-                versioned_base_path, ignore_not_found=True)
-            listed_directory = await self._request_executor.execute_request(
+            list_directory_request = MetadataRequest(versioned_base_path)
+            listed_directory = await self._request_executor.execute(
                 list_directory_request)
-            (dirs, files) = MetadataRequest.format_response(listed_directory)
+            (dirs, files) = MetadataRequest.format_response(
+                listed_directory.result)
             if any(dirs):
                 raise ValueError(
                     'A versioned directory with partial files cannot contain subdirectories')
@@ -190,12 +190,12 @@ class FileManager:
 
     async def _read_directory_using_metadata_request(self, translatable_path: TranslatablePath, recursive: bool, _second: bool):
         base = translatable_path.calculate_remote()
-        metadata_request = MetadataRequest(base, ignore_not_found=True)
-        response = await self._request_executor.execute_request(metadata_request)
+        metadata_request = MetadataRequest(base)
+        response = await self._request_executor.execute(metadata_request)
         logging.debug(f'Got response for path {base}')
-        if response.status_code == 404:
+        if response.result.status == 404:
             return
-        (dirs, files) = MetadataRequest.format_response(response)
+        (dirs, files) = await MetadataRequest.format_response(response.result)
         if len(files) == 1 and files[0]['Name'] == METADATA_FILE_NAME:
             yield translatable_path
 
@@ -214,17 +214,17 @@ class FileManager:
     async def _read_directory_using_directory_list_request(self, translatable_path: TranslatablePath):
         remote_path = translatable_path.calculate_remote()
         directory_list_command = DirectoryListRequest(
-            remote_path, ListType.File, ignore_not_found=True, ignore_internal_server_error=True)
-        response = await self._request_executor.execute_request(
+            remote_path, ListType.File)
+        response = await self._request_executor.execute(
             directory_list_command)
-        if response.status_code == 404:
+        if response.result.status == 404:
             return
 
         if DirectoryListRequest.is_timeout(response):
             metadata_request = MetadataRequest(remote_path)
-            metadata_response = await self._request_executor.execute_request(
+            metadata_response = await self._request_executor.execute(
                 metadata_request)
-            (dirs, files) = MetadataRequest.format_response(metadata_response)
+            (dirs, files) = await MetadataRequest.format_response(metadata_response.result)
             if len(files) == 1 and os.path.basename(files[0]) == METADATA_FILE_NAME:
                 yield files[0]['Path']
                 return
@@ -235,7 +235,7 @@ class FileManager:
                 for item in items:
                     yield item
         else:
-            files = directory_list_command.format_response(response)
+            files = directory_list_command.format_response(response.result)
             # TODO: use less memory and make proper use of `files` generator
             directory_file_count = defaultdict(int)
             for file in files:
