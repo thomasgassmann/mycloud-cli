@@ -4,6 +4,7 @@ from time import sleep
 
 import aiohttp
 
+from mycloud import __version__
 from mycloud.common import merge_url_query_params
 from mycloud.constants import RESET_SESSION_EVERY, WAIT_TIME_MULTIPLIER
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
@@ -88,7 +89,7 @@ class MyCloudRequestExecutor:
         headers = dict()
         headers['Content-Type'] = content_type
         headers['Authorization'] = 'Bearer ' + bearer_token
-        headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        headers['User-Agent'] = f'mycloud-cli/{__version__}'
         return headers
 
     def _check_retry(self, response):
