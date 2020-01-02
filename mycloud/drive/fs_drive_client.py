@@ -5,7 +5,7 @@ from pathlib import Path
 
 import inject
 
-from mycloud.drive import DriveClient, DriveNotFoundException
+from mycloud.drive.drive_client import DriveClient
 from mycloud.mycloudapi import ObjectResourceBuilder
 
 

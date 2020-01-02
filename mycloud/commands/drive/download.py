@@ -4,8 +4,7 @@ import click
 import inject
 
 from mycloud.commands.shared import (async_click, authenticated)
-from mycloud.filesystem import FsDriveClient
-from mycloud.drive import DriveNotFoundException
+from mycloud.drive import DriveNotFoundException, FsDriveClient
 
 
 @click.command(name='download')
