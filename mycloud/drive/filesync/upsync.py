@@ -3,12 +3,12 @@ import os
 
 from mycloud.common import TimeoutException, operation_timeout
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.filesync.progress import ProgressTracker
-from mycloud.filesystem import (FileManager, HashCalculatedVersion,
-                                LocalTranslatablePath)
+from mycloud.drive.filesync.progress import ProgressTracker
+from mycloud.drive.filesystem import (FileManager, HashCalculatedVersion,
+                                      LocalTranslatablePath)
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
-from mycloud.streamapi import DefaultUpStream, ProgressReporter
-from mycloud.streamapi.transforms import AES256CryptoTransform
+from mycloud.drive.streamapi import DefaultUpStream, ProgressReporter
+from mycloud.drive.streamapi.transforms import AES256CryptoTransform
 
 # _mtime_cache = {}
 

@@ -2,7 +2,7 @@ import os
 
 from Crypto.Cipher import AES
 
-from mycloud.streamapi.transforms import AES256CryptoTransform
+from mycloud.drive.streamapi.transforms import AES256CryptoTransform
 
 
 def test_aes_transform_padding_is_applied():

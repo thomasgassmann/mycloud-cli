@@ -1,14 +1,12 @@
 import os
 
-from mycloud.constants import AES_EXTENSION, BASE_DIR, REPLACEMENT_TABLE
+from mycloud.constants import REPLACEMENT_TABLE
 
 
 class ObjectResourceBuilder:
     def __init__(self, base_dir: str, mycloud_backup_dir: str):
-        self.base_dir = base_dir
+        self.base_dir = os.path.abspath(base_dir)
         self.mycloud_dir = mycloud_backup_dir
-        if not self.mycloud_dir.startswith(BASE_DIR):
-            raise ValueError('Backup directory must start with /Drive/')
         if not self.mycloud_dir.endswith('/'):
             self.mycloud_dir += '/'
         if not self.base_dir.endswith(os.sep):
@@ -34,27 +32,14 @@ class ObjectResourceBuilder:
             remote_path += '/'
         return remote_path
 
-    def build_local_file(self, mycloud_path: str, remove_extension: bool = True):
+    def build_local_file(self, mycloud_path: str):
         path = mycloud_path[len(self.mycloud_dir):]
         normalized_relative_path = os.path.normpath(path)
         if normalized_relative_path == '.':
             normalized_relative_path = os.path.basename(
                 mycloud_path if not mycloud_path.endswith('/') else mycloud_path[:-1])
-        if remove_extension:
-            normalized_relative_path = self.remove_aes_extension(
-                normalized_relative_path)
 
         return os.path.join(self.base_dir, normalized_relative_path)
-
-    @staticmethod
-    def ends_with_aes_extension(mycloud_path: str):
-        return mycloud_path.endswith(AES_EXTENSION)
-
-    @staticmethod
-    def remove_aes_extension(mycloud_path: str):
-        if mycloud_path.endswith(AES_EXTENSION):
-            mycloud_path = mycloud_path[:-len(AES_EXTENSION)]
-        return mycloud_path
 
     def build_remote_file(self, full_file_path: str):
         file_name = os.path.basename(full_file_path)

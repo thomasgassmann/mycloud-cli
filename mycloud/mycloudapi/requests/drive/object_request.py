@@ -39,21 +39,11 @@ class PutObjectRequest(ObjectRequest):
 
 class GetObjectRequest(ObjectRequest):
 
-    def __init__(self, object_resource: str, ignore_bad_request=False, ignore_not_found=False):
+    def __init__(self, object_resource: str):
         super().__init__(object_resource)
-        self._ignore_400 = ignore_bad_request
-        self._ignore_404 = ignore_not_found
 
     def get_method(self):
         return Method.GET
-
-    def ignored_error_status_codes(self):
-        ignored = []
-        if self._ignore_400:
-            ignored.append(400)
-        if self._ignore_404:
-            ignored.append(404)
-        return ignored
 
     def is_query_parameter_access_token(self):
         return True
@@ -64,5 +54,6 @@ class DeleteObjectRequest(ObjectRequest):
     def get_method(self):
         return Method.DELETE
 
-    def ignored_error_status_codes(self):
-        return []
+    @staticmethod
+    def is_success(resp):
+        return resp.status == 204

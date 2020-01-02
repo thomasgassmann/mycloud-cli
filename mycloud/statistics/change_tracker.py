@@ -9,8 +9,8 @@ async def track_changes(request_executor: MyCloudRequestExecutor, mycloud_dir: s
     mycloud_dir = ObjectResourceBuilder.correct_suffix_sep(
         mycloud_dir, is_file=False)
     change_request = ChangeRequest(mycloud_dir, top)
-    response = await request_executor.execute_request(change_request)
-    items = ChangeRequest.format_response(response)
+    response = await request_executor.execute(change_request)
+    items = await response.formatted()
     data = []
     for item in items:
         data.append([

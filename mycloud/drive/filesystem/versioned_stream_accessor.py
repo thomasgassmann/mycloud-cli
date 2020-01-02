@@ -1,7 +1,7 @@
-from mycloud.filesystem.file_version import CalculatableVersion
-from mycloud.filesystem.translatable_path import TranslatablePath
+from mycloud.drive.filesystem.file_version import CalculatableVersion
+from mycloud.drive.filesystem.translatable_path import TranslatablePath
 from mycloud.mycloudapi import ObjectResourceBuilder
-from mycloud.streamapi import CloudStream, CloudStreamAccessor
+from mycloud.drive.streamapi import CloudStream, CloudStreamAccessor
 
 
 class VersionedCloudStreamAccessor(CloudStreamAccessor):

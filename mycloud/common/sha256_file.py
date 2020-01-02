@@ -3,7 +3,7 @@ import logging
 import os
 
 from mycloud.common import operation_timeout
-from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
+from mycloud.constants import CHUNK_SIZE
 
 CACHED_HASHES = {}
 
@@ -19,7 +19,7 @@ def sha256_file(local_file: str):
     stream = operation_timeout(lambda x: open(
         x['file'], 'rb'), file=local_file)
     file_buffer = operation_timeout(
-        read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
+        read_file, file=stream, length=CHUNK_SIZE)
     read_length = 0
     file_size = operation_timeout(
         lambda x: os.stat(x['file']).st_size, file=local_file)
@@ -27,12 +27,12 @@ def sha256_file(local_file: str):
     while any(file_buffer):
         sha.update(file_buffer)
         file_buffer = operation_timeout(
-            read_file, file=stream, length=ENCRYPTION_CHUNK_LENGTH)
-        if (read_length / ENCRYPTION_CHUNK_LENGTH) % 1000 == 0:
+            read_file, file=stream, length=CHUNK_SIZE)
+        if (read_length / CHUNK_SIZE) % 1000 == 0:
             percentage = '{0:.2f}'.format((read_length / file_size) * 100)
             print('Hashing file {}: {}% complete...'.format(
                 local_file, percentage), end='\r')
-        read_length += ENCRYPTION_CHUNK_LENGTH
+        read_length += CHUNK_SIZE
     print('Hashing file {}: {}% complete...'.format(
         local_file, percentage), end='\n')
     stream.close()

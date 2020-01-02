@@ -1,11 +1,11 @@
 import time
 
-from mycloud.constants import ENCRYPTION_CHUNK_LENGTH
+from mycloud.constants import CHUNK_SIZE
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.requests.drive import GetObjectRequest
-from mycloud.streamapi.stream_object import StreamDirection
-from mycloud.streamapi.progress_report import ProgressReport, ProgressReporter
-from mycloud.streamapi.stream_accessor import CloudStreamAccessor
+from mycloud.drive.streamapi.stream_object import StreamDirection
+from mycloud.drive.streamapi.progress_report import ProgressReport, ProgressReporter
+from mycloud.drive.streamapi.stream_accessor import CloudStreamAccessor
 
 
 class DownStreamExecutor:
@@ -28,9 +28,9 @@ class DownStreamExecutor:
             for transform in stream_accessor.get_transforms():
                 transform.reset_state()
             resource_url = stream_accessor.get_part_file(current_part_index)
-            get_request = GetObjectRequest(resource_url, ignore_not_found=True)
-            response = await self.request_executor.execute_request(get_request)
-            if response.status_code == 404:
+            get_request = GetObjectRequest(resource_url)
+            response = await self.request_executor.execute(get_request)
+            if response.result.status == 404:
                 file_stream.finished()
                 break
 
@@ -53,7 +53,7 @@ class DownStreamExecutor:
 
             previous_chunk = None
 
-            for chunk in response.iter_content(chunk_size=ENCRYPTION_CHUNK_LENGTH):
+            async for chunk in response.result.content.iter_chunked(CHUNK_SIZE):
                 if previous_chunk is None:
                     previous_chunk = chunk
                     continue

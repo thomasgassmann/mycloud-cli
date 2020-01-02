@@ -15,6 +15,7 @@ class UsageRequest(MyCloudRequest):
         return REQUEST_URL.format(int(time.time()))
 
     @staticmethod
-    def format_response(response):
-        json_data = json.loads(response.text)
+    async def format_response(response):
+        text = await response.text()
+        json_data = json.loads(text)
         return json_data

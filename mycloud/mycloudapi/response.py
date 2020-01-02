@@ -8,9 +8,18 @@ class MyCloudResponse:
         self._result = result
 
     @property
-    def success(self) -> bool:
-        raise NotImplementedError()
+    def result(self):
+        return self._result
 
     @property
-    def result(self):
-        raise NotImplementedError()
+    def success(self):
+        if 'is_success' not in dir(type(self.request)):
+            return None
+
+        return type(self.request).is_success(self.result)
+
+    async def formatted(self):
+        if 'format_response' not in dir(type(self.request)):
+            return None
+
+        return await type(self.request).format_response(self.result)
