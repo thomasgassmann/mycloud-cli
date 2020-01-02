@@ -4,9 +4,9 @@ import click
 import inject
 
 from mycloud.commands.shared import async_click, authenticated
-from mycloud.filesync import downsync_folder
-from mycloud.filesystem import BasicRemotePath
-from mycloud.filesync.progress import ProgressTracker
+from mycloud.drive.filesync import downsync_folder
+from mycloud.drive.filesystem import BasicRemotePath
+from mycloud.drive.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor, ObjectResourceBuilder
 
 

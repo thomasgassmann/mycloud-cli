@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from mycloud.common import operation_timeout
 from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
-from mycloud.filesystem.file_version import HashCalculatedVersion
+from mycloud.drive.filesystem.file_version import HashCalculatedVersion
 from mycloud.mycloudapi import ObjectResourceBuilder
 
 

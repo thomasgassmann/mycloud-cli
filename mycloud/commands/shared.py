@@ -5,7 +5,7 @@ from functools import update_wrapper
 import inject
 from click import ClickException
 
-from mycloud.filesync.progress import ProgressTracker
+from mycloud.drive.filesync.progress import ProgressTracker
 from mycloud.mycloudapi import MyCloudRequestExecutor
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 
