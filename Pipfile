@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 mypy = "*"
+autopep8 = "*"
 
 [packages]
 selenium = "==3.11.0"
