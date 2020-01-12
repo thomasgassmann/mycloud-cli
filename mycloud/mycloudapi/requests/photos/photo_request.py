@@ -30,6 +30,7 @@ class AddPhotoRequest(MyCloudRequest):
 
     @staticmethod
     async def format_response(response):
+        print(response.status)
         if response.status == 400:
             text = await response.text()
             print(text)

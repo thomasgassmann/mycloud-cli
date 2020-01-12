@@ -1,5 +1,6 @@
 import inject
 import os
+from mycloud.common import to_generator
 from mycloud.photos.photos_client import PhotosClient
 
 
@@ -11,4 +12,5 @@ class FsPhotosClient:
         filename = os.path.basename(local_path)
 
         with open(local_path, 'rb') as f:
-            await self.photos_client.add(name, f, filename)
+            generator = to_generator(f)
+            await self.photos_client.add(name, generator, filename)
