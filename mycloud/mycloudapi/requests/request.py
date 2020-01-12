@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 
+from mycloud.common import abstractstatic
+
 
 class ContentType:
     APPLICATION_JSON = 'application/json'
@@ -23,6 +25,9 @@ class MyCloudRequest(ABC):
     def get_method(self):
         raise NotImplementedError()
 
+    def get_additional_headers(self):
+        return dict()
+
     def is_query_parameter_access_token(self):
         return False
 
@@ -31,3 +36,7 @@ class MyCloudRequest(ABC):
 
     def get_content_type(self):
         return ContentType.APPLICATION_JSON
+
+    @abstractstatic
+    async def format_response(response):
+        raise NotImplementedError()

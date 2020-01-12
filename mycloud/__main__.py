@@ -4,6 +4,7 @@ import sys
 import click
 
 from mycloud.commands import auth_command, statistics_command
+from mycloud.commands.photos import add_command
 from mycloud.commands.drive import (delete_command, download_command,
                                     upload_command)
 from mycloud.commands.drive.fs import downsync_command, upsync_command
@@ -56,6 +57,13 @@ def fs_drive_cli():
     pass
 
 
+@click.group('photos')
+def photos_cli():
+    pass
+
+
+photos_cli.add_command(add_command)
+
 drive_cli.add_command(delete_command)
 drive_cli.add_command(upload_command)
 drive_cli.add_command(download_command)
@@ -66,6 +74,7 @@ fs_drive_cli.add_command(downsync_command)
 mycloud_cli.add_command(drive_cli)
 mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
+mycloud_cli.add_command(photos_cli)
 
 
 def main():

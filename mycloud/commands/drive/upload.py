@@ -1,7 +1,3 @@
-import os
-from typing import List
-from pathlib import Path
-
 import click
 import inject
 

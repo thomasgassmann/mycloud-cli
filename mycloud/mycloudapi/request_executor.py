@@ -24,7 +24,7 @@ class MyCloudRequestExecutor:
         logging.info(f'Executing request {request}')
 
         headers = MyCloudRequestExecutor._get_headers(
-            request.get_content_type(), auth_token)
+            request.get_content_type(), auth_token, request.get_additional_headers())
 
         session = aiohttp.ClientSession(headers=headers)
         request_url = MyCloudRequestExecutor._get_request_url(
@@ -85,11 +85,15 @@ class MyCloudRequestExecutor:
         return request_url
 
     @staticmethod
-    def _get_headers(content_type: ContentType, bearer_token: str):
+    def _get_headers(content_type: ContentType, bearer_token: str, additional: dict):
         headers = dict()
         headers['Content-Type'] = content_type
         headers['Authorization'] = 'Bearer ' + bearer_token
         headers['User-Agent'] = f'mycloud-cli/{__version__}'
+
+        for key in additional:
+            headers[key] = additional[key]
+
         return headers
 
     def _check_retry(self, response):
