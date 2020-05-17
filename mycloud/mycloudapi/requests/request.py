@@ -37,6 +37,5 @@ class MyCloudRequest(ABC):
     def get_content_type(self):
         return ContentType.APPLICATION_JSON
 
-    @abstractstatic
     async def format_response(response):
-        raise NotImplementedError()
+        return response

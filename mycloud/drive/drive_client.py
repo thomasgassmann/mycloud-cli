@@ -40,8 +40,7 @@ class DriveClient:
 
     async def download_each(self, directory_path: str, stream_factory):
         async for file in self.list_files(directory_path):
-            with stream_factory(file) as stream:
-                await self.download(file['Path'], stream)
+            await self.download(file['Path'], lambda: stream_factory(file))
 
     async def download(self, path: str, stream_factory):
         get_request = GetObjectRequest(path)
