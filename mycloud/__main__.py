@@ -8,6 +8,7 @@ from mycloud.commands.photos import add_command
 from mycloud.commands.drive import (delete_command, download_command,
                                     upload_command)
 from mycloud.commands.drive.fs import downsync_command, upsync_command
+from mycloud.commands.webdav import webdav_command
 from mycloud.configure_inject import build_container
 
 
@@ -75,6 +76,7 @@ mycloud_cli.add_command(drive_cli)
 mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 mycloud_cli.add_command(photos_cli)
+mycloud_cli.add_command(webdav_command)
 
 
 def main():
