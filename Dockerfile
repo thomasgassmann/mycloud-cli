@@ -11,8 +11,8 @@ COPY ./Pipfile.lock ./Pipfile.lock
 RUN pip install pipenv && \
     pipenv install --system --deploy --ignore-pipfile
 
-RUN apt-get update && apt-get install -y chromium=78.0.3904.108-1~deb10u1
-RUN wget https://chromedriver.storage.googleapis.com/78.0.3904.105/chromedriver_linux64.zip && \
+RUN apt-get update && apt-get install -y chromium=80.0.3987.162-1~deb10u1
+RUN wget https://chromedriver.storage.googleapis.com/80.0.3987.16/chromedriver_linux64.zip && \
     unzip chromedriver_linux64.zip && \
     rm chromedriver_linux64.zip && \
     mv chromedriver /usr/bin/chromedriver
