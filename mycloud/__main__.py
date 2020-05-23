@@ -27,7 +27,9 @@ def setup_logger(level_str: str, log_file: str):
     log_formatter = logging.Formatter(
         "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
     root_logger = logging.getLogger()
-    root_logger.setLevel(get_log_level(level_str))
+    root_logger.propagate = True
+    level = get_log_level(level_str)
+    root_logger.setLevel(level)
 
     if log_file:
         file_handler = logging.FileHandler(log_file)
@@ -37,6 +39,10 @@ def setup_logger(level_str: str, log_file: str):
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(log_formatter)
     root_logger.addHandler(console_handler)
+
+    logger = logging.getLogger('wsgidav')
+    logger.propagate = True
+    logger.setLevel(level)
 
 
 @click.group()
