@@ -23,6 +23,8 @@ halo = "*"
 click = "*"
 pytest = "*"
 inject = "*"
+wsgidav = "*"
+cheroot = "*"
 
 [requires]
 python_version = "3.7"
