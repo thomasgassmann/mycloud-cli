@@ -6,7 +6,7 @@ import aiohttp
 
 from mycloud import __version__
 from mycloud.common import merge_url_query_params
-from mycloud.constants import RESET_SESSION_EVERY, WAIT_TIME_MULTIPLIER
+from mycloud.constants import WAIT_TIME_MULTIPLIER
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
 from mycloud.mycloudapi.response import MyCloudResponse
