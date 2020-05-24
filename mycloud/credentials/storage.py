@@ -33,8 +33,16 @@ class CredentialStorage:
             return None, None
         with open(AUTHENTICATION_INFO_LOCATION, 'r') as file:
             auth_info = json.load(file)
-        password = keyring.get_password(SERVICE_NAME, auth_info['user'])
-        return (auth_info['user'], password)
+        return cls.load_with_user(auth_info['user'])
+
+    @classmethod
+    def load_with_user(cls, user):
+        password = keyring.get_password(SERVICE_NAME, user)
+        return (user, password)
+
+    @classmethod
+    async def validate(cls, user, password):
+        return await _validate_credentials(user, password, True)
 
 
 async def _validate_credentials(user_name: str, password: str, headless: bool) -> bool:
