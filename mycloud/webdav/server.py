@@ -7,32 +7,20 @@ from wsgidav.error_printer import ErrorPrinter
 from wsgidav.request_resolver import RequestResolver
 from cheroot import wsgi
 
-from mycloud.webdav.wsgidav import MyCloudDomainController
-
 
 class WebdavServer:
 
     def run(self, host, port):
         port = int(port)
         config = {
-            "middleware_stack": [
-                WsgiDavDebugFilter,
-                ErrorPrinter,
-                HTTPAuthenticator,
-                WsgiDavDirBrowser,
-                RequestResolver
-            ],
             "host": host,
             "port": port,
             "provider_mapping": {
                 '/': FilesystemProvider('/tmp')
             },
-            "verbose": 5,
             "http_authenticator": {
-                "accept_basic": True,
-                "domain_controller": MyCloudDomainController
+                "accept_basic": True
             },
-            "enable_loggers": ["lock_manager", "property_manager", "http_authenticator"],
             "error_printer": {"catch_all": True}
         }
 
