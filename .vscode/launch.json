@@ -2,6 +2,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "myCloud Webdav Server Debug",
+      "type": "python",
+      "request": "launch",
+      "pythonPath": "${workspaceRoot}/.venv/bin/python",
+      "module": "mycloud",
+      "stopOnEntry": false,
+      "console": "integratedTerminal",
+      "args": ["webdav", "--host", "0.0.0.0", "--port", "9008"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "name": "myCloud Debug",
       "type": "python",
       "request": "launch",
