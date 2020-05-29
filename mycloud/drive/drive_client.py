@@ -59,6 +59,9 @@ class DriveClient:
         stream.close()
 
     async def upload(self, path: str, stream):
+        if self.is_directory(path):
+            raise ValueError('Cannot upload directory')
+
         generator = to_generator(stream)
         put_request = PutObjectRequest(path, generator)
         await self.request_executor.execute(put_request)

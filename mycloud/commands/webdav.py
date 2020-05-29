@@ -8,7 +8,8 @@ from mycloud.webdav import WebdavServer
 @click.command(name='webdav')
 @click.option('--host', nargs=1, required=True)
 @click.option('--port', nargs=1, required=True)
+@click.option('--skip-credential-validation', required=False, is_flag=True, default=False)
 @authenticated
 @inject.params(server=WebdavServer)
-def webdav_command(server: WebdavServer, host: str, port: int):
-    server.run(host, port)
+def webdav_command(server: WebdavServer, host: str, port: int, skip_credential_validation: bool):
+    server.run(host, port, not skip_credential_validation)
