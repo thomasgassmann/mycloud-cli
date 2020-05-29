@@ -5,7 +5,7 @@ from pathlib import Path
 
 import inject
 
-from mycloud.drive.drive_client import DriveClient
+from mycloud.drive.drive_client import DriveClient, FileType
 from mycloud.mycloudapi import ObjectResourceBuilder
 
 
@@ -14,8 +14,8 @@ class FsDriveClient:
     client: DriveClient = inject.attr(DriveClient)
 
     async def download(self, remote: str, local: str):
-        is_directory = self.client.is_directory(remote)
-        if is_directory:
+        file_type = await self.client.get_path_metadata(remote)
+        if file_type == FileType.Directory:
             await self.download_directory(remote, local)
         else:
             await self.download_file(remote, local)

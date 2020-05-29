@@ -6,7 +6,7 @@ import click
 from mycloud.commands import auth_command, statistics_command
 from mycloud.commands.photos import add_command
 from mycloud.commands.drive import (delete_command, download_command,
-                                    upload_command)
+                                    upload_command, metadata_command)
 from mycloud.commands.drive.fs import downsync_command, upsync_command
 from mycloud.commands.webdav import webdav_command
 from mycloud.configure_inject import build_container
@@ -74,6 +74,7 @@ photos_cli.add_command(add_command)
 drive_cli.add_command(delete_command)
 drive_cli.add_command(upload_command)
 drive_cli.add_command(download_command)
+drive_cli.add_command(metadata_command)
 
 fs_drive_cli.add_command(upsync_command)
 fs_drive_cli.add_command(downsync_command)
