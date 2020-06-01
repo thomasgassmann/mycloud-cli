@@ -1,7 +1,7 @@
 import inject
 import os
 from wsgidav.dav_provider import DAVNonCollection
-from mycloud.webdav.client import MyCloudDavClient
+from mycloud.webdav.client import MyCloudDavClient, FileEntry
 from mycloud.common import to_unix
 
 
@@ -48,4 +48,16 @@ class FileResource(DAVNonCollection):
     def _file_entry(self):
         dir_name = os.path.dirname(os.path.normpath(self.path))
         metadata = self.dav_client.get_directory_metadata(dir_name)
-        return list(filter(lambda x: x.path == self.path, metadata.files))[0]
+        res = list(filter(lambda x: x.path == self.path, metadata.files))
+        if any(res):
+            return res[0]
+
+        return FileEntry(
+            creation_time=None,
+            etag=None,
+            extension=None,
+            length=0,
+            mime=None,
+            modification_time=None,
+            name=os.path.basename(os.path.normpath(self.path)),
+            path=self.path)

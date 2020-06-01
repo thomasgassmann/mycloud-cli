@@ -16,17 +16,18 @@ class FileType(Enum):
 
 class Writable:
 
-    def __init__(self, path, client, loop):
+    def __init__(self, path, client, loop, dav_client):
         self._path = path
         self._client: DriveClient = client
         self._loop = loop
+        self._dav_client = dav_client
 
     def writelines(self, stream):
         self._loop.run_until_complete(
             self._client.put_stream(self._path, stream))
 
     def close(self):
-        pass
+        self._dav_client.metadata_cache = dict()
 
 
 class MyCloudDavClient:
@@ -66,7 +67,7 @@ class MyCloudDavClient:
 
     def open_write(self, path):
         loop = self._get_set_loop()
-        return Writable(path, self.drive_client, loop)
+        return Writable(path, self.drive_client, loop, self)
 
     def mkfile(self, path):
         run_sync(self.drive_client.mkfile(path))

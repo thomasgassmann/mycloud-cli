@@ -2,6 +2,7 @@ import asyncio
 import inject
 import os
 from wsgidav.dav_provider import DAVCollection
+from mycloud.webdav.wsgidav.file_resource import FileResource
 from mycloud.webdav.client import MyCloudDavClient, MyCloudMetadata
 from mycloud.common import run_sync, to_unix
 
@@ -31,7 +32,7 @@ class DirResource(DAVCollection):
         self.dav_client.mkdirs(new_path)
 
     def create_empty_resource(self, name):
-        pass
+        return FileResource(os.path.join(self.path, name), self.environ)
 
     def support_recursive_delete(self):
         return True
