@@ -43,6 +43,7 @@ class MyCloudMetadata:
 
 class MetadataRequest(MyCloudRequest):
     def __init__(self, object_resource: str):
+        logging.debug(f'Metadata request {object_resource}')
         object_resource = sanitize_path(object_resource, force_dir=True)
         self.object_resource = object_resource
 

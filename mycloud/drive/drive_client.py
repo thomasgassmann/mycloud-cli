@@ -27,20 +27,15 @@ class DriveClient:
     async def get_directory_metadata(self, path: str):
         return await self._get_directory_metadata_internal(path)
 
-    async def download_each(self, directory_path: str, stream_factory):
-        async for file in self._list_files_internal(directory_path):
-            await self._download_internal(file['Path'], lambda: stream_factory(file))
-
     async def download(self, path: str, stream_factory):
         return await self._download_internal(path, stream_factory)
 
-    async def upload(self, path: str, stream):
-        generator = to_generator(stream)
-        put_request = PutObjectRequest(path, generator)
+    async def mkdirs(self, path: str):
+        put_request = PutObjectRequest(path, None, True)
         await self.request_executor.execute(put_request)
 
-    async def delete(self, path: str):
-        return await self._delete_internal(path)
+    async def delete(self, path: str, is_dir):
+        return await self._delete_internal(path, is_dir)
 
     async def _download_internal(self, path, stream_factory):
         get_request = GetObjectRequest(path)
@@ -58,21 +53,21 @@ class DriveClient:
             stream.write(chunk)
         stream.close()
 
-    async def _delete_internal(self, path: str):
+    async def _delete_internal(self, path: str, is_dir):
         try:
-            await self._delete_single_internal(path)
+            await self._delete_single_internal(path, is_dir)
         except DriveFailedToDeleteException:
-            if not path.endswith('/'):
+            if not is_dir:
                 raise  # probably an unrecoverable error, if it's not a directory
 
             metadata = await self._get_directory_metadata_internal(path)
             for remote_file in metadata.files:
-                await self._delete_internal(remote_file.path)
+                await self._delete_internal(remote_file.path, False)
             for directory in metadata.dirs:
-                await self._delete_internal(directory.path)
+                await self._delete_internal(directory.path, True)
 
-    async def _delete_single_internal(self, path: str):
-        delete_request = DeleteObjectRequest(path)
+    async def _delete_single_internal(self, path: str, is_dir):
+        delete_request = DeleteObjectRequest(path, is_dir)
         resp = await self.request_executor.execute(delete_request)
         DriveClient._raise_404(resp)
         if not resp.success:

@@ -40,9 +40,12 @@ class MyCloudDavClient:
         normed = os.path.normpath(path)
         return self._get_metadata(normed)
 
-    def remove(self, path):
-        normed = os.path.normpath(path)
-        run_sync(self.drive_client.delete(normed))
+    def mkdirs(self, path):
+        run_sync(self.drive_client.mkdirs(path))
+        self.metadata_cache = dict()
+
+    def remove(self, path, is_dir):
+        run_sync(self.drive_client.delete(path, is_dir))
         self.metadata_cache = dict()
 
     def _get_metadata(self, path: str):

@@ -34,7 +34,7 @@ class FileResource(DAVNonCollection):
         return False
 
     def delete(self):
-        self.dav_client.remove(self.path)
+        self.dav_client.remove(self.path, is_dir=False)
         self.remove_all_properties(True)
         self.remove_all_locks(True)
 
