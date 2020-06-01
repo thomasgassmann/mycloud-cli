@@ -3,7 +3,7 @@ import asyncio
 import os
 from typing import Dict
 from enum import Enum
-from mycloud.mycloudapi.requests.drive import MyCloudMetadata, FileEntry, DirEntry
+from mycloud.mycloudapi.requests.drive import MyCloudMetadata, FileEntry, DirEntry, PutObjectRequest
 from mycloud.drive import DriveClient
 from mycloud.common import run_sync
 
@@ -12,6 +12,21 @@ class FileType(Enum):
     File = 0
     Dir = 1
     Enoent = 2
+
+
+class Writable:
+
+    def __init__(self, path, client, loop):
+        self._path = path
+        self._client: DriveClient = client
+        self._loop = loop
+
+    def writelines(self, stream):
+        self._loop.run_until_complete(
+            self._client.put_stream(self._path, stream))
+
+    def close(self):
+        pass
 
 
 class MyCloudDavClient:
@@ -46,9 +61,12 @@ class MyCloudDavClient:
         self.metadata_cache = dict()
 
     def open_read(self, path):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        loop = self._get_set_loop()
         return loop.run_until_complete(self.drive_client.open_read(path))
+
+    def open_write(self, path):
+        loop = self._get_set_loop()
+        return Writable(path, self.drive_client, loop)
 
     def mkfile(self, path):
         run_sync(self.drive_client.mkfile(path))
@@ -64,3 +82,8 @@ class MyCloudDavClient:
         metadata = run_sync(self.drive_client.get_directory_metadata(path))
         self.metadata_cache[path] = metadata
         return metadata
+
+    def _get_set_loop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop

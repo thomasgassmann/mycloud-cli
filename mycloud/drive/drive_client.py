@@ -47,6 +47,10 @@ class DriveClient:
         DriveClient._raise_404(resp)
         return ReadStream(resp.result.content, asyncio.get_event_loop())
 
+    async def put_stream(self, path: str, generator):
+        req = PutObjectRequest(path, generator, is_dir=False)
+        resp = await self.request_executor.execute(req)
+
     async def mkfile(self, path: str):
         put_request = PutObjectRequest(path, None, False)
         await self.request_executor.execute(put_request)

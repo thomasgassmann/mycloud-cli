@@ -36,6 +36,9 @@ class FileResource(DAVNonCollection):
     def get_content(self):
         return self.dav_client.open_read(self.path)
 
+    def begin_write(self, content_type):
+        return self.dav_client.open_write(self.path)
+
     def delete(self):
         self.dav_client.remove(self.path, is_dir=False)
         self.remove_all_properties(True)
