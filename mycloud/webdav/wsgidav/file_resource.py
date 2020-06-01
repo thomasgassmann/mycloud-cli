@@ -33,6 +33,9 @@ class FileResource(DAVNonCollection):
     def support_ranges(self):
         return False
 
+    def get_content(self):
+        return self.dav_client.open_read(self.path)
+
     def delete(self):
         self.dav_client.remove(self.path, is_dir=False)
         self.remove_all_properties(True)

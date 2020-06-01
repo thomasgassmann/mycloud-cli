@@ -9,6 +9,7 @@
       "module": "mycloud",
       "stopOnEntry": false,
       "console": "integratedTerminal",
+      "justMyCode": false,
       "args": [
         "webdav",
         "--host",

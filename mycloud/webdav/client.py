@@ -1,4 +1,5 @@
 import inject
+import asyncio
 import os
 from typing import Dict
 from enum import Enum
@@ -42,6 +43,15 @@ class MyCloudDavClient:
 
     def mkdirs(self, path):
         run_sync(self.drive_client.mkdirs(path))
+        self.metadata_cache = dict()
+
+    def open_read(self, path):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop.run_until_complete(self.drive_client.open_read(path))
+
+    def mkfile(self, path):
+        run_sync(self.drive_client.mkfile(path))
         self.metadata_cache = dict()
 
     def remove(self, path, is_dir):

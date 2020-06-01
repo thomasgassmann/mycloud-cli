@@ -1,9 +1,10 @@
 import logging
+import asyncio
 import os
 import inject
 from enum import Enum
 
-from mycloud.common import to_generator
+from mycloud.common import to_generator, run_sync
 from mycloud.constants import CHUNK_SIZE
 from mycloud.drive.exceptions import (DriveFailedToDeleteException,
                                       DriveNotFoundException)
@@ -14,6 +15,19 @@ from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                MetadataRequest,
                                                PutObjectRequest,
                                                MyCloudMetadata)
+
+
+class ReadStream:
+
+    def __init__(self, content, loop):
+        self._content = content
+        self._loop = loop
+
+    def read(self, length):
+        return self._loop.run_until_complete(self._content.read(length))
+
+    def close(self):
+        pass
 
 
 class DriveClient:
@@ -27,8 +41,15 @@ class DriveClient:
     async def get_directory_metadata(self, path: str):
         return await self._get_directory_metadata_internal(path)
 
-    async def download(self, path: str, stream_factory):
-        return await self._download_internal(path, stream_factory)
+    async def open_read(self, path: str):
+        get = GetObjectRequest(path, is_dir=False)
+        resp = await self.request_executor.execute(get)
+        DriveClient._raise_404(resp)
+        return ReadStream(resp.result.content, asyncio.get_event_loop())
+
+    async def mkfile(self, path: str):
+        put_request = PutObjectRequest(path, None, False)
+        await self.request_executor.execute(put_request)
 
     async def mkdirs(self, path: str):
         put_request = PutObjectRequest(path, None, True)
@@ -36,22 +57,6 @@ class DriveClient:
 
     async def delete(self, path: str, is_dir):
         return await self._delete_internal(path, is_dir)
-
-    async def _download_internal(self, path, stream_factory):
-        get_request = GetObjectRequest(path)
-        resp: MyCloudResponse = await self.request_executor.execute(get_request)
-        DriveClient._raise_404(resp)
-
-        stream = stream_factory()
-        while True:
-            logging.debug(f'Reading download content...')
-            chunk = await resp.result.content.read(CHUNK_SIZE)
-            logging.debug(f'Got {len(chunk)} bytes')
-            if not chunk:
-                break
-            logging.debug(f'Writing to output stream...')
-            stream.write(chunk)
-        stream.close()
 
     async def _delete_internal(self, path: str, is_dir):
         try:

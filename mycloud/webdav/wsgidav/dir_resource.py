@@ -30,6 +30,18 @@ class DirResource(DAVCollection):
         new_path = os.path.join(self.path, name)
         self.dav_client.mkdirs(new_path)
 
+    def create_empty_resource(self, name):
+        pass
+
+    def support_recursive_delete(self):
+        return True
+
+    def support_recursive_move(self):
+        return True
+
+    def support_ranges(self):
+        return False
+
     def delete(self):
         self.dav_client.remove(self.path, is_dir=True)
         self.remove_all_properties(True)
