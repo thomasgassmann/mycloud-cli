@@ -9,7 +9,14 @@
       "module": "mycloud",
       "stopOnEntry": false,
       "console": "integratedTerminal",
-      "args": ["webdav", "--host", "0.0.0.0", "--port", "9008"],
+      "args": [
+        "webdav",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9008",
+        "--skip-credential-validation"
+      ],
       "cwd": "${workspaceFolder}"
     },
     {

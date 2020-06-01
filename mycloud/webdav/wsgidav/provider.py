@@ -1,22 +1,19 @@
 import inject
-import asyncio
 from wsgidav.dav_provider import DAVProvider
-from mycloud.drive import DriveClient, FileType
 from mycloud.webdav.wsgidav.dir_resource import DirResource
 from mycloud.webdav.wsgidav.file_resource import FileResource
+from mycloud.webdav.client import MyCloudDavClient, FileType
+from mycloud.common import run_sync
 
 
 class MyCloudWebdavProvider(DAVProvider):
 
-    drive_client: DriveClient = inject.attr(DriveClient)
+    dav_client: MyCloudDavClient = inject.attr(MyCloudDavClient)
 
     def get_resource_inst(self, path, environ):
-        loop = asyncio.new_event_loop()
+        file_type = self.dav_client.get_file_type(path)
 
-        file_type = loop.run_until_complete(
-            self.drive_client.get_path_metadata(path))
-
-        if file_type == FileType.Directory:
+        if file_type == FileType.Dir:
             return DirResource(path, environ)
 
         if file_type == FileType.File:

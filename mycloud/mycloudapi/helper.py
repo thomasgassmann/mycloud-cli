@@ -7,11 +7,6 @@ def get_object_id(string: str):
     return str(base_64, 'utf-8')
 
 
-def raise_if_invalid_drive_path(path: str):
-    if not path.startswith('/Drive/'):
-        raise ValueError('Object path for myCloud must start with /Drive')
-
-
 def generator_to_stream(generator, buffer_size=io.DEFAULT_BUFFER_SIZE):
     class GeneratorStream(io.RawIOBase):
         def __init__(self):

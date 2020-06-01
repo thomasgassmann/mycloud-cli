@@ -12,16 +12,8 @@ from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
 from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                GetObjectRequest,
                                                MetadataRequest,
-                                               PutObjectRequest)
-
-
-DRIVE_BASE = '/Drive'
-
-
-class FileType(Enum):
-    DoesNotExist = 0
-    Directory = 1
-    File = 2
+                                               PutObjectRequest,
+                                               MyCloudMetadata)
 
 
 class DriveClient:
@@ -30,47 +22,24 @@ class DriveClient:
         MyCloudRequestExecutor)
 
     async def list_files(self, remote: str):
-        remote = DriveClient._sanitize_path(remote, force_dir=True)
         return await self._list_files_internal(remote)
 
     async def get_directory_metadata(self, path: str):
-        path = DriveClient._sanitize_path(
-            path, force_dir=True)
         return await self._get_directory_metadata_internal(path)
 
-    async def get_path_metadata(self, remote: str) -> FileType:
-        if remote == '/':
-            return FileType.Directory
-
-        remote = DriveClient._sanitize_path(remote, force_file=True)
-        directory = os.path.dirname(remote)
-        try:
-            (dirs, files) = await self._get_directory_metadata_internal(directory)
-            if remote in files:
-                return FileType.File
-            return FileType.Directory
-        except:
-            return FileType.DoesNotExist
-
     async def download_each(self, directory_path: str, stream_factory):
-        directory_path = DriveClient._sanitize_path(
-            directory_path, force_dir=True)
         async for file in self._list_files_internal(directory_path):
             await self._download_internal(file['Path'], lambda: stream_factory(file))
 
     async def download(self, path: str, stream_factory):
-        path = DriveClient._sanitize_path(path, force_file=True)
         return await self._download_internal(path, stream_factory)
 
     async def upload(self, path: str, stream):
-        path = DriveClient._sanitize_path(path, force_file=True)
-
         generator = to_generator(stream)
         put_request = PutObjectRequest(path, generator)
         await self.request_executor.execute(put_request)
 
     async def delete(self, path: str):
-        path = DriveClient._sanitize_path(path)
         return await self._delete_internal(path)
 
     async def _download_internal(self, path, stream_factory):
@@ -96,11 +65,11 @@ class DriveClient:
             if not path.endswith('/'):
                 raise  # probably an unrecoverable error, if it's not a directory
 
-            (dirs, files) = await self._get_directory_metadata_internal(path)
-            for remote_file in files:
-                await self._delete_internal(remote_file['Path'])
-            for directory in dirs:
-                await self._delete_internal(directory['Path'])
+            metadata = await self._get_directory_metadata_internal(path)
+            for remote_file in metadata.files:
+                await self._delete_internal(remote_file.path)
+            for directory in metadata.dirs:
+                await self._delete_internal(directory.path)
 
     async def _delete_single_internal(self, path: str):
         delete_request = DeleteObjectRequest(path)
@@ -110,7 +79,7 @@ class DriveClient:
             logging.info(f'Failed to delete {path}')
             raise DriveFailedToDeleteException
 
-    async def _get_directory_metadata_internal(self, path: str):
+    async def _get_directory_metadata_internal(self, path: str) -> MyCloudMetadata:
         req = MetadataRequest(path)
         resp = await self.request_executor.execute(req)
         DriveClient._raise_404(resp)
@@ -118,26 +87,15 @@ class DriveClient:
         return await resp.formatted()
 
     async def _list_files_internal(self, path: str):
-        (directories, fetched_files) = await self._get_directory_metadata_internal(path)
-        for file in fetched_files:
+        metadata = await self._get_directory_metadata_internal(path)
+        for file in metadata.files:
             yield file
 
-        for sub_directory in directories:
-            async for file in self._list_files_internal(sub_directory['Path']):
+        for sub_directory in metadata.dirs:
+            async for file in self._list_files_internal(sub_directory.path):
                 yield file
 
     @staticmethod
     def _raise_404(response: MyCloudResponse):
         if response.result.status == 404:
             raise DriveNotFoundException
-
-    @staticmethod
-    def _sanitize_path(path: str, force_dir=False, force_file=False) -> str:
-        res = DRIVE_BASE + path
-        if force_dir:
-            return res + '/' if not res.endswith('/') else res
-
-        if force_file:
-            return res[:-1] if res.endswith('/') else res
-
-        return res

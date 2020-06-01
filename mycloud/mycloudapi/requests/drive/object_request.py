@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from mycloud.mycloudapi.helper import (get_object_id,
-                                       raise_if_invalid_drive_path)
+from mycloud.common import sanitize_path
+from mycloud.mycloudapi.helper import get_object_id
 from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
@@ -10,8 +10,7 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
 class ObjectRequest(MyCloudRequest):
 
     def __init__(self, object_resource: str):
-        raise_if_invalid_drive_path(object_resource)
-        self.object_resource = object_resource
+        self.object_resource = sanitize_path(object_resource)
 
     def get_request_url(self):
         return REQUEST_URL + get_object_id(self.object_resource)
