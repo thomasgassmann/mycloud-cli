@@ -65,7 +65,7 @@ class WriteStream:
     def _generator(self):
         while not self._closed or len(self._queue) > 0:
             if len(self._queue) > 0:
-                yield self._queue.pop()
+                yield self._queue.popleft()
 
 
 class DriveClient:

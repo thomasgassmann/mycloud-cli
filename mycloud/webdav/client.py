@@ -94,7 +94,8 @@ class MyCloudDavClient:
     def _clear_cache(self, path: str):
         dirname = get_uri_parent(path)
         normed = os.path.normpath(dirname)
-        del self.metadata_cache[normed]
+        if normed in self.metadata_cache:
+            del self.metadata_cache[normed]
 
     def _get_metadata(self, path: str):
         path = os.path.normpath(path)
