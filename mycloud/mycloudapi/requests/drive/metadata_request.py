@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from datetime import datetime
 from typing import List
 from dataclasses import dataclass
@@ -8,7 +9,7 @@ from mycloud.mycloudapi.helper import get_object_id
 from mycloud.mycloudapi.requests import Method, MyCloudRequest
 from mycloud.common import parse_datetime, unsanitize_path, sanitize_path
 
-REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/metadata?p='
+REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/metadata?p={0}&nocache={1}'
 
 
 @dataclass
@@ -52,7 +53,7 @@ class MetadataRequest(MyCloudRequest):
 
     def get_request_url(self):
         resource = get_object_id(self.object_resource)
-        return REQUEST_URL + resource
+        return REQUEST_URL.format(resource, int(time.time()))
 
     def is_query_parameter_access_token(self):
         return True
