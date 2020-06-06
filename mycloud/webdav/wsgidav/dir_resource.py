@@ -4,7 +4,7 @@ import os
 from wsgidav.dav_provider import DAVCollection
 from mycloud.webdav.wsgidav.file_resource import FileResource
 from mycloud.webdav.client import MyCloudDavClient, MyCloudMetadata
-from mycloud.common import run_sync, to_unix
+from mycloud.common import to_unix
 
 
 class DirResource(DAVCollection):

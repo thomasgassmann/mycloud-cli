@@ -1,6 +1,7 @@
 import logging
 import os
 from enum import Enum
+from threading import Lock
 
 from mycloud.constants import (CACHED_TOKEN_IDENTIFIER, TOKEN_CACHE_FOLDER,
                                USE_TOKEN_CACHE)
@@ -22,6 +23,7 @@ class MyCloudAuthenticator:
         self.tried_cached_token = False
         self.token_refresh_required = True
         self.bearer_token = None
+        self._lock = Lock()
 
     def set_password_auth(self, user_name: str, password: str):
         self.auth_mode = AuthMode.Password
@@ -59,8 +61,9 @@ class MyCloudAuthenticator:
                     self.token_refresh_required = False
                     return self.current_token
 
-                self.current_token = await get_bearer_token(
-                    self.user_name, self.password, headless=True)
+                with self._lock:
+                    self.current_token = await get_bearer_token(
+                        self.user_name, self.password, headless=True)
                 if USE_TOKEN_CACHE:
                     self.tried_cached_token = False
                     self._save_token()

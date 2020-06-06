@@ -6,7 +6,6 @@ from mycloud.common.operation_timeout import (TimeoutException,
 from mycloud.common.sha256_file import sha256_file
 from mycloud.common.urls import merge_url_query_params
 from mycloud.common.generator import to_generator
-from mycloud.common.sync import run_sync
 from mycloud.common.time import parse_datetime, to_unix
 from mycloud.common.paths import unsanitize_path, sanitize_path, is_dir
 

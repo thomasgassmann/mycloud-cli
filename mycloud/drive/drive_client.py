@@ -3,8 +3,9 @@ import asyncio
 import os
 import inject
 from enum import Enum
+from collections import deque
+from threading import Thread
 
-from mycloud.common import to_generator, run_sync
 from mycloud.constants import CHUNK_SIZE
 from mycloud.drive.exceptions import (DriveFailedToDeleteException,
                                       DriveNotFoundException)
@@ -19,15 +20,55 @@ from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
 
 class ReadStream:
 
-    def __init__(self, content, loop):
+    def __init__(self, content):
         self._content = content
-        self._loop = loop
+        self._loop = asyncio.get_event_loop()
 
     def read(self, length):
-        return self._loop.run_until_complete(self._content.read(length))
+        res = self._loop.run_until_complete(self._content.read(length))
+        return res
 
     def close(self):
         pass
+
+
+class WriteStream:
+
+    def __init__(self, exec_stream):
+        self._exec = exec_stream
+        self._loop = asyncio.get_event_loop()
+        self._queue = deque()
+        self._closed = False
+        self._thread = None
+        self._started = False
+
+    def write(self, bytes):
+        self._maybe_start()
+        self._queue.append(bytes)
+
+    def writelines(self, stream):
+        self._maybe_start()
+        for item in stream:
+            self._queue.append(item)
+
+    def close(self):
+        self._closed = True
+        if self._thread:
+            self._thread.join()
+
+    def _maybe_start(self):
+        if self._started:
+            return
+
+        def r():
+            self._loop.run_until_complete(self._exec(self._generator()))
+        self._thread = Thread(target=r)
+        self._thread.start()
+
+    def _generator(self):
+        while not self._closed or len(self._queue) > 0:
+            if len(self._queue) > 0:
+                yield self._queue.pop()
 
 
 class DriveClient:
@@ -45,11 +86,14 @@ class DriveClient:
         get = GetObjectRequest(path, is_dir=False)
         resp = await self.request_executor.execute(get)
         DriveClient._raise_404(resp)
-        return ReadStream(resp.result.content, asyncio.get_event_loop())
+        return ReadStream(resp.result.content)
 
-    async def put_stream(self, path: str, generator):
-        req = PutObjectRequest(path, generator, is_dir=False)
-        resp = await self.request_executor.execute(req)
+    async def open_write(self, path: str):
+        def exec_stream(g):
+            return self.request_executor.execute(
+                PutObjectRequest(path, g, is_dir=False))
+
+        return WriteStream(exec_stream)
 
     async def mkfile(self, path: str):
         put_request = PutObjectRequest(path, None, False)
