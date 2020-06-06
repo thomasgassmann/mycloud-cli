@@ -6,7 +6,7 @@ from typing import Dict
 from enum import Enum
 from wsgidav.util import get_uri_parent
 from mycloud.mycloudapi.requests.drive import MyCloudMetadata, FileEntry, DirEntry, PutObjectRequest
-from mycloud.drive import DriveClient
+from mycloud.drive import DriveClient, DriveNotFoundException
 
 
 class FileType(Enum):
@@ -28,25 +28,28 @@ class WriterWithCallback:
         self._callback()
 
 
+def thread_runner(loop: asyncio.AbstractEventLoop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+
 class MyCloudDavClient:
 
     # make tree, update on other actions
     metadata_cache: Dict[str, MyCloudMetadata] = dict()
     # loops used to translate from sync to async paths
     # one per thread is needed
-    loops: Dict[int, asyncio.AbstractEventLoop] = dict()
     drive_client: DriveClient = inject.attr(DriveClient)
 
-    def _run_sync(self, task):
-        thread_id = threading.get_ident()
-        if thread_id in self.loops:
-            loop = self.loops[thread_id]
-        else:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            self.loops[thread_id] = loop
+    def __init__(self):
+        self._loop = asyncio.new_event_loop()
+        self._thread = threading.Thread(
+            target=thread_runner, args=(self._loop,))
+        self._thread.start()
 
-        return asyncio.get_event_loop().run_until_complete(task)
+    def _run_sync(self, task):
+        future = asyncio.run_coroutine_threadsafe(task, self._loop)
+        return future.result()
 
     def get_file_type(self, path: str):
         normed = os.path.normpath(path)
@@ -63,7 +66,7 @@ class MyCloudDavClient:
             if contains(metadata.dirs):
                 return FileType.Dir
             return FileType.Enoent
-        except:
+        except DriveNotFoundException:
             return FileType.Enoent
 
     def get_directory_metadata(self, path):
