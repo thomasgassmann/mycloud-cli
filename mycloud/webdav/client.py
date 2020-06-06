@@ -4,6 +4,7 @@ import os
 import threading
 from typing import Dict
 from enum import Enum
+from wsgidav.util import get_uri_parent
 from mycloud.mycloudapi.requests.drive import MyCloudMetadata, FileEntry, DirEntry, PutObjectRequest
 from mycloud.drive import DriveClient
 
@@ -54,7 +55,7 @@ class MyCloudDavClient:
 
         basename = os.path.basename(normed)
         try:
-            metadata = self._get_metadata(os.path.dirname(normed))
+            metadata = self._get_metadata(get_uri_parent(normed))
             def contains(l): return any(
                 filter(lambda x: x.name == basename, l))
             if contains(metadata.files):
@@ -88,7 +89,7 @@ class MyCloudDavClient:
         self._clear_cache(path)
 
     def _clear_cache(self, path: str):
-        dirname = os.path.dirname(path)
+        dirname = get_uri_parent(path)
         normed = os.path.normpath(dirname)
         del self.metadata_cache[normed]
 

@@ -39,8 +39,7 @@ class WriteStream:
         self._queue = deque()
         self._closed = False
         self._thread = None
-        self._started = False
-        self._maybe_start()
+        self._start()
 
     def write(self, bytes):
         self._queue.append(bytes)
@@ -54,10 +53,7 @@ class WriteStream:
         if self._thread:
             self._thread.join()
 
-    def _maybe_start(self):
-        if self._started:
-            return
-
+    def _start(self):
         def r():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
