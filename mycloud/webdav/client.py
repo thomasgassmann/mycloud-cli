@@ -14,9 +14,25 @@ class FileType(Enum):
     Enoent = 2
 
 
+class WriterWithCallback:
+    def __init__(self, initial, callback):
+        self._initial = initial
+        self._callback = callback
+
+    def write(self, bytes):
+        self._initial.write(bytes)
+
+    def close(self):
+        self._initial.close()
+        self._callback()
+
+
 class MyCloudDavClient:
 
+    # make tree, update on other actions
     metadata_cache: Dict[str, MyCloudMetadata] = dict()
+    # loops used to translate from sync to async paths
+    # one per thread is needed
     loops: Dict[int, asyncio.AbstractEventLoop] = dict()
     drive_client: DriveClient = inject.attr(DriveClient)
 
@@ -50,28 +66,34 @@ class MyCloudDavClient:
             return FileType.Enoent
 
     def get_directory_metadata(self, path):
-        normed = os.path.normpath(path)
-        return self._get_metadata(normed)
+        return self._get_metadata(path)
 
     def mkdirs(self, path):
         self._run_sync(self.drive_client.mkdirs(path))
-        self.metadata_cache = dict()
+        self._clear_cache(path)
 
     def open_read(self, path):
         return self._run_sync(self.drive_client.open_read(path))
 
     def open_write(self, path):
-        return self._run_sync(self.drive_client.open_write(path))
+        temp = self._run_sync(self.drive_client.open_write(path))
+        return WriterWithCallback(temp, lambda: self._clear_cache(path))
 
     def mkfile(self, path):
         self._run_sync(self.drive_client.mkfile(path))
-        self.metadata_cache = dict()
+        self._clear_cache(path)
 
     def remove(self, path, is_dir):
         self._run_sync(self.drive_client.delete(path, is_dir))
-        self.metadata_cache = dict()
+        self._clear_cache(path)
+
+    def _clear_cache(self, path: str):
+        dirname = os.path.dirname(path)
+        normed = os.path.normpath(dirname)
+        del self.metadata_cache[normed]
 
     def _get_metadata(self, path: str):
+        path = os.path.normpath(path)
         if path in self.metadata_cache:
             return self.metadata_cache[path]
         metadata = self._run_sync(

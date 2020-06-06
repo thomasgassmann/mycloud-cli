@@ -36,18 +36,16 @@ class WriteStream:
 
     def __init__(self, exec_stream):
         self._exec = exec_stream
-        self._loop = asyncio.get_event_loop()
         self._queue = deque()
         self._closed = False
         self._thread = None
         self._started = False
+        self._maybe_start()
 
     def write(self, bytes):
-        self._maybe_start()
         self._queue.append(bytes)
 
     def writelines(self, stream):
-        self._maybe_start()
         for item in stream:
             self._queue.append(item)
 
@@ -61,7 +59,9 @@ class WriteStream:
             return
 
         def r():
-            self._loop.run_until_complete(self._exec(self._generator()))
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self._exec(self._generator()))
         self._thread = Thread(target=r)
         self._thread.start()
 
