@@ -15,7 +15,7 @@
         "--host",
         "0.0.0.0",
         "--port",
-        "9008",
+        "${input:args0}",
         "--skip-credential-validation"
       ],
       "cwd": "${workspaceFolder}"
@@ -40,6 +40,11 @@
     }
   ],
   "inputs": [
+    {
+      "id": "port",
+      "type": "promptString",
+      "description": "Port to run on"
+    },
     {
       "id": "args0",
       "type": "promptString",

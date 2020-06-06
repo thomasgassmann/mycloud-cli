@@ -25,8 +25,9 @@ class ReadStream:
         self._loop = asyncio.get_event_loop()
 
     def read(self, length):
-        res = self._loop.run_until_complete(self._content.read(length))
-        return res
+        res = asyncio.run_coroutine_threadsafe(
+            self._content.read(length), self._loop)
+        return res.result()
 
     def close(self):
         pass
