@@ -16,7 +16,3 @@ def unsanitize_path(path: str):
     if not path.startswith(DRIVE_BASE):
         raise ValueError(path)
     return path[len(DRIVE_BASE):]
-
-
-def is_dir(path: str):
-    return path.endswith('/')

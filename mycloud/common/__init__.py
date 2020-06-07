@@ -7,7 +7,7 @@ from mycloud.common.sha256_file import sha256_file
 from mycloud.common.urls import merge_url_query_params
 from mycloud.common.generator import to_generator
 from mycloud.common.time import parse_datetime, to_unix
-from mycloud.common.paths import unsanitize_path, sanitize_path, is_dir
+from mycloud.common.paths import unsanitize_path, sanitize_path
 
 
 def is_int(string: str):

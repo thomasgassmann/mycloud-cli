@@ -5,9 +5,13 @@ from pathlib import Path
 
 import inject
 
-from mycloud.common import is_dir
-from mycloud.drive.drive_client import DriveClient
+from mycloud.drive.drive_client import DriveClient, EntryType
+from mycloud.drive.common import ls_files_recursively
+from mycloud.drive.exceptions import DriveNotFoundException
 from mycloud.mycloudapi import ObjectResourceBuilder
+
+
+CHUNK_SIZE = 4096
 
 
 class FsDriveClient:
@@ -15,60 +19,64 @@ class FsDriveClient:
     client: DriveClient = inject.attr(DriveClient)
 
     async def download(self, remote: str, local: str):
-        if is_dir(remote):
+        remote_type = await self.client.stat(remote)
+        if remote_type.entry_type == EntryType.Dir:
             await self.download_directory(remote, local)
-        else:
+        elif remote_type.entry_type == EntryType.File:
             await self.download_file(remote, local)
+        else:
+            raise DriveNotFoundException
 
     async def download_file(self, remote: str, local: str):
+        stream = await self.client.open_read(remote)
 
-        def stream_factory():
-            dir_name = os.path.dirname(local)
-            if not os.path.isdir(dir_name):
-                os.makedirs(os.path.dirname(local))
-
-            return open(local, 'wb')
-
-        await self.client.download(remote, stream_factory)
+        dir_name = os.path.dirname(local)
+        if not os.path.isdir(dir_name):
+            os.makedirs(os.path.dirname(local))
+        local_stream = open(local, 'wb')
+        while True:
+            read = stream.read_async(CHUNK_SIZE)
+            if not read:
+                break
+            local_stream.write(read)
+        stream.close()
+        local_stream.close()
 
     async def download_directory(self, remote: str, local: str):
         builder = ObjectResourceBuilder(local, remote)
 
-        def stream_factory(file):
-            remote_file_path = file['Path']
-            file_path = builder.build_local_file(remote_file_path)
-            logging.debug(
-                f'Stream factory built download path {file_path} for item {remote_file_path}')
-            dir_path = os.path.dirname(file_path)
-            if not os.path.isdir(dir_path):
-                os.makedirs(dir_path)
-            return open(file_path, 'wb')
-
-        await self.client.download_each(remote, stream_factory)
+        async for file in ls_files_recursively(self.client, remote):
+            local_path = builder.build_local_file(file.path)
+            await self.download(file.path, local_path)
 
     async def upload(self, local: str, remote: str):
-        builder = ObjectResourceBuilder(local, remote)
-        if os.path.isfile(local):
-            logging.debug(f'{local} is file...')
-            with open(local, 'rb') as f:
-                await self.client.upload(remote, f)
-        elif os.path.isdir(local):
-            logging.debug(f'{local} is directory...')
-            for file in Path(local).glob('**/*'):
-                if file.is_file():
-                    upload_path = builder.build_remote_file(
-                        file.relative_to(local).as_posix())
-
-                    async def _up():
-                        logging.info(f'Uploading {file}...')
-                        try:
-                            f = file.open('rb')
-                        except PermissionError:
-                            logging.error(f'Could not access file {file}')
-                            return
-                        await self.client.upload(upload_path, f)
-                        f.close()
-                    # TODO: parallelize
-                    await _up()
+        if os.path.isdir(local):
+            await self.upload_directory(local, remote)
+        elif os.path.isfile(local):
+            await self.upload_file(local, remote)
         else:
-            raise ValueError(f'No valid file type {local}')
+            raise FileNotFoundError
+
+    async def upload_file(self, local: str, remote: str):
+        if not os.path.isfile(local):
+            raise FileNotFoundError
+
+        stream = await self.client.open_write(remote)
+        local_stream = open(local, 'rb')
+        while True:
+            chunk = local_stream.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            await stream.write_async(chunk)
+        local_stream.close()
+        stream.close()
+
+    async def upload_directory(self, local: str, remote: str):
+        if not os.path.isdir(local):
+            raise FileNotFoundError
+
+        builder = ObjectResourceBuilder(local, remote)
+        for file in filter(lambda x: x.is_file(), Path(local).glob('**/*')):
+            local_path = file.relative_to(local).as_posix()
+            upload_path = builder.build_remote_file(local_path)
+            await self.upload_file(local_path, upload_path)

@@ -34,6 +34,9 @@ class ReadStream:
             self._content.read(length), self._loop)
         return res.result()
 
+    async def read_async(self, length):
+        return await self._content.read(length)
+
     def close(self):
         pass
 
@@ -56,11 +59,17 @@ class WriteStream:
         for item in stream:
             self._put_queue(item)
 
+    async def write_async(self, bytes):
+        await self._put_queue_async(bytes)
+
     def close(self):
         self._closed = True
         if self._thread:
             self._thread.join()
         del self._queue
+
+    async def _put_queue_async(self, item):
+        await self._queue.put(item)
 
     def _put_queue(self, item):
         asyncio.run_coroutine_threadsafe(
