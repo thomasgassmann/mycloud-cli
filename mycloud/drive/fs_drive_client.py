@@ -35,7 +35,7 @@ class FsDriveClient:
             os.makedirs(os.path.dirname(local))
         local_stream = open(local, 'wb')
         while True:
-            read = stream.read_async(CHUNK_SIZE)
+            read = await stream.read_async(CHUNK_SIZE)
             if not read:
                 break
             local_stream.write(read)
