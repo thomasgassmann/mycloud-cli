@@ -87,6 +87,11 @@ class MyCloudDavClient:
         self._run_sync(self.drive_client.mkfile(path))
         self._clear_cache(path)
 
+    def move(self, from_path, to_path):
+        self._run_sync(self.drive_client.move(from_path, to_path))
+        self._clear_cache(from_path)
+        self._clear_cache(to_path)
+
     def remove(self, path, is_dir):
         self._run_sync(self.drive_client.delete(path, is_dir))
         self._clear_cache(path)

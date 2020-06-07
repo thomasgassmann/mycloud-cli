@@ -39,6 +39,18 @@ class FileResource(DAVNonCollection):
     def begin_write(self, content_type):
         return self.dav_client.open_write(self.path)
 
+    def end_write(self):
+        self.remove_all_locks(True)
+
+    def copy_move_single(self, dest_path, is_move):
+        pass
+
+    def support_recursive_move(self, path):
+        return True
+
+    def move_recursive(self, path):
+        self.dav_client.move(self.path, path)
+
     def delete(self):
         self.dav_client.remove(self.path, is_dir=False)
         self.remove_all_properties(True)

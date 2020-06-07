@@ -15,7 +15,8 @@ from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                GetObjectRequest,
                                                MetadataRequest,
                                                PutObjectRequest,
-                                               MyCloudMetadata)
+                                               MyCloudMetadata,
+                                               RenameRequest)
 
 
 class ReadStream:
@@ -100,7 +101,13 @@ class DriveClient:
         put_request = PutObjectRequest(path, None, True)
         await self.request_executor.execute(put_request)
 
+    async def move(self, from_path, to_path):
+        rename_request = RenameRequest(
+            from_path, to_path, True)  # TODO: check if dir
+        await self.request_executor.execute(rename_request)
+
     async def delete(self, path: str, is_dir):
+        # TODO: remove is_dir param
         return await self._delete_internal(path, is_dir)
 
     async def _delete_internal(self, path: str, is_dir):
