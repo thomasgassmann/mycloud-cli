@@ -6,13 +6,7 @@ from typing import Dict
 from enum import Enum
 from wsgidav.util import get_uri_parent
 from mycloud.mycloudapi.requests.drive import MyCloudMetadata, FileEntry, DirEntry, PutObjectRequest
-from mycloud.drive import DriveClient, DriveNotFoundException
-
-
-class FileType(Enum):
-    File = 0
-    Dir = 1
-    Enoent = 2
+from mycloud.drive import DriveClient, DriveNotFoundException, EntryType, EntryStats
 
 
 class WriterWithCallback:
@@ -53,8 +47,9 @@ class MyCloudDavClient:
 
     def get_file_type(self, path: str):
         normed = os.path.normpath(path)
+        # TODO: driveclient stat
         if normed == '/':
-            return FileType.Dir
+            return EntryType.Dir
 
         basename = os.path.basename(normed)
         try:
@@ -62,12 +57,12 @@ class MyCloudDavClient:
             def contains(l): return any(
                 filter(lambda x: x.name == basename, l))
             if contains(metadata.files):
-                return FileType.File
+                return EntryType.File
             if contains(metadata.dirs):
-                return FileType.Dir
-            return FileType.Enoent
+                return EntryType.Dir
+            return EntryType.Enoent
         except DriveNotFoundException:
-            return FileType.Enoent
+            return EntryType.Enoent
 
     def get_directory_metadata(self, path):
         return self._get_metadata(path)
@@ -92,8 +87,8 @@ class MyCloudDavClient:
         self._clear_cache(from_path)
         self._clear_cache(to_path)
 
-    def remove(self, path, is_dir):
-        self._run_sync(self.drive_client.delete(path, is_dir))
+    def remove(self, path):
+        self._run_sync(self.drive_client.delete(path))
         self._clear_cache(path)
 
     def _clear_cache(self, path: str):

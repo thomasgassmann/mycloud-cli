@@ -43,7 +43,9 @@ class FileResource(DAVNonCollection):
         self.remove_all_locks(True)
 
     def copy_move_single(self, dest_path, is_move):
-        pass
+        if is_move:
+            self.move_recursive(dest_path)
+            return
 
     def support_recursive_move(self, path):
         return True
@@ -52,7 +54,7 @@ class FileResource(DAVNonCollection):
         self.dav_client.move(self.path, path)
 
     def delete(self):
-        self.dav_client.remove(self.path, is_dir=False)
+        self.dav_client.remove(self.path)
         self.remove_all_properties(True)
         self.remove_all_locks(True)
 

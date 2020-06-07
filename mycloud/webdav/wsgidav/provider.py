@@ -5,7 +5,8 @@ import asyncio
 from wsgidav.dav_provider import DAVProvider
 from mycloud.webdav.wsgidav.dir_resource import DirResource
 from mycloud.webdav.wsgidav.file_resource import FileResource
-from mycloud.webdav.client import MyCloudDavClient, FileType
+from mycloud.webdav.client import MyCloudDavClient
+from mycloud.drive import EntryType
 
 
 class MyCloudWebdavProvider(DAVProvider):
@@ -15,10 +16,10 @@ class MyCloudWebdavProvider(DAVProvider):
     def get_resource_inst(self, path, environ):
         file_type = self.dav_client.get_file_type(path)
 
-        if file_type == FileType.Dir:
+        if file_type == EntryType.Dir:
             return DirResource(path, environ)
 
-        if file_type == FileType.File:
+        if file_type == EntryType.File:
             return FileResource(path, environ)
 
         return None

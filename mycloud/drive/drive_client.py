@@ -3,9 +3,10 @@ import asyncio
 import os
 import inject
 from enum import Enum
+from datetime import datetime
 from collections import deque
 from threading import Thread
-
+from dataclasses import dataclass
 from mycloud.constants import CHUNK_SIZE
 from mycloud.drive.exceptions import (DriveFailedToDeleteException,
                                       DriveNotFoundException)
@@ -69,6 +70,25 @@ class WriteStream:
                 yield self._queue.popleft()
 
 
+class EntryType(Enum):
+    File = 0
+    Dir = 1
+    Enoent = 2
+
+
+@dataclass
+class EntryStats:
+    entry_type: EntryType
+    name: str
+    path: str
+    creation_time: datetime
+    modification_time: datetime
+
+
+NO_ENTRY = EntryStats(EntryType.Enoent, '', '', datetime.min, datetime.min)
+ROOT_ENTRY = EntryStats(EntryType.Dir, '/', '/', datetime.min, datetime.min)
+
+
 class DriveClient:
 
     request_executor: MyCloudRequestExecutor = inject.attr(
@@ -79,6 +99,40 @@ class DriveClient:
 
     async def get_directory_metadata(self, path: str):
         return await self._get_directory_metadata_internal(path)
+
+    async def stat(self, path: str):
+        normed = os.path.normpath(path)
+        if normed == '/':
+            return ROOT_ENTRY
+
+        basename = os.path.basename(normed)
+        try:
+            metadata = await self.get_directory_metadata(os.path.dirname(normed))
+
+            def first(l):
+                try:
+                    return next(filter(lambda x: x.name == basename, l))
+                except StopIteration:
+                    return None
+            file = first(metadata.files)
+            if file is not None:
+                return EntryStats(
+                    EntryType.File,
+                    name=file.name,
+                    path=file.path,
+                    creation_time=file.creation_time,
+                    modification_time=file.modification_time)
+            directory = first(metadata.dirs)
+            if directory is not None:
+                return EntryStats(
+                    EntryType.Dir,
+                    name=directory.name,
+                    path=directory.path,
+                    creation_time=directory.creation_time,
+                    modification_time=directory.modification_time)
+            return NO_ENTRY
+        except DriveNotFoundException:
+            return NO_ENTRY
 
     async def open_read(self, path: str):
         get = GetObjectRequest(path, is_dir=False)
@@ -106,9 +160,12 @@ class DriveClient:
             from_path, to_path, True)  # TODO: check if dir
         await self.request_executor.execute(rename_request)
 
-    async def delete(self, path: str, is_dir):
-        # TODO: remove is_dir param
-        return await self._delete_internal(path, is_dir)
+    async def copy(self, from_path, to_path):
+        pass
+
+    async def delete(self, path: str):
+        stat = await self.stat(path)
+        return await self._delete_internal(path, stat.entry_type == EntryType.Dir)
 
     async def _delete_internal(self, path: str, is_dir):
         try:
