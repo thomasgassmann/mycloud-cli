@@ -3,6 +3,7 @@ import asyncio
 import os
 import inject
 from enum import Enum
+from typing import List, AsyncIterator
 from datetime import datetime
 from collections import deque
 from threading import Thread
@@ -17,7 +18,9 @@ from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                MetadataRequest,
                                                PutObjectRequest,
                                                MyCloudMetadata,
-                                               RenameRequest)
+                                               RenameRequest,
+                                               FileEntry,
+                                               DirEntry)
 
 
 class ReadStream:
@@ -100,11 +103,8 @@ class DriveClient:
     request_executor: MyCloudRequestExecutor = inject.attr(
         MyCloudRequestExecutor)
 
-    async def list_files(self, remote: str):
-        return await self._list_files_internal(remote)
-
-    async def get_directory_metadata(self, path: str):
-        return await self._get_directory_metadata_internal(path)
+    async def ls(self, remote: str) -> MyCloudMetadata:
+        return await self._get_directory_metadata_internal(remote)
 
     async def stat(self, path: str):
         normed = os.path.normpath(path)
@@ -113,7 +113,7 @@ class DriveClient:
 
         basename = os.path.basename(normed)
         try:
-            metadata = await self.get_directory_metadata(os.path.dirname(normed))
+            metadata = await self.ls(os.path.dirname(normed))
 
             def first(l):
                 try:
@@ -200,15 +200,6 @@ class DriveClient:
         DriveClient._raise_404(resp)
 
         return await resp.formatted()
-
-    async def _list_files_internal(self, path: str):
-        metadata = await self._get_directory_metadata_internal(path)
-        for file in metadata.files:
-            yield file
-
-        for sub_directory in metadata.dirs:
-            async for file in self._list_files_internal(sub_directory.path):
-                yield file
 
     @staticmethod
     def _raise_404(response: MyCloudResponse):

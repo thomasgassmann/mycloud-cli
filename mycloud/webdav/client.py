@@ -99,6 +99,6 @@ class MyCloudDavClient:
         if path in self.metadata_cache:
             return self.metadata_cache[path]
         metadata = self._run_sync(
-            self.drive_client.get_directory_metadata(path))
+            self.drive_client.ls(path))
         self.metadata_cache[path] = metadata
         return metadata

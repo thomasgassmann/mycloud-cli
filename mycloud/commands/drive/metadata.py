@@ -14,5 +14,5 @@ from mycloud.drive import DriveClient
 @inject.params(client=DriveClient)
 @async_click
 async def metadata_command(remote: str, client: DriveClient):
-    metadata = await client.get_directory_metadata(remote)
+    metadata = await client.ls(remote)
     click.echo(metadata)
