@@ -39,7 +39,7 @@ class FileResource(DAVNonCollection):
     def begin_write(self, content_type):
         return self.dav_client.open_write(self.path)
 
-    def end_write(self):
+    def end_write(self, with_errors):
         self.remove_all_locks(True)
 
     def copy_move_single(self, dest_path, is_move):

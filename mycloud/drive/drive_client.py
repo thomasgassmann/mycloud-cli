@@ -39,7 +39,8 @@ class WriteStream:
 
     def __init__(self, exec_stream):
         self._exec = exec_stream
-        self._queue = deque()
+        # TODO: queue size should depend on size of individual items?
+        self._queue = asyncio.Queue(maxsize=1)
         self._closed = False
         self._thread = None
         self._start()
@@ -55,6 +56,7 @@ class WriteStream:
         self._closed = True
         if self._thread:
             self._thread.join()
+        del self._queue
 
     def _start(self):
         def r():

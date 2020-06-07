@@ -29,10 +29,7 @@ def thread_runner(loop: asyncio.AbstractEventLoop):
 
 class MyCloudDavClient:
 
-    # make tree, update on other actions
     metadata_cache: Dict[str, MyCloudMetadata] = dict()
-    # loops used to translate from sync to async paths
-    # one per thread is needed
     drive_client: DriveClient = inject.attr(DriveClient)
 
     def __init__(self):

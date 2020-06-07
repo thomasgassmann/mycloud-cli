@@ -2,6 +2,7 @@ import io
 import logging
 from time import sleep
 
+import asyncio
 import aiohttp
 
 from mycloud import __version__
@@ -26,7 +27,8 @@ class MyCloudRequestExecutor:
         headers = MyCloudRequestExecutor._get_headers(
             request.get_content_type(), auth_token, request.get_additional_headers())
 
-        session = aiohttp.ClientSession(headers=headers)
+        session = aiohttp.ClientSession(
+            headers=headers, timeout=aiohttp.ClientTimeout(total=None))
         request_url = MyCloudRequestExecutor._get_request_url(
             request, auth_token)
 
