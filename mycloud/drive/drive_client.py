@@ -50,7 +50,7 @@ class WriteStream:
         # TODO: queue size should depend on size of individual items?
         self._queue = asyncio.Queue(maxsize=1)
         self._closed = False
-        self._task = self._start()
+        self._thread = None
 
     def writelines(self, generator):
         stream = generator_to_stream(generator)
@@ -59,12 +59,16 @@ class WriteStream:
 
     def write(self, bytes):
         self._put_queue(bytes)
+        self._start()
 
     async def write_async(self, bytes):
         await self._put_queue_async(bytes)
+        self._start()
 
     def close(self):
         self._closed = True
+        if self._thread:
+            self._thread.join()
         del self._queue
 
     async def _put_queue_async(self, item):
@@ -75,11 +79,20 @@ class WriteStream:
             self._queue.put(item), self._loop).result()
 
     def _start(self):
-        return self._loop.create_task(self._exec(self._generator()))
+        if self._thread is not None:
+            return
+
+        def r():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self._exec(self._generator()))
+        self._thread = Thread(target=r)
+        self._thread.start()
 
     async def _generator(self):
         while not self._closed or not self._queue.empty():
-            yield await self._queue.get()
+            if not self._queue.empty():  # TODO: should be done with asyncio
+                yield self._queue.get_nowait()
 
 
 class EntryType(Enum):
