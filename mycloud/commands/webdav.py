@@ -23,4 +23,5 @@ def webdav_command(
     # TODO if both file_creation_in_cache and folder_creation_in_cache are
     # enabled, only create folders, files in cache, only calls to open_write
     # should actually *write* to myCloud
-    server.run(host, port, not skip_credential_validation)
+    server.run(host, port, not skip_credential_validation,
+               folder_creation_in_cache, file_creation_in_cache)

@@ -9,7 +9,7 @@ if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 SERVICE_NAME = 'myCloud'
-MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1024 * 1024 * 256
+MY_CLOUD_BIG_FILE_CHUNK_SIZE = 1024 * 1024 * 1024
 CHUNK_SIZE = 1024
 BASE_DIR = '/Drive/'
 PARTIAL_EXTENSION = '.partial'

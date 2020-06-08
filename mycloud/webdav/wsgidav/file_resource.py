@@ -1,8 +1,10 @@
 import inject
 import os
 from wsgidav.dav_provider import DAVNonCollection
+from wsgidav.dav_error import DAVError
 from mycloud.webdav.client import MyCloudDavClient, FileEntry
 from mycloud.common import to_unix
+from mycloud.constants import MY_CLOUD_BIG_FILE_CHUNK_SIZE
 
 
 class FileResource(DAVNonCollection):
@@ -37,6 +39,11 @@ class FileResource(DAVNonCollection):
         return self.dav_client.open_read(self.path)
 
     def begin_write(self, content_type):
+        length = int(self.environ['CONTENT_LENGTH'])
+        if length > MY_CLOUD_BIG_FILE_CHUNK_SIZE:
+            # TODO: lfs
+            raise DAVError(413)
+
         return self.dav_client.open_write(self.path)
 
     def end_write(self, with_errors):

@@ -32,6 +32,9 @@ class MyCloudDavClient:
     metadata_cache: Dict[str, MyCloudMetadata] = dict()
     drive_client: DriveClient = inject.attr(DriveClient)
 
+    file_creation_in_cache = False
+    folder_creation_in_cache = True
+
     def __init__(self):
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(
@@ -39,8 +42,7 @@ class MyCloudDavClient:
         self._thread.start()
 
     def _run_sync(self, task):
-        future = asyncio.run_coroutine_threadsafe(task, self._loop)
-        return future.result()
+        return asyncio.run_coroutine_threadsafe(task, self._loop).result()
 
     def get_file_type(self, path: str):
         normed = os.path.normpath(path)
