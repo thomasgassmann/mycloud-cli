@@ -47,6 +47,22 @@ To get a list of all available commands, run:
 mycloud -h
 ```
 
+## WebDAV
+
+myCloud CLI incldues a basic WebDAV Proxy out of the box.
+
+To run it, first configure the credentials for the WebDAV server using:
+
+```bash
+mycloud config webdav
+```
+
+Then start the server using:
+
+```bash
+mycloud webdav --host ip --port port
+```
+
 # Setup local environment
 
 First, clone the repository:
