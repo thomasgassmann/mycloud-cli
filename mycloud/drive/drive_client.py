@@ -178,7 +178,16 @@ class DriveClient:
         await self.request_executor.execute(rename_request)
 
     async def copy(self, from_path, to_path):
-        pass
+        # assume it's a file for now?
+        read_stream = await self.open_read(from_path)
+        write_stream = await self.open_write(to_path)
+        while True:
+            read = await read_stream.read_async(CHUNK_SIZE)
+            if not read:
+                break
+            await write_stream.write_async(read)
+        read_stream.close()
+        write_stream.close()
 
     async def delete(self, path: str):
         stat = await self.stat(path)

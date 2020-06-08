@@ -46,6 +46,7 @@ class FileResource(DAVNonCollection):
         if is_move:
             self.move_recursive(dest_path)
             return
+        self.dav_client.copy(self.path, dest_path)
 
     def support_recursive_move(self, path):
         return True
