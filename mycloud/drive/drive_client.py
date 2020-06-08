@@ -9,6 +9,7 @@ from collections import deque
 from threading import Thread
 from dataclasses import dataclass
 from mycloud.constants import CHUNK_SIZE
+from mycloud.mycloudapi.helper import generator_to_stream
 from mycloud.drive.exceptions import (DriveFailedToDeleteException,
                                       DriveNotFoundException)
 from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
@@ -49,23 +50,21 @@ class WriteStream:
         # TODO: queue size should depend on size of individual items?
         self._queue = asyncio.Queue(maxsize=1)
         self._closed = False
-        self._thread = None
-        self._start()
+        self._task = self._start()
+
+    def writelines(self, generator):
+        stream = generator_to_stream(generator)
+        asyncio.run_coroutine_threadsafe(
+            self._exec(stream), self._loop).result()
 
     def write(self, bytes):
         self._put_queue(bytes)
-
-    def writelines(self, stream):
-        for item in stream:
-            self._put_queue(item)
 
     async def write_async(self, bytes):
         await self._put_queue_async(bytes)
 
     def close(self):
         self._closed = True
-        if self._thread:
-            self._thread.join()
         del self._queue
 
     async def _put_queue_async(self, item):
@@ -76,17 +75,11 @@ class WriteStream:
             self._queue.put(item), self._loop).result()
 
     def _start(self):
-        def r():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(self._exec(self._generator(loop)))
-        self._thread = Thread(target=r)
-        self._thread.start()
+        return self._loop.create_task(self._exec(self._generator()))
 
-    def _generator(self, loop):
+    async def _generator(self):
         while not self._closed or not self._queue.empty():
-            if not self._queue.empty():  # TODO: should be done with asyncio
-                yield self._queue.get_nowait()
+            yield await self._queue.get()
 
 
 class EntryType(Enum):

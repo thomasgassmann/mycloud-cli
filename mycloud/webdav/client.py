@@ -14,8 +14,8 @@ class WriterWithCallback:
         self._initial = initial
         self._callback = callback
 
-    def write(self, bytes):
-        self._initial.write(bytes)
+    def writelines(self, stream):
+        self._initial.writelines(stream)
 
     def close(self):
         self._initial.close()

@@ -68,9 +68,8 @@ class MyCloudRequestExecutor:
     async def _execute_put(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
         generator = request.get_data_generator()
         if generator:
-            stream = generator_to_stream(generator)
             logging.debug(f'Executing put request with generator...')
-            return await session.put(request_url, data=stream)
+            return await session.put(request_url, data=generator)
         return await session.put(request_url)
 
     @staticmethod
