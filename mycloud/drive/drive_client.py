@@ -172,8 +172,9 @@ class DriveClient:
         await self.request_executor.execute(put_request)
 
     async def move(self, from_path, to_path):
+        stat = await self.stat(from_path)
         rename_request = RenameRequest(
-            from_path, to_path, True)  # TODO: check if dir
+            from_path, to_path, stat.is_file)
         await self.request_executor.execute(rename_request)
 
     async def copy(self, from_path, to_path):
