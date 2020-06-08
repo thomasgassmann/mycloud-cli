@@ -49,7 +49,7 @@ mycloud -h
 
 ## WebDAV
 
-myCloud CLI incldues a basic WebDAV Proxy out of the box.
+myCloud CLI includes a basic WebDAV Proxy out of the box.
 
 To run it, first configure the credentials for the WebDAV server using:
 
