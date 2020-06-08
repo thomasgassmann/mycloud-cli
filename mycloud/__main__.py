@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from mycloud.commands import auth_command, statistics_command
+from mycloud.commands import auth_command, statistics_command, config_command
 from mycloud.commands.photos import add_command
 from mycloud.commands.drive import (delete_command, download_command,
                                     upload_command, metadata_command)
@@ -84,6 +84,7 @@ mycloud_cli.add_command(auth_command)
 mycloud_cli.add_command(statistics_command)
 mycloud_cli.add_command(photos_cli)
 mycloud_cli.add_command(webdav_command)
+mycloud_cli.add_command(config_command)
 
 
 def main():
