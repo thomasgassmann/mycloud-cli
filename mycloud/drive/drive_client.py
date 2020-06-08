@@ -79,13 +79,14 @@ class WriteStream:
         def r():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            loop.run_until_complete(self._exec(self._generator()))
+            loop.run_until_complete(self._exec(self._generator(loop)))
         self._thread = Thread(target=r)
         self._thread.start()
 
-    def _generator(self):
+    def _generator(self, loop):
         while not self._closed or not self._queue.empty():
-            yield asyncio.run_coroutine_threadsafe(self._queue.get(), self._loop).result()
+            if not self._queue.empty():  # TODO: should be done with asyncio
+                yield self._queue.get_nowait()
 
 
 class EntryType(Enum):
