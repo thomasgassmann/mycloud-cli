@@ -2,11 +2,12 @@ import io
 import logging
 from time import sleep
 
+import asyncio
 import aiohttp
 
 from mycloud import __version__
 from mycloud.common import merge_url_query_params
-from mycloud.constants import RESET_SESSION_EVERY, WAIT_TIME_MULTIPLIER
+from mycloud.constants import WAIT_TIME_MULTIPLIER
 from mycloud.mycloudapi.auth import AuthMode, MyCloudAuthenticator
 from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
 from mycloud.mycloudapi.response import MyCloudResponse
@@ -26,7 +27,8 @@ class MyCloudRequestExecutor:
         headers = MyCloudRequestExecutor._get_headers(
             request.get_content_type(), auth_token, request.get_additional_headers())
 
-        session = aiohttp.ClientSession(headers=headers)
+        session = aiohttp.ClientSession(
+            headers=headers, timeout=aiohttp.ClientTimeout(total=None))
         request_url = MyCloudRequestExecutor._get_request_url(
             request, auth_token)
 
@@ -66,9 +68,8 @@ class MyCloudRequestExecutor:
     async def _execute_put(session: aiohttp.ClientSession, request: MyCloudRequest, request_url: str):
         generator = request.get_data_generator()
         if generator:
-            stream = generator_to_stream(generator)
             logging.debug(f'Executing put request with generator...')
-            return await session.put(request_url, data=stream)
+            return await session.put(request_url, data=generator)
         return await session.put(request_url)
 
     @staticmethod

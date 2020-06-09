@@ -2,8 +2,8 @@ import json
 from enum import Enum
 from time import time
 
-from mycloud.mycloudapi.helper import (get_object_id,
-                                       raise_if_invalid_drive_path)
+from mycloud.common import sanitize_path
+from mycloud.mycloudapi.helper import get_object_id
 from mycloud.mycloudapi.requests import Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/sync/list?p={}&$type={}&nocache={}'
@@ -20,7 +20,7 @@ class DirectoryListRequest(MyCloudRequest):
     def __init__(self, object_resource: str, list_type: ListType):
         if not object_resource.endswith('/'):
             object_resource += '/'
-        raise_if_invalid_drive_path(object_resource)
+        object_resource = sanitize_path(object_resource)
         self._object_resource = object_resource
         self._list_type = list_type
 

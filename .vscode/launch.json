@@ -2,6 +2,25 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "myCloud Webdav Server Debug",
+      "type": "python",
+      "request": "launch",
+      "pythonPath": "${workspaceRoot}/.venv/bin/python",
+      "module": "mycloud",
+      "stopOnEntry": false,
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "webdav",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "${input:args0}",
+        "--skip-credential-validation"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "name": "myCloud Debug",
       "type": "python",
       "request": "launch",
@@ -21,6 +40,11 @@
     }
   ],
   "inputs": [
+    {
+      "id": "port",
+      "type": "promptString",
+      "description": "Port to run on"
+    },
     {
       "id": "args0",
       "type": "promptString",

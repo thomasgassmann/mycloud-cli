@@ -1,6 +1,6 @@
 import json
 
-from mycloud.common.functions import get_string_generator
+from mycloud.common import get_string_generator, sanitize_path
 from mycloud.mycloudapi.object_resource_builder import ObjectResourceBuilder
 from mycloud.mycloudapi.requests import Method, MyCloudRequest
 
@@ -9,10 +9,10 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/commands/rename'
 
 class RenameRequest(MyCloudRequest):
     def __init__(self, source: str, destination: str, is_file: bool):
-        self._destination = ObjectResourceBuilder.correct_suffix_sep(
-            destination, is_file)
-        self._source = ObjectResourceBuilder.correct_suffix_sep(
-            source, is_file)
+        self._destination = sanitize_path(
+            destination, force_dir=not is_file, force_file=is_file)
+        self._source = sanitize_path(
+            source, force_dir=not is_file, force_file=is_file)
 
     def get_method(self):
         return Method.PUT

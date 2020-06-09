@@ -1,9 +1,15 @@
 import logging
-
+import asyncio
+import os
 import inject
-
-from mycloud.common import to_generator
+from enum import Enum
+from typing import List, AsyncIterator
+from datetime import datetime
+from collections import deque
+from threading import Thread
+from dataclasses import dataclass
 from mycloud.constants import CHUNK_SIZE
+from mycloud.mycloudapi.helper import generator_to_stream
 from mycloud.drive.exceptions import (DriveFailedToDeleteException,
                                       DriveNotFoundException)
 from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
@@ -11,7 +17,101 @@ from mycloud.mycloudapi import (MyCloudRequestExecutor, MyCloudResponse,
 from mycloud.mycloudapi.requests.drive import (DeleteObjectRequest,
                                                GetObjectRequest,
                                                MetadataRequest,
-                                               PutObjectRequest)
+                                               PutObjectRequest,
+                                               MyCloudMetadata,
+                                               RenameRequest,
+                                               FileEntry,
+                                               DirEntry)
+
+
+class ReadStream:
+
+    def __init__(self, content):
+        self._content = content
+        self._loop = asyncio.get_event_loop()
+
+    def read(self, length):
+        res = asyncio.run_coroutine_threadsafe(
+            self._content.read(length), self._loop)
+        return res.result()
+
+    async def read_async(self, length):
+        return await self._content.read(length)
+
+    def close(self):
+        pass
+
+
+class WriteStream:
+
+    def __init__(self, exec_stream):
+        self._loop = asyncio.get_event_loop()
+        self._exec = exec_stream
+        # TODO: queue size should depend on size of individual items?
+        self._queue = asyncio.Queue(maxsize=1)
+        self._closed = False
+        self._thread = None
+
+    def writelines(self, generator):
+        stream = generator_to_stream(generator)
+        asyncio.run_coroutine_threadsafe(
+            self._exec(stream), self._loop).result()
+
+    def write(self, bytes):
+        self._put_queue(bytes)
+        self._start()
+
+    async def write_async(self, bytes):
+        await self._put_queue_async(bytes)
+        self._start()
+
+    def close(self):
+        self._closed = True
+        if self._thread:
+            self._thread.join()
+        del self._queue
+
+    async def _put_queue_async(self, item):
+        await self._queue.put(item)
+
+    def _put_queue(self, item):
+        asyncio.run_coroutine_threadsafe(
+            self._queue.put(item), self._loop).result()
+
+    def _start(self):
+        if self._thread is not None:
+            return
+
+        def r():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self._exec(self._generator()))
+        self._thread = Thread(target=r)
+        self._thread.start()
+
+    async def _generator(self):
+        while not self._closed or not self._queue.empty():
+            if not self._queue.empty():  # TODO: should be done with asyncio
+                yield self._queue.get_nowait()
+
+
+class EntryType(Enum):
+    File = 0
+    Dir = 1
+    Enoent = 2
+
+
+@dataclass
+class EntryStats:
+    entry_type: EntryType
+    name: str
+    path: str
+    creation_time: datetime
+    modification_time: datetime
+
+
+NO_ENTRY = EntryStats(EntryType.Enoent, '', '', datetime.min, datetime.min)
+ROOT_ENTRY = EntryStats(EntryType.Dir, '/', '/', datetime.min, datetime.min)
 
 
 class DriveClient:
@@ -19,70 +119,113 @@ class DriveClient:
     request_executor: MyCloudRequestExecutor = inject.attr(
         MyCloudRequestExecutor)
 
-    async def list_files(self, remote: str):
-        (directories, fetched_files) = await self.get_directory_metadata(remote)
-        for file in fetched_files:
-            yield file
+    async def ls(self, remote: str) -> MyCloudMetadata:
+        return await self._get_directory_metadata_internal(remote)
 
-        for sub_directory in directories:
-            async for file in self.list_files(sub_directory['Path']):
-                yield file
+    async def stat(self, path: str):
+        normed = os.path.normpath(path)
+        if normed == '/':
+            return ROOT_ENTRY
 
-    def is_directory(self, remote: str):
-        return remote.endswith('/')
+        basename = os.path.basename(normed)
+        try:
+            metadata = await self.ls(os.path.dirname(normed))
 
-    async def get_directory_metadata(self, path: str):
-        req = MetadataRequest(path)
-        resp = await self.request_executor.execute(req)
+            def first(l):
+                try:
+                    return next(filter(lambda x: x.name == basename, l))
+                except StopIteration:
+                    return None
+            file = first(metadata.files)
+            if file is not None:
+                return EntryStats(
+                    EntryType.File,
+                    name=file.name,
+                    path=file.path,
+                    creation_time=file.creation_time,
+                    modification_time=file.modification_time)
+            directory = first(metadata.dirs)
+            if directory is not None:
+                return EntryStats(
+                    EntryType.Dir,
+                    name=directory.name,
+                    path=directory.path,
+                    creation_time=directory.creation_time,
+                    modification_time=directory.modification_time)
+            return NO_ENTRY
+        except DriveNotFoundException:
+            return NO_ENTRY
+
+    async def open_read(self, path: str):
+        get = GetObjectRequest(path, is_dir=False)
+        resp = await self.request_executor.execute(get)
         DriveClient._raise_404(resp)
+        return ReadStream(resp.result.content)
 
-        return await resp.formatted()
+    async def open_write(self, path: str):
+        def exec_stream(g):
+            return self.request_executor.execute(
+                PutObjectRequest(path, g, is_dir=False))
 
-    async def download_each(self, directory_path: str, stream_factory):
-        async for file in self.list_files(directory_path):
-            await self.download(file['Path'], lambda: stream_factory(file))
+        return WriteStream(exec_stream)
 
-    async def download(self, path: str, stream_factory):
-        get_request = GetObjectRequest(path)
-        resp: MyCloudResponse = await self.request_executor.execute(get_request)
-        DriveClient._raise_404(resp)
-
-        stream = stream_factory()
-        while True:
-            logging.debug(f'Reading download content...')
-            chunk = await resp.result.content.read(CHUNK_SIZE)
-            logging.debug(f'Got {len(chunk)} bytes')
-            if not chunk:
-                break
-            logging.debug(f'Writing to output stream...')
-            stream.write(chunk)
-        stream.close()
-
-    async def upload(self, path: str, stream):
-        generator = to_generator(stream)
-        put_request = PutObjectRequest(path, generator)
+    async def mkfile(self, path: str):
+        put_request = PutObjectRequest(path, None, False)
         await self.request_executor.execute(put_request)
 
+    async def mkdirs(self, path: str):
+        put_request = PutObjectRequest(path, None, True)
+        await self.request_executor.execute(put_request)
+
+    async def move(self, from_path, to_path):
+        stat = await self.stat(from_path)
+        rename_request = RenameRequest(
+            from_path, to_path, stat.is_file)
+        await self.request_executor.execute(rename_request)
+
+    async def copy(self, from_path, to_path):
+        # assume it's a file for now?
+        read_stream = await self.open_read(from_path)
+        write_stream = await self.open_write(to_path)
+        while True:
+            read = await read_stream.read_async(CHUNK_SIZE)
+            if not read:
+                break
+            await write_stream.write_async(read)
+        read_stream.close()
+        write_stream.close()
+
     async def delete(self, path: str):
+        stat = await self.stat(path)
+        return await self._delete_internal(path, stat.entry_type == EntryType.Dir)
+
+    async def _delete_internal(self, path: str, is_dir):
         try:
-            await self._delete_internal(path)
+            await self._delete_single_internal(path, is_dir)
         except DriveFailedToDeleteException:
-            if not self.is_directory(path):
-                raise
+            if not is_dir:
+                raise  # probably an unrecoverable error, if it's not a directory
 
-            (dirs, files) = await self.get_directory_metadata(path)
-            for remote_file in files:
-                await self.delete(remote_file['Path'])
-            for directory in dirs:
-                await self.delete(directory['Path'])
+            metadata = await self._get_directory_metadata_internal(path)
+            for remote_file in metadata.files:
+                await self._delete_internal(remote_file.path, False)
+            for directory in metadata.dirs:
+                await self._delete_internal(directory.path, True)
 
-    async def _delete_internal(self, path: str):
-        delete_request = DeleteObjectRequest(path)
+    async def _delete_single_internal(self, path: str, is_dir):
+        delete_request = DeleteObjectRequest(path, is_dir)
         resp = await self.request_executor.execute(delete_request)
         DriveClient._raise_404(resp)
         if not resp.success:
             logging.info(f'Failed to delete {path}')
             raise DriveFailedToDeleteException
+
+    async def _get_directory_metadata_internal(self, path: str) -> MyCloudMetadata:
+        req = MetadataRequest(path)
+        resp = await self.request_executor.execute(req)
+        DriveClient._raise_404(resp)
+
+        return await resp.formatted()
 
     @staticmethod
     def _raise_404(response: MyCloudResponse):

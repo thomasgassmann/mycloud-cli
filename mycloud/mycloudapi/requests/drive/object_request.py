@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from mycloud.mycloudapi.helper import (get_object_id,
-                                       raise_if_invalid_drive_path)
+from mycloud.common import sanitize_path
+from mycloud.mycloudapi.helper import get_object_id
 from mycloud.mycloudapi.requests import ContentType, Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
@@ -9,9 +9,9 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/object?p='
 
 class ObjectRequest(MyCloudRequest):
 
-    def __init__(self, object_resource: str):
-        raise_if_invalid_drive_path(object_resource)
-        self.object_resource = object_resource
+    def __init__(self, object_resource: str, is_dir: bool):
+        self.object_resource = sanitize_path(
+            object_resource, force_dir=is_dir, force_file=not is_dir)
 
     def get_request_url(self):
         return REQUEST_URL + get_object_id(self.object_resource)
@@ -23,8 +23,8 @@ class ObjectRequest(MyCloudRequest):
 
 class PutObjectRequest(ObjectRequest):
 
-    def __init__(self, object_resource: str, generator):
-        super().__init__(object_resource)
+    def __init__(self, object_resource: str, generator, is_dir):
+        super().__init__(object_resource, is_dir)
         self.generator = generator
 
     def get_method(self):
@@ -39,8 +39,8 @@ class PutObjectRequest(ObjectRequest):
 
 class GetObjectRequest(ObjectRequest):
 
-    def __init__(self, object_resource: str):
-        super().__init__(object_resource)
+    def __init__(self, object_resource: str, is_dir=False):
+        super().__init__(object_resource, is_dir)
 
     def get_method(self):
         return Method.GET
@@ -50,6 +50,9 @@ class GetObjectRequest(ObjectRequest):
 
 
 class DeleteObjectRequest(ObjectRequest):
+
+    def __init__(self, object_resource: str, is_dir=False):
+        super().__init__(object_resource, is_dir)
 
     def get_method(self):
         return Method.DELETE

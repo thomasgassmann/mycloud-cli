@@ -1,8 +1,8 @@
 import json
 import time
 
-from mycloud.mycloudapi.helper import (get_object_id,
-                                       raise_if_invalid_drive_path)
+from mycloud.common import sanitize_path
+from mycloud.mycloudapi.helper import get_object_id
 from mycloud.mycloudapi.requests import Method, MyCloudRequest
 
 REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/changes/files/?p={}&$limit={}&nocache={}'
@@ -11,7 +11,7 @@ REQUEST_URL = 'https://storage.prod.mdl.swisscom.ch/changes/files/?p={}&$limit={
 class ChangeRequest(MyCloudRequest):
 
     def __init__(self, object_resource: str, top: int):
-        raise_if_invalid_drive_path(object_resource)
+        object_resource = sanitize_path(object_resource)
         self.object_resource = object_resource
         self.top = top
 

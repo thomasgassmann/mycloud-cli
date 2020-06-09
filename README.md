@@ -47,6 +47,22 @@ To get a list of all available commands, run:
 mycloud -h
 ```
 
+## WebDAV
+
+myCloud CLI includes a basic WebDAV Proxy out of the box.
+
+To run it, first configure the credentials for the WebDAV server using:
+
+```bash
+mycloud config webdav
+```
+
+Then start the server using:
+
+```bash
+mycloud webdav --host ip --port port
+```
+
 # Setup local environment
 
 First, clone the repository:
@@ -60,7 +76,7 @@ Then install all dependencies via pipenv:
 ```
 cd mycloud-cli
 export PIPENV_VENV_IN_PROJECT="enabled"
-pipenv install --python 3.6
+pipenv install --python 3.7
 pipenv shell
 ```
 
